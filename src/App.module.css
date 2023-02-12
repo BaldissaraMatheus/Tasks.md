@@ -1,0 +1,65 @@
+.App {
+  text-align: center;
+}
+
+.main {
+  background: #fefffe;
+  height: 100vh;
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+}
+
+.foo {
+  height: 100%;
+  width: 300px;
+  background: #B4B8C5;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card {
+  height: 100px;
+  width: 100%;
+  background: #E9EBF8;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: grab;
+}
+
+.card:active {
+  opacity: 0.5;
+}
+
+.h3 {
+  font-size: 0.9rem;
+  line-height: 1.1rem;
+  margin: 0 !important;
+  text-align: left;
+  font-weight: normal;
+}
+
+.chip {
+  background: #B4B8C5;
+  padding: 4px;
+  border-radius: 5px;
+}
+
+.h4 {
+  font-weight: normal;
+  font-size: 0.8rem;
+  line-height: 1.0rem;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.hr {
+  width: 100%;
+  height: 12px;
+  background: blue;
+}
