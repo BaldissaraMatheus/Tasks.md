@@ -4,26 +4,34 @@ import styles from './App.module.css';
 function App() {
 
   const [cards, setCards] = createSignal([
-    { title: 'Planning a new version of the tutorial process', priority: '🔥 High' },
-    { title: 'Iabadabadu', priority: 'Medium' },
-    { title: 'outro', priority: 'Low' },
+    { title: 'Planning a new version of the tutorial process', priority: '🔥 High', id: 0 },
+    { title: 'Iabadabadu', priority: 'Medium', id: 1 },
+    { title: 'outro', priority: 'Low', id: 2 },
   ]);
 
   const [cardBeingDraggedIndex, setCardBeingDraggedIndex] = createSignal(null);
   const [cardToBeReplacedIndex, setCardToBeReplacedIndex] = createSignal(null);
 
-  function swapCardsPosition() {
+  function MoveCardPosition() {
     const newCards = structuredClone(cards());
-    const oldCard = structuredClone(newCards[cardBeingDraggedIndex()]);
-    newCards[cardBeingDraggedIndex()] = newCards[cardToBeReplacedIndex()];
-    newCards[cardToBeReplacedIndex()] = oldCard;
-    setCards(newCards)
+    const cardBeingDragged = newCards[cardBeingDraggedIndex()];
+    newCards[cardBeingDraggedIndex()] = null;
+    const upOrDownDisplacement = cardBeingDraggedIndex() < cardToBeReplacedIndex()
+      ? 1
+      : 0;
+    const cardsWithChangedPositions = [
+      ...newCards.slice(0, cardToBeReplacedIndex() + upOrDownDisplacement),
+      cardBeingDragged,
+      ...newCards.slice(cardToBeReplacedIndex() + upOrDownDisplacement)
+    ]
+    .filter(card => card !== null);
+    setCards(cardsWithChangedPositions);
   }
 
   return (
     <div class={styles.App}>
       <main class={styles.main}>
-        <div class={styles.foo}>
+        <div class={styles.lane}>
           <For each={cards()} fallback={<div>loading...</div>}>
             {(card, i) => (
               <>
@@ -31,7 +39,7 @@ function App() {
                   class={styles.card}
                   draggable={true}
                   onDragStart={() => setCardBeingDraggedIndex(i)}
-                  onDragEnd={() => swapCardsPosition()}
+                  onDragEnd={() => MoveCardPosition()}
                   onDragOver={() => setCardToBeReplacedIndex(i)}
                 >
                   <h3 class={styles.h3}>{card.title}</h3>
@@ -42,8 +50,6 @@ function App() {
               </>
             )}
           </For>
-          {/* <div class={styles.slot}>
-          </div> */}
         </div>
       </main>
     </div>
