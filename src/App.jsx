@@ -12,7 +12,7 @@ function App() {
   const [cardBeingDraggedIndex, setCardBeingDraggedIndex] = createSignal(null);
   const [cardToBeReplacedIndex, setCardToBeReplacedIndex] = createSignal(null);
 
-  function MoveCardPosition() {
+  function moveCardPosition() {
     const newCards = structuredClone(cards());
     const cardBeingDragged = newCards[cardBeingDraggedIndex()];
     newCards[cardBeingDraggedIndex()] = null;
@@ -39,7 +39,7 @@ function App() {
                   class={styles.card}
                   draggable={true}
                   onDragStart={() => setCardBeingDraggedIndex(i)}
-                  onDragEnd={() => MoveCardPosition()}
+                  onDragEnd={() => moveCardPosition()}
                   onDragOver={() => setCardToBeReplacedIndex(i)}
                 >
                   <h3 class={styles.h3}>{card.title}</h3>
