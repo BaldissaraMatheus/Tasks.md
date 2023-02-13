@@ -1,16 +1,19 @@
-import { createSignal, For } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
+import { Portal } from 'solid-js/web';
 import styles from './App.module.css';
 
 function App() {
 
   const [cards, setCards] = createSignal([
-    { title: 'Planning a new version of the tutorial process', priority: '🔥 High', id: 0 },
-    { title: 'Iabadabadu', priority: 'Medium', id: 1 },
-    { title: 'outro', priority: 'Low', id: 2 },
+    { title: 'Planning a new version of the tutorial process', priority: '🔥 High', id: 1 },
+    { title: 'Iabadabadu', priority: 'Medium', id: 2 },
+    { title: 'outro', priority: 'Low', id: 3 },
   ]);
 
   const [cardBeingDraggedIndex, setCardBeingDraggedIndex] = createSignal(null);
   const [cardToBeReplacedIndex, setCardToBeReplacedIndex] = createSignal(null);
+
+  const [selectedCardId, setSelectedCardId] = createSignal(null);
 
   function moveCardPosition() {
     const newCards = structuredClone(cards());
@@ -30,7 +33,14 @@ function App() {
 
   return (
     <div class={styles.App}>
-      <main class={styles.main}>
+      <main class={styles.main} id="main">
+        <Show when={!!selectedCardId()}>
+          <div class={styles.modalBg} onClick={() => setSelectedCardId(null)}>
+            <div class={styles.modal} onClick={() => stopPropation()}>
+              { cards().find(card => card.id === selectedCardId())?.title }
+            </div>
+          </div>
+        </Show>
         <div class={styles.lane}>
           <For each={cards()} fallback={<div>loading...</div>}>
             {(card, i) => (
@@ -41,6 +51,7 @@ function App() {
                   onDragStart={() => setCardBeingDraggedIndex(i)}
                   onDragEnd={() => moveCardPosition()}
                   onDragOver={() => setCardToBeReplacedIndex(i)}
+                  onClick={() => setSelectedCardId(card.id)}
                 >
                   <h3 class={styles.h3}>{card.title}</h3>
                   <div class={styles.chip}>
