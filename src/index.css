@@ -1,3 +1,5 @@
+@import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +12,57 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.modal-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+  z-index: 2;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 960px;
+  max-height: 819px;
+  background: #fefffe;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  box-sizing: border-box;
+  border-radius: 5px;
+  padding: 12px;
+  text-align: left;
+}
+
+.modal__toolbar {
+  width: 100%;
+}
+
+.modal__toolbar > :first-child {
+  display: inline-block;
+  width: calc(100% - 50px);
+  margin-top: 0;
+}
+
+.modal__toolbar > :nth-child(2) {
+  width: 50px;
+  height: 50px;
+  vertical-align: top;
+  margin-left: auto;
+}
+
+.modal__content {
+  position: relative;
+  overflow: auto;
+  height: 90%;
+}
+
+.CodeMirror, .CodeMirror-scroll {
+  min-height: calc(90% - 51px) !important;
 }
