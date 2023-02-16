@@ -80,6 +80,9 @@ function App() {
     let newCards = structuredClone(cards());
     const cardBeingDraggedIndex = newCards.findIndex(card => card.id === cardBeingDraggedId());
     const newCard = structuredClone(newCards[cardBeingDraggedIndex]);
+    if (newCard.laneId === newLaneId) {
+      return;
+    }
     newCard.laneId = newLaneId;
     newCards = newCards.filter((card, i) => i !== cardBeingDraggedIndex);
     newCards.push(newCard);
