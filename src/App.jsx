@@ -11,24 +11,24 @@ function App() {
   const [cards, setCards] = createSignal([
     {
       title: null,
-      priority: '🔥 High',
       id: 1,
       content: 'alsdasldjaskldj',
       laneId: 1,
+      tags: []
     },
     {
       title: null,
-      priority: '🔔 Medium',
       id: 2,
       content: 'alsdasldjaskldj',
       laneId: 2,
+      tags: []
     },
     {
       title: null,
-      priority: '🤏 Low',
       id: 3,
-      content: 'alsdasldjaskldj',
+      content: 'tags: 🔥 High',
       laneId: 2,
+      tags: ['🔥 High']
     },
   ]);
   const [cardBeingDraggedId, setCardBeingDraggedId] = createSignal(null);
@@ -93,9 +93,11 @@ function App() {
     const newCards = structuredClone(cards())
     const newCardIndex = structuredClone(newCards.findIndex(card => card.id === cardId))
     const newCard = newCards[newCardIndex];
+    newCard.content = newContent;
     const newTitle = getTitle(newContent)
     newCard.title = newTitle;
-    newCard.content = newContent;
+    const newTags = getTags(newContent);
+    newCard.tags = newTags;
     newCards[newCardIndex] = newCard;
     setCards(newCards);
     setSelectedCard(newCard);
@@ -111,13 +113,29 @@ function App() {
     if (textWithoutSpaces.substring(0, 2) !== '# ') {
       return null;
     }
-    const firstBlankLine = textWithoutSpaces.indexOf('\n');
+    const lineBreakIndex = textWithoutSpaces.indexOf('\n');
     let titleWithoutHashtag = textWithoutSpaces;
-    if (firstBlankLine > 0) {
-      titleWithoutHashtag = textWithoutSpaces.substring(0, firstBlankLine);
+    if (lineBreakIndex > 0) {
+      titleWithoutHashtag = textWithoutSpaces.substring(0, lineBreakIndex);
     }
     titleWithoutHashtag = titleWithoutHashtag.substring(2);
     return titleWithoutHashtag;
+  }
+
+  function getTags(text) {
+    const indexOfTagsKeyword = text.toLowerCase().indexOf('tags: ');
+    if (indexOfTagsKeyword === -1) {
+      return null;
+    }
+    let startOfTags = text.substring(indexOfTagsKeyword + 'tags: '.length);
+    const lineBreak = text.indexOf('\n');
+    if (lineBreak > 0) {
+      startOfTags = startOfTags.split('\n')[0];
+    }
+    const tags = startOfTags
+      .split(',')
+      .map(tag => tag.trim());
+    return tags;
   }
 
   function handleOptionBtnOnClick(event, id) {
@@ -128,7 +146,7 @@ function App() {
     setCardIdOptionsBeingShown(id);
   }
 
-  function handleDeleteCard() {
+  function deleteCard() {
     const newCards = structuredClone(cards());
     const cardsWithoutDeletedCard = newCards.filter(card => card.id !== cardIdOptionsBeingShown());
     setCards(cardsWithoutDeletedCard);
@@ -142,8 +160,10 @@ function App() {
           <ExpandedCard
             title={selectedCard().title}
             content={selectedCard().content}
+            tags={selectedCard().tags}
             onExit={() => setSelectedCard(null)}
             onChange={(value) => changeCardContent(value, selectedCard().id)}
+            onTagClick={(tagId) => removeTagFromCard(tagId)}
           />
         </Show>
         <For each={lanes()} fallback={<div>loading...</div>}>
@@ -169,8 +189,14 @@ function App() {
                           <h3 class={styles.h3}>{card.title || 'NO TITLE'}</h3>
                           <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
                         </div>
-                        <div class={styles.chip}>
-                          <h4 class={styles.h4}>{card.priority}</h4>
+                        <div className="tags">
+                          <For each={card.tags}>
+                            {tag => (
+                              <div className="tag">
+                                <h4>{tag}</h4>
+                              </div>
+                            )}
+                          </For>
                         </div>
                       </div>
                     </>
@@ -189,7 +215,7 @@ function App() {
               left: `${popupCoordinates().x}px`
             }}
           >
-            <button onClick={handleDeleteCard}>Delete</button>
+            <button onClick={deleteCard}>Delete</button>
           </div>
         </Show>
       </main>

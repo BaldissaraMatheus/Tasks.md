@@ -95,3 +95,28 @@ code {
   display: flex;
   flex-direction: column;
 }
+
+.tags {
+  display: flex;
+  gap: 8px;
+}
+
+.tag {
+  background: #B4B8C5;
+  padding: 4px;
+  border-radius: 5px;
+}
+
+.modal__tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+h4 {
+  font-weight: normal;
+  font-size: 0.8rem;
+  line-height: 1.0rem;
+  margin-bottom: 0;
+  margin-top: 0;
+}

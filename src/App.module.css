@@ -22,7 +22,7 @@
 }
 
 .card {
-  height: 100px;
+  min-height: 100px;
   width: 100%;
   background: #E9EBF8;
   padding: 12px;
@@ -46,20 +46,6 @@
   margin: 0 !important;
   text-align: left;
   font-weight: normal;
-}
-
-.chip {
-  background: #B4B8C5;
-  padding: 4px;
-  border-radius: 5px;
-}
-
-.h4 {
-  font-weight: normal;
-  font-size: 0.8rem;
-  line-height: 1.0rem;
-  margin-bottom: 0;
-  margin-top: 0;
 }
 
 .hr {
