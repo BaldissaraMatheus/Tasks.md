@@ -90,3 +90,8 @@ code {
 .popup > button {
   width: 100%;
 }
+
+.lane-container {
+  display: flex;
+  flex-direction: column;
+}

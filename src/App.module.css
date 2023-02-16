@@ -7,14 +7,18 @@
   height: 100vh;
   padding: 20px 20px 0;
   box-sizing: border-box;
+  display: flex;
+  gap: 40px;
 }
 
+
 .lane {
-  height: 100%;
+  flex-grow: 1;
   width: 300px;
   background: #B4B8C5;
   padding: 20px;
   box-sizing: border-box;
+  overflow: auto;
 }
 
 .card {
