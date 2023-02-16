@@ -1,7 +1,6 @@
-import { createSignal, For, Show, onMount, createEffect } from 'solid-js';
+import { createSignal, For, Show, onMount, createEffect, onCleanup } from 'solid-js';
 import styles from './App.module.css';
 import ExpandedCard from './components/expanded-card';
-
 
 function App() {
   const [cards, setCards] = createSignal([
@@ -24,11 +23,25 @@ function App() {
       content: 'alsdasldjaskldj'
     },
   ]);
-
   const [cardBeingDraggedIndex, setCardBeingDraggedIndex] = createSignal(null);
   const [cardToBeReplacedIndex, setCardToBeReplacedIndex] = createSignal(null);
-
   const [selectedCard, setSelectedCard] = createSignal(null);
+  const [cardIdOptionsBeingShown, setCardIdOptionsBeingShown] = createSignal(null);
+  const [popupCoordinates, setPopupCoordinates] = createSignal();
+
+  function handleClickOutsideCardOptions(event) {
+    if (cardIdOptionsBeingShown() !== null && event.target?.parentElement?.id !== `${cardIdOptionsBeingShown()}`) {
+      setCardIdOptionsBeingShown(null);
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('mousedown', handleClickOutsideCardOptions)
+  });
+
+  onCleanup(() => {
+    window.removeEventListener('mousedown', handleClickOutsideCardOptions)
+  });
 
   function moveCardPosition() {
     const newCards = structuredClone(cards());
@@ -77,6 +90,21 @@ function App() {
     return titleWithoutHashtag;
   }
 
+  function handleOptionBtnOnClick(event, id) {
+    event.stopPropagation();
+    const x = event.target.offsetLeft;
+    const y = event.target.offsetTop + 25;
+    setPopupCoordinates({ x, y });
+    setCardIdOptionsBeingShown(id);
+  }
+
+  function handleDeleteCard() {
+    const newCards = structuredClone(cards());
+    const cardsWithoutDeletedCard = newCards.filter(card => card.id !== cardIdOptionsBeingShown());
+    setCards(cardsWithoutDeletedCard);
+    setCardIdOptionsBeingShown(null);
+  }
+
   return (
     <div class={styles.App}>
       <main class={styles.main} id="main">
@@ -100,7 +128,10 @@ function App() {
                   onDragOver={() => setCardToBeReplacedIndex(i)}
                   onClick={() => setSelectedCard(card)}
                 >
-                  <h3 class={styles.h3}>{card.title || 'NO TITLE'}</h3>
+                  <div className="toolbar">
+                    <h3 class={styles.h3}>{card.title || 'NO TITLE'}</h3>
+                    <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
+                  </div>
                   <div class={styles.chip}>
                     <h4 class={styles.h4}>{card.priority}</h4>
                   </div>
@@ -109,6 +140,18 @@ function App() {
             )}
           </For>
         </div>
+        <Show when={cardIdOptionsBeingShown()}>
+          <div
+            id={cardIdOptionsBeingShown()}
+            className="popup"
+            style={{
+              top:`${popupCoordinates().y}px`,
+              left: `${popupCoordinates().x}px`
+            }}
+          >
+            <button onClick={handleDeleteCard}>Delete</button>
+          </div>
+        </Show>
       </main>
     </div>
   );

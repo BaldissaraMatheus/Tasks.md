@@ -66,3 +66,27 @@ code {
 .CodeMirror, .CodeMirror-scroll {
   min-height: calc(90% - 51px) !important;
 }
+
+.toolbar {
+  width: 100%;
+}
+
+.toolbar > :first-child {
+  display: inline-block;
+  width: 90%;
+}
+
+.toolbar > :nth-child(2) {
+  display: inline-block;
+  width: 10%;
+  vertical-align: top;
+  margin-left: auto;
+}
+
+.popup {
+  position: absolute;
+}
+
+.popup > button {
+  width: 100%;
+}
