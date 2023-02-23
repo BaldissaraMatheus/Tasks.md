@@ -9,21 +9,21 @@ function App() {
   ])
   const [cards, setCards] = createSignal([
     {
-      title: 'A',
+      title: 'First Card',
       id: 1,
       content: '# A',
       laneId: 1,
       tags: []
     },
     {
-      title: 'B',
+      title: 'Second Card',
       id: 2,
       content: '# B',
       laneId: 2,
       tags: []
     },
     {
-      title: 'C',
+      title: 'Third Card',
       id: 3,
       content: '# C',
       laneId: 2,
@@ -37,6 +37,7 @@ function App() {
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardIdOptionsBeingShown, setCardIdOptionsBeingShown] = createSignal(null);
   const [popupCoordinates, setPopupCoordinates] = createSignal();
+  const [search, setSearch] = createSignal('');
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -223,7 +224,7 @@ function App() {
       <header class="app-header">
         <div class="search-input">
           <label for="search">Search</label>
-          <input type="text" name="search" />
+          <input type="text" name="search" onInput={(e) => setSearch(e.target.value)} />
         </div>
         <div>
           Sort by: 
@@ -273,7 +274,13 @@ function App() {
                 </div>
               </header>
               <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
-                <For each={sortedCards().filter(card => card.laneId === lane.id)}>
+                <For
+                  each={
+                    sortedCards()
+                      .filter(card => card.laneId === lane.id)
+                      .filter(card => card.title.toLowerCase().includes(search().toLowerCase()))
+                  }
+                >
                   {(card, j) => (
                     <>
                       <div
