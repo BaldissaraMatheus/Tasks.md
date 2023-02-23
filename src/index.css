@@ -10,8 +10,88 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+h4 {
+  font-weight: normal;
+  font-size: 0.8rem;
+  line-height: 1.0rem;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+h3 {
+  font-size: 0.9rem;
+  line-height: 1.1rem;
+  margin: 0 !important;
+  text-align: left;
+  font-weight: normal;
+}
+
+main {
+  background: #fefffe;
+  height: 100vh;
+  padding: 20px 20px 0;
+  box-sizing: border-box;
+  display: flex;
+  gap: 40px;
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .main {
+    background: slategrey;
+  }
+}
+
+.lane {
+  display: flex;
+  flex-direction: column;
+}
+
+.lane__content {
+  flex-grow: 1;
+  width: 300px;
+  background: #B4B8C5;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.card {
+  min-height: 100px;
+  width: 100%;
+  background: #E9EBF8;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: grab;
+}
+
+.card:active {
+  opacity: 0.5;
+}
+
+.card__toolbar {
+  width: 100%;
+}
+
+.card__toolbar > :first-child {
+  display: inline-block;
+  width: 90%;
+}
+
+.card__toolbar > :nth-child(2) {
+  display: inline-block;
+  width: 10%;
+  vertical-align: top;
+  margin-left: auto;
 }
 
 .modal-bg {
@@ -67,33 +147,12 @@ code {
   min-height: calc(90% - 51px) !important;
 }
 
-.toolbar {
-  width: 100%;
-}
-
-.toolbar > :first-child {
-  display: inline-block;
-  width: 90%;
-}
-
-.toolbar > :nth-child(2) {
-  display: inline-block;
-  width: 10%;
-  vertical-align: top;
-  margin-left: auto;
-}
-
 .popup {
   position: absolute;
 }
 
 .popup > button {
   width: 100%;
-}
-
-.lane-container {
-  display: flex;
-  flex-direction: column;
 }
 
 .tags {
@@ -111,12 +170,4 @@ code {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
-}
-
-h4 {
-  font-weight: normal;
-  font-size: 0.8rem;
-  line-height: 1.0rem;
-  margin-bottom: 0;
-  margin-top: 0;
 }

@@ -1,5 +1,4 @@
 import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect } from 'solid-js';
-import styles from './App.module.css';
 import ExpandedCard from './components/expanded-card';
 
 function App() {
@@ -145,6 +144,7 @@ function App() {
     const tags = startOfTags
       .split(',')
       .map(tag => tag.trim())
+      .filter(tag => tag !== '')
       .sort((a, b) => a.localeCompare(b))
     return tags;
   }
@@ -188,7 +188,6 @@ function App() {
   function sortCardsByTags() {
     const newCards = structuredClone(cards());
     return newCards.sort((a, b) => {
-      console.log(a.tags?.[0], b.tags?.[0])
       return sortDirection() === 'asc'
         ? a.tags?.[0]?.localeCompare(b.tags?.[0])
         : b.tags?.[0]?.localeCompare(a.tags?.[0])
@@ -213,80 +212,74 @@ function App() {
   createEffect(() => {
     localStorage.setItem('sort', sort());
     localStorage.setItem('sortDirection', sortDirection());
-  })
+  });
 
   return (
-    <div class={styles.App}>
-      <main class={styles.main} id="main">
-        <Show when={!!selectedCard()}>
-          <ExpandedCard
-            title={selectedCard().title}
-            content={selectedCard().content}
-            tags={selectedCard().tags}
-            onExit={() => setSelectedCard(null)}
-            onChange={(value) => changeCardContent(value, selectedCard().id)}
-            onTagClick={(tagId) => removeTagFromCard(tagId)}
-          />
-        </Show>
-        <For each={lanes()} fallback={<div>loading...</div>}>
-          {(lane, i) => (
-            <div className="lane-container">
-              <h2>{lane.name}</h2>
-              <div
-                class={styles.lane}
-                onDragOver={() => moveCardToLane(lane.id)}
-              >
-                <For each={sortedCards().filter(card => card.laneId === lane.id)}>
-                  {(card, j) => (
-                    <>
-                      <div
-                        class={styles.card}
-                        draggable={true}
-                        onDragStart={() => setCardBeingDraggedId(card.id)}
-                        onDragEnd={(event) => moveCardPosition(event)}
-                        onDragOver={() => setCardToBeReplacedId(card.id)}
-                        onClick={() => setSelectedCard(card)}
-                      >
-                        <div className="toolbar">
-                          <h3 class={styles.h3}>{card.title || 'NO TITLE'}</h3>
-                          <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
-                        </div>
-                        <div className="tags">
-                          <For each={card.tags}>
-                            {tag => (
-                              <div className="tag">
-                                <h4>{tag}</h4>
-                              </div>
-                            )}
-                          </For>
-                        </div>
+    <main>
+      <Show when={!!selectedCard()}>
+        <ExpandedCard
+          title={selectedCard().title}
+          content={selectedCard().content}
+          tags={selectedCard().tags}
+          onExit={() => setSelectedCard(null)}
+          onChange={(value) => changeCardContent(value, selectedCard().id)}
+          onTagClick={(tagId) => removeTagFromCard(tagId)}
+        />
+      </Show>
+      <For each={lanes()} fallback={<div>loading...</div>}>
+        {(lane, i) => (
+          <div class="lane">
+            <h2>{lane.name}</h2>
+            <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
+              <For each={sortedCards().filter(card => card.laneId === lane.id)}>
+                {(card, j) => (
+                  <>
+                    <div
+                      class="card"
+                      draggable={true}
+                      onDragStart={() => setCardBeingDraggedId(card.id)}
+                      onDragEnd={(event) => moveCardPosition(event)}
+                      onDragOver={() => setCardToBeReplacedId(card.id)}
+                      onClick={() => setSelectedCard(card)}
+                    >
+                      <div class="card__toolbar">
+                        <h3>{card.title || 'NO TITLE'}</h3>
+                        <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
                       </div>
-                    </>
-                  )}
-                </For>
-              </div>
+                      <div class="tags">
+                        <For each={card.tags}>
+                          {tag => (
+                            <div class="tag">
+                              <h4>{tag}</h4>
+                            </div>
+                          )}
+                        </For>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </For>
             </div>
-          )}
-        </For>
-        <div>
-          <button onClick={updateSort}>
-            { sort() || 'no sort' } { sortDirection() || 'no sort direction' }
-          </button>
-        </div>
-        <Show when={cardIdOptionsBeingShown()}>
-          <div
-            id={cardIdOptionsBeingShown()}
-            className="popup"
-            style={{
-              top:`${popupCoordinates().y}px`,
-              left: `${popupCoordinates().x}px`
-            }}
-          >
-            <button onClick={deleteCard}>Delete</button>
           </div>
-        </Show>
-      </main>
-    </div>
+        )}
+      </For>
+      <div>
+        <button onClick={updateSort}>
+          { sort() || 'no sort' } { sortDirection() || 'no sort direction' }
+        </button>
+      </div>
+      <Show when={cardIdOptionsBeingShown()}>
+        <div
+          class="popup"
+          style={{
+            top:`${popupCoordinates().y}px`,
+            left: `${popupCoordinates().x}px`
+          }}
+        >
+          <button onClick={deleteCard}>Delete</button>
+        </div>
+      </Show>
+    </main>
   );
 }
 
