@@ -39,6 +39,20 @@ main {
   text-align: center;
 }
 
+.app-header {
+  display: flex;
+  /* justify-content: space-between; */
+  align-items: center;
+  gap: 12px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.search-input {
+  display: flex;
+  flex-direction: column;
+}
+
 @media (prefers-color-scheme: dark) {
   .main {
     background: slategrey;
@@ -48,6 +62,23 @@ main {
 .lane {
   display: flex;
   flex-direction: column;
+}
+
+.lane__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lane__header-name-and-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lane__header-buttons {
+  display: flex;
+  gap: 5px;
 }
 
 .lane__content {

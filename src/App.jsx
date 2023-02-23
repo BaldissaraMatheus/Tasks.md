@@ -215,71 +215,98 @@ function App() {
   });
 
   return (
-    <main>
-      <Show when={!!selectedCard()}>
-        <ExpandedCard
-          title={selectedCard().title}
-          content={selectedCard().content}
-          tags={selectedCard().tags}
-          onExit={() => setSelectedCard(null)}
-          onChange={(value) => changeCardContent(value, selectedCard().id)}
-          onTagClick={(tagId) => removeTagFromCard(tagId)}
-        />
-      </Show>
-      <For each={lanes()} fallback={<div>loading...</div>}>
-        {(lane, i) => (
-          <div class="lane">
-            <h2>{lane.name}</h2>
-            <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
-              <For each={sortedCards().filter(card => card.laneId === lane.id)}>
-                {(card, j) => (
-                  <>
-                    <div
-                      class="card"
-                      draggable={true}
-                      onDragStart={() => setCardBeingDraggedId(card.id)}
-                      onDragEnd={(event) => moveCardPosition(event)}
-                      onDragOver={() => setCardToBeReplacedId(card.id)}
-                      onClick={() => setSelectedCard(card)}
-                    >
-                      <div class="card__toolbar">
-                        <h3>{card.title || 'NO TITLE'}</h3>
-                        <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
-                      </div>
-                      <div class="tags">
-                        <For each={card.tags}>
-                          {tag => (
-                            <div class="tag">
-                              <h4>{tag}</h4>
-                            </div>
-                          )}
-                        </For>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </For>
-            </div>
-          </div>
-        )}
-      </For>
-      <div>
-        <button onClick={updateSort}>
-          { sort() || 'no sort' } { sortDirection() || 'no sort direction' }
-        </button>
-      </div>
-      <Show when={cardIdOptionsBeingShown()}>
-        <div
-          class="popup"
-          style={{
-            top:`${popupCoordinates().y}px`,
-            left: `${popupCoordinates().x}px`
-          }}
-        >
-          <button onClick={deleteCard}>Delete</button>
+    <>
+      <header class="app-header">
+        <div class="search-input">
+          <label for="search">Search</label>
+          <input type="text" name="search" />
         </div>
-      </Show>
-    </main>
+        <div>
+          Sort by: 
+          <button onClick={updateSort}>
+            { sort() || 'no sort' } { sortDirection() || 'no sort direction' }
+          </button>
+        </div>
+        <div>
+          Filter by: 
+          <select>
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+        </div>
+        <button>New lane</button>
+      </header>
+      <main>
+        <Show when={!!selectedCard()}>
+          <ExpandedCard
+            title={selectedCard().title}
+            content={selectedCard().content}
+            tags={selectedCard().tags}
+            onExit={() => setSelectedCard(null)}
+            onChange={(value) => changeCardContent(value, selectedCard().id)}
+            onTagClick={(tagId) => removeTagFromCard(tagId)}
+          />
+        </Show>
+        <For each={lanes()} fallback={<div>loading...</div>}>
+          {(lane, i) => (
+            <div class="lane">
+              <header class="lane__header">
+                <div class="lane__header-name-and-count">
+                  <h2>{lane.name}</h2>
+                  <h5>{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
+                </div>
+                <div class="lane__header-buttons">
+                  <button>+</button>
+                  <button>...</button>
+                </div>
+              </header>
+              <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
+                <For each={sortedCards().filter(card => card.laneId === lane.id)}>
+                  {(card, j) => (
+                    <>
+                      <div
+                        class="card"
+                        draggable={true}
+                        onDragStart={() => setCardBeingDraggedId(card.id)}
+                        onDragEnd={(event) => moveCardPosition(event)}
+                        onDragOver={() => setCardToBeReplacedId(card.id)}
+                        onClick={() => setSelectedCard(card)}
+                      >
+                        <div class="card__toolbar">
+                          <h3>{card.title || 'NO TITLE'}</h3>
+                          <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
+                        </div>
+                        <div class="tags">
+                          <For each={card.tags}>
+                            {tag => (
+                              <div class="tag">
+                                <h4>{tag}</h4>
+                              </div>
+                            )}
+                          </For>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </For>
+              </div>
+            </div>
+          )}
+        </For>
+        <Show when={cardIdOptionsBeingShown()}>
+          <div
+            class="popup"
+            style={{
+              top:`${popupCoordinates().y}px`,
+              left: `${popupCoordinates().x}px`
+            }}
+          >
+            <button onClick={deleteCard}>Delete</button>
+          </div>
+        </Show>
+      </main>
+    </>
   );
 }
 
