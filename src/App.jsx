@@ -168,8 +168,8 @@ function App() {
     if (sortDirection() === null) {
       return cards();
     }
-    if (sort() === 'title') {
-      return sortCardsByTitle();
+    if (sort() === 'name') {
+      return sortCardsByName();
     }
     if (sort() === 'tags') {
       return sortCardsByTags();
@@ -177,7 +177,7 @@ function App() {
     return cards();
   });
 
-  function sortCardsByTitle() {
+  function sortCardsByName() {
     const newCards = structuredClone(cards());
     return newCards.sort((a, b) => sortDirection() === 'asc'
       ? a.title?.localeCompare(b.title)
@@ -194,25 +194,21 @@ function App() {
     });
   }
 
-  function updateSort() {
-    if (sortDirection() === 'asc') {
-      return setSortDirection('desc');
-    }
-    if (sortDirection() === 'desc') {
-      return setSortDirection(null);
-    }
-    setSortDirection('asc');
-    if (sort() === 'title') {
-      setSort('tags')
-    } else {
-      setSort('title')
-    }
-  }
-
   createEffect(() => {
     localStorage.setItem('sort', sort());
     localStorage.setItem('sortDirection', sortDirection());
   });
+
+  function handleSortSelectOnChange(e) {
+    const value = e.target.value;
+    if (value === 'none') {
+      setSort(null);
+      return setSortDirection(null);
+    }
+    const [newSort, newSortDirection] = value.split(':');
+    setSort(newSort);
+    setSortDirection(newSortDirection);
+  }
 
   return (
     <>
@@ -223,9 +219,16 @@ function App() {
         </div>
         <div>
           Sort by: 
-          <button onClick={updateSort}>
-            { sort() || 'no sort' } { sortDirection() || 'no sort direction' }
-          </button>
+          <select
+            onChange={handleSortSelectOnChange}
+            value={sort() === null ? 'none' : `${sort()}:${sortDirection()}`}
+          >
+            <option value="none">Manually</option>
+            <option value="name:asc">Name asc</option>
+            <option value="name:desc">Name desc</option>
+            <option value="tags:asc">Tags asc</option>
+            <option value="tags:desc">Tags desc</option>
+          </select>
         </div>
         <div>
           Filter by: 
@@ -257,8 +260,8 @@ function App() {
                   <h5>{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
                 </div>
                 <div class="lane__header-buttons">
-                  <button>+</button>
-                  <button>...</button>
+                  <button title="Create new card">+</button>
+                  <button title="Show lane options">...</button>
                 </div>
               </header>
               <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
@@ -275,7 +278,12 @@ function App() {
                       >
                         <div class="card__toolbar">
                           <h3>{card.title || 'NO TITLE'}</h3>
-                          <button onClick={event => handleOptionBtnOnClick(event, card.id)}>...</button>
+                          <button
+                            title="Show card options"
+                            onClick={event => handleOptionBtnOnClick(event, card.id)}
+                          >
+                            ...
+                          </button>
                         </div>
                         <div class="tags">
                           <For each={card.tags}>
