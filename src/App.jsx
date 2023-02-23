@@ -210,6 +210,14 @@ function App() {
     setSortDirection(newSortDirection);
   }
 
+  const usedTags = createMemo(() => {
+    const allTags = cards()
+      .map(card => card.tags)
+      .flat();
+    const tagsWithoutDuplicates = Array.from(new Set(allTags));
+    return tagsWithoutDuplicates;
+  });
+
   return (
     <>
       <header class="app-header">
@@ -233,9 +241,9 @@ function App() {
         <div>
           Filter by: 
           <select>
-            <option>Low</option>
-            <option>Medium</option>
-            <option>High</option>
+            <For each={usedTags()}>
+              {tag => <option>{tag}</option>}
+            </For>
           </select>
         </div>
         <button>New lane</button>
