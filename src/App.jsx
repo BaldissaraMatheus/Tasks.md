@@ -1,4 +1,4 @@
-import { createSignal, For, Show, onMount, createEffect, onCleanup } from 'solid-js';
+import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect } from 'solid-js';
 import styles from './App.module.css';
 import ExpandedCard from './components/expanded-card';
 
@@ -10,32 +10,42 @@ function App() {
   ])
   const [cards, setCards] = createSignal([
     {
-      title: null,
+      title: 'A',
       id: 1,
-      content: 'alsdasldjaskldj',
+      content: '# A',
       laneId: 1,
       tags: []
     },
     {
-      title: null,
+      title: 'B',
       id: 2,
-      content: 'alsdasldjaskldj',
+      content: '# B',
       laneId: 2,
       tags: []
     },
     {
-      title: null,
+      title: 'C',
       id: 3,
-      content: 'tags: 🔥 High',
+      content: '# C',
       laneId: 2,
-      tags: ['🔥 High']
+      tags: []
     },
   ]);
+  const [sort, setSort] = createSignal(getDefaultFromLocalStorage('sort'))
+  const [sortDirection, setSortDirection] = createSignal(getDefaultFromLocalStorage('sortDirection'))
   const [cardBeingDraggedId, setCardBeingDraggedId] = createSignal(null);
   const [cardToBeReplacedId, setCardToBeReplacedId] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardIdOptionsBeingShown, setCardIdOptionsBeingShown] = createSignal(null);
   const [popupCoordinates, setPopupCoordinates] = createSignal();
+
+  function getDefaultFromLocalStorage(key) {
+    const defaultValue = localStorage.getItem(key);
+    if (defaultValue === 'null') {
+      return null;
+    }
+    return defaultValue;
+  }
 
   function handleClickOutsideCardOptions(event) {
     if (cardIdOptionsBeingShown() !== null && event.target?.parentElement?.id !== `${cardIdOptionsBeingShown()}`) {
@@ -134,7 +144,8 @@ function App() {
     }
     const tags = startOfTags
       .split(',')
-      .map(tag => tag.trim());
+      .map(tag => tag.trim())
+      .sort((a, b) => a.localeCompare(b))
     return tags;
   }
 
@@ -152,6 +163,57 @@ function App() {
     setCards(cardsWithoutDeletedCard);
     setCardIdOptionsBeingShown(null);
   }
+
+  const sortedCards = createMemo(() => {
+    if (sortDirection() === null) {
+      return cards();
+    }
+    if (sort() === 'title') {
+      return sortCardsByTitle();
+    }
+    if (sort() === 'tags') {
+      return sortCardsByTags();
+    }
+    return cards();
+  });
+
+  function sortCardsByTitle() {
+    const newCards = structuredClone(cards());
+    return newCards.sort((a, b) => sortDirection() === 'asc'
+      ? a.title?.localeCompare(b.title)
+      : b.title?.localeCompare(a.title)
+    );
+  }
+
+  function sortCardsByTags() {
+    const newCards = structuredClone(cards());
+    return newCards.sort((a, b) => {
+      console.log(a.tags?.[0], b.tags?.[0])
+      return sortDirection() === 'asc'
+        ? a.tags?.[0]?.localeCompare(b.tags?.[0])
+        : b.tags?.[0]?.localeCompare(a.tags?.[0])
+    });
+  }
+
+  function updateSort() {
+    if (sortDirection() === 'asc') {
+      return setSortDirection('desc');
+    }
+    if (sortDirection() === 'desc') {
+      return setSortDirection(null);
+    }
+    setSortDirection('asc');
+    if (sort() === 'title') {
+      setSort('tags')
+    } else {
+      setSort('title')
+    }
+  }
+
+  createEffect(() => {
+    localStorage.setItem('sort', sort());
+    localStorage.setItem('sortDirection', sortDirection());
+  })
 
   return (
     <div class={styles.App}>
@@ -174,7 +236,7 @@ function App() {
                 class={styles.lane}
                 onDragOver={() => moveCardToLane(lane.id)}
               >
-                <For each={cards().filter(card => card.laneId === lane.id)}>
+                <For each={sortedCards().filter(card => card.laneId === lane.id)}>
                   {(card, j) => (
                     <>
                       <div
@@ -206,6 +268,11 @@ function App() {
             </div>
           )}
         </For>
+        <div>
+          <button onClick={updateSort}>
+            { sort() || 'no sort' } { sortDirection() || 'no sort direction' }
+          </button>
+        </div>
         <Show when={cardIdOptionsBeingShown()}>
           <div
             id={cardIdOptionsBeingShown()}
