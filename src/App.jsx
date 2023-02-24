@@ -48,18 +48,27 @@ function App() {
     return defaultValue;
   }
 
-  function handleClickOutsideCardOptions(event) {
-    if (cardIdOptionsBeingShown() !== null && event.target?.parentElement?.id !== `${cardIdOptionsBeingShown()}`) {
+  function handleClickOutsideOptions(event) {
+    if (
+      cardIdOptionsBeingShown() !== null
+      && event.target?.parentElement?.id !== `${cardIdOptionsBeingShown()}`
+    ) {
       setCardIdOptionsBeingShown(null);
+    }
+    if (
+      laneIdOptionsBeingShown() !== null
+      && event.target?.parentElement?.id !== `${laneIdOptionsBeingShown()}`
+    ) {
+      setLaneIdOptionsBeingShown(null);
     }
   }
 
   onMount(() => {
-    window.addEventListener('mousedown', handleClickOutsideCardOptions)
+    window.addEventListener('mousedown', handleClickOutsideOptions)
   });
 
   onCleanup(() => {
-    window.removeEventListener('mousedown', handleClickOutsideCardOptions)
+    window.removeEventListener('mousedown', handleClickOutsideOptions)
   });
 
   function moveCardPosition(event) {
