@@ -2,11 +2,7 @@ import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect }
 import ExpandedCard from './components/expanded-card';
 
 function App() {
-  const [lanes, setLanes] = createSignal([
-    { id: 1, name: 'backlog' },
-    { id: 2, name: 'sprint' },
-    { id: 3, name: 'done' },
-  ])
+  const [lanes, setLanes] = createSignal([])
   const [cards, setCards] = createSignal([
     {
       title: 'First Card',
@@ -34,6 +30,8 @@ function App() {
   const [sortDirection, setSortDirection] = createSignal(getDefaultFromLocalStorage('sortDirection'))
   const [cardBeingDraggedId, setCardBeingDraggedId] = createSignal(null);
   const [cardToBeReplacedId, setCardToBeReplacedId] = createSignal(null);
+  const [laneBeingDraggedId, setLaneBeingDraggedId] = createSignal(null);
+  const [laneToBeReplacedId, setLaneToBeReplacedId] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardIdOptionsBeingShown, setCardIdOptionsBeingShown] = createSignal(null);
   const [laneIdOptionsBeingShown, setLaneIdOptionsBeingShown] = createSignal(null);
@@ -121,7 +119,6 @@ function App() {
     setSelectedCard(newCard);
   }
 
-
   function getTags(text) {
     const indexOfTagsKeyword = text.toLowerCase().indexOf('tags: ');
     if (indexOfTagsKeyword === -1) {
@@ -191,11 +188,6 @@ function App() {
     });
   }
 
-  createEffect(() => {
-    localStorage.setItem('sort', sort());
-    localStorage.setItem('sortDirection', sortDirection());
-  });
-
   function handleSortSelectOnChange(e) {
     const value = e.target.value;
     if (value === 'none') {
@@ -213,6 +205,51 @@ function App() {
       .flat();
     const tagsWithoutDuplicates = Array.from(new Set(allTags));
     return tagsWithoutDuplicates;
+  });
+
+  function moveLanePosition(event) {
+    event.stopPropagation();
+    const newLanes = structuredClone(lanes());
+    const laneBeingDraggedIndex = newLanes.findIndex(lane => lane.id === laneBeingDraggedId());
+    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.id === laneToBeReplacedId());
+    const upOrDownDisplacement = laneBeingDraggedIndex < laneToBeReplacedIndex
+      ? 1
+      : 0;
+    const laneBeingDragged = newLanes[laneBeingDraggedIndex];
+    newLanes[laneBeingDraggedIndex] = null;
+    const lanesWithChangedPositions = [
+      ...newLanes.slice(0, laneToBeReplacedIndex + upOrDownDisplacement),
+      laneBeingDragged,
+      ...newLanes.slice(laneToBeReplacedIndex + upOrDownDisplacement)
+    ]
+    .filter(lane => lane !== null);
+    setLanes(lanesWithChangedPositions);
+  }
+
+  createEffect(() => {
+    localStorage.setItem('sort', sort());
+    localStorage.setItem('sortDirection', sortDirection());
+  });
+
+  createEffect(() => {
+    const lanesFromApi = [
+      { id: 1, name: 'backlog' },
+      { id: 2, name: 'sprint' },
+      { id: 3, name: 'done' }
+    ];
+    const sortedLanesFromLocalStorage = localStorage.getItem('lanes');
+    const sortedLanesFromLocalStorageArr = sortedLanesFromLocalStorage
+      ? sortedLanesFromLocalStorage.split(',').map(id => Number.parseInt(id))
+      : [];
+    const sortedLanes = sortedLanesFromLocalStorageArr
+      .filter(laneId => lanesFromApi.find(lane => lane.id === laneId))
+      .map(laneId => lanesFromApi.find(laneFromApi => laneFromApi.id === laneId));
+    const notSortedLanes = lanesFromApi.filter(lane => !sortedLanesFromLocalStorageArr.includes(lane.id));
+    setLanes([...sortedLanes, ...notSortedLanes]);
+  });
+
+  createEffect(() => {
+    localStorage.setItem('lanes', lanes().map(lane => lane.id));  
   });
 
   return (
@@ -258,10 +295,19 @@ function App() {
         </Show>
         <For each={lanes()}>
           {(lane, i) => (
-            <div class="lane">
+            <div
+              class="lane"
+              onDragEnd={(event) => moveLanePosition(event)}
+              onDragOver={() => setLaneToBeReplacedId(lane.id)}
+            >
               <header class="lane__header">
                 <div class="lane__header-name-and-count">
-                  <h2>{lane.name}</h2>
+                  <h2
+                    draggable={true}
+                    onDragStart={() => setLaneBeingDraggedId(lane.id)}
+                  >
+                    {lane.name}
+                  </h2>
                   <h5>{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
                 </div>
                 <div class="lane__header-buttons">
