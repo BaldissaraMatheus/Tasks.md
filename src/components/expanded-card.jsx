@@ -1,6 +1,6 @@
 import SimpleMDE from 'simplemde/dist/simplemde.min.js'
 import 'simplemde/dist/simplemde.min.css'
-import { createSignal, onMount } from 'solid-js';
+import { onMount } from 'solid-js';
 
 /**
  * 

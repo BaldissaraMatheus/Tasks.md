@@ -104,8 +104,6 @@ function App() {
     const newCardIndex = structuredClone(newCards.findIndex(card => card.id === cardId))
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
-    const newTitle = getTitle(newContent)
-    newCard.title = newTitle;
     const newTags = getTags(newContent);
     newCard.tags = newTags;
     newCards[newCardIndex] = newCard;
@@ -113,24 +111,6 @@ function App() {
     setSelectedCard(newCard);
   }
 
-  /**
-   * 
-   * @param {string} text 
-   * @returns string
-   */
-  function getTitle(text) {
-    const textWithoutSpaces = text.trim();
-    if (textWithoutSpaces.substring(0, 2) !== '# ') {
-      return null;
-    }
-    const lineBreakIndex = textWithoutSpaces.indexOf('\n');
-    let titleWithoutHashtag = textWithoutSpaces;
-    if (lineBreakIndex > 0) {
-      titleWithoutHashtag = textWithoutSpaces.substring(0, lineBreakIndex);
-    }
-    titleWithoutHashtag = titleWithoutHashtag.substring(2);
-    return titleWithoutHashtag;
-  }
 
   function getTags(text) {
     const indexOfTagsKeyword = text.toLowerCase().indexOf('tags: ');
