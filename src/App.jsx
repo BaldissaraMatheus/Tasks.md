@@ -36,6 +36,7 @@ function App() {
   const [cardToBeReplacedId, setCardToBeReplacedId] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardIdOptionsBeingShown, setCardIdOptionsBeingShown] = createSignal(null);
+  const [laneIdOptionsBeingShown, setLaneIdOptionsBeingShown] = createSignal(null);
   const [popupCoordinates, setPopupCoordinates] = createSignal();
   const [search, setSearch] = createSignal('');
 
@@ -130,12 +131,11 @@ function App() {
     return tags;
   }
 
-  function handleOptionBtnOnClick(event, id) {
+  function handleOptionBtnOnClick(event) {
     event.stopPropagation();
     const x = event.target.offsetLeft;
     const y = event.target.offsetTop + 25;
     setPopupCoordinates({ x, y });
-    setCardIdOptionsBeingShown(id);
   }
 
   function deleteCard() {
@@ -143,6 +143,13 @@ function App() {
     const cardsWithoutDeletedCard = newCards.filter(card => card.id !== cardIdOptionsBeingShown());
     setCards(cardsWithoutDeletedCard);
     setCardIdOptionsBeingShown(null);
+  }
+
+  function deleteLane() {
+    const newLanes = structuredClone(lanes());
+    const lanesWithoutDeletedCard = newLanes.filter(lane => lane.id !== laneIdOptionsBeingShown());
+    setLanes(lanesWithoutDeletedCard);
+    setLaneIdOptionsBeingShown(null);
   }
 
   const sortedCards = createMemo(() => {
@@ -240,7 +247,7 @@ function App() {
             onTagClick={(tagId) => removeTagFromCard(tagId)}
           />
         </Show>
-        <For each={lanes()} fallback={<div>loading...</div>}>
+        <For each={lanes()}>
           {(lane, i) => (
             <div class="lane">
               <header class="lane__header">
@@ -250,7 +257,15 @@ function App() {
                 </div>
                 <div class="lane__header-buttons">
                   <button title="Create new card">+</button>
-                  <button title="Show lane options">...</button>
+                  <button
+                    title="Show lane options"
+                    onClick={event => {
+                      handleOptionBtnOnClick(event, lane.id);
+                      setLaneIdOptionsBeingShown(lane.id);
+                    }}
+                  >
+                    ...
+                  </button>
                 </div>
               </header>
               <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
@@ -275,7 +290,10 @@ function App() {
                           <h3>{card.title || 'NO TITLE'}</h3>
                           <button
                             title="Show card options"
-                            onClick={event => handleOptionBtnOnClick(event, card.id)}
+                            onClick={event => {
+                              handleOptionBtnOnClick(event, card.id)
+                              setCardIdOptionsBeingShown(card.id);
+                            }}
                           >
                             ...
                           </button>
@@ -299,6 +317,7 @@ function App() {
         </For>
         <Show when={cardIdOptionsBeingShown()}>
           <div
+            id={cardIdOptionsBeingShown()}
             class="popup"
             style={{
               top:`${popupCoordinates().y}px`,
@@ -306,6 +325,18 @@ function App() {
             }}
           >
             <button onClick={deleteCard}>Delete</button>
+          </div>
+        </Show>
+        <Show when={laneIdOptionsBeingShown()}>
+          <div
+            id={laneIdOptionsBeingShown()}
+            class="popup"
+            style={{
+              top:`${popupCoordinates().y}px`,
+              left: `${popupCoordinates().x}px`
+            }}
+          >
+            <button onClick={deleteLane}>Delete</button>
           </div>
         </Show>
       </main>
