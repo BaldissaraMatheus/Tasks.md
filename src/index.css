@@ -31,21 +31,63 @@ h3 {
 
 main {
   background: #fefffe;
-  height: 100vh;
-  padding: 20px 20px 0;
+  /* TODO store toolbar height in variable */
+  height: calc(100vh - 44px);
+  padding: 20px;
   box-sizing: border-box;
   display: flex;
   gap: 40px;
-  text-align: center;
+}
+
+input,
+button,
+select
+{
+  height: 32px;
+  padding: 4px 15px;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: 1px solid #d9d9d9;
+  box-shadow: 0 2px 0 rgba(0,0,0,.02);
+  box-sizing: border-box;
+}
+
+button,
+select
+{
+  cursor: pointer;
+}
+
+button {
+  transition: all 0.1s;
+}
+
+button:hover {
+  opacity: 0.75;
+  transition: all 0.1s;
+}
+
+button.small {
+  padding: 0;
+  width: 25px;
+  height: 25px;
+  font-size: 1rem;
+}
+
+button.primary {
+  background: #1c71d8;
+  color: white;
+  border: none;
 }
 
 .app-header {
   display: flex;
-  /* justify-content: space-between; */
   align-items: center;
   gap: 12px;
   padding-left: 24px;
   padding-right: 24px;
+  padding-top: 12px;
 }
 
 .search-input {
@@ -64,10 +106,15 @@ main {
   flex-direction: column;
 }
 
+.dragged-over {
+  opacity: 0.5;
+}
+
 .lane__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: grab;
 }
 
 .lane__header-name-and-count {
@@ -84,8 +131,9 @@ main {
 .lane__content {
   flex-grow: 1;
   width: 300px;
-  background: #B4B8C5;
-  padding: 20px;
+  background:  	#ebebeb;
+  border-radius: 8px;
+  padding: 12px;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -93,16 +141,18 @@ main {
 .card {
   min-height: 100px;
   width: 100%;
-  background: #E9EBF8;
-  padding: 12px;
-  box-sizing: border-box;
-  border-radius: 10px;
+  background: #fff;
   margin-bottom: 12px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
   cursor: grab;
+  font-size: 0.9rem;
+  border: 1px solid #d9d9d9;
+  box-shadow: 0 2px 0 rgba(0,0,0,.02);
+  border-radius: 6px;
+  box-sizing: border-box;
 }
 
 .card:active {
@@ -111,18 +161,16 @@ main {
 
 .card__toolbar {
   width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  min-height: 38px;
+  display: flex;
+  align-items: start;
 }
 
 .card__toolbar > :first-child {
   display: inline-block;
-  width: 90%;
-}
-
-.card__toolbar > :nth-child(2) {
-  display: inline-block;
-  width: 10%;
-  vertical-align: top;
-  margin-left: auto;
+  flex-grow: 1;
 }
 
 .modal-bg {
@@ -162,8 +210,8 @@ main {
 }
 
 .modal__toolbar > :nth-child(2) {
-  width: 50px;
-  height: 50px;
+  /* width: 50px;
+  height: 50px; */
   vertical-align: top;
   margin-left: auto;
 }
@@ -189,12 +237,14 @@ main {
 .tags {
   display: flex;
   gap: 8px;
+  padding: 12px;
 }
 
 .tag {
-  background: #B4B8C5;
   padding: 4px;
   border-radius: 5px;
+  background:	#ebebeb;
+  border: 1px solid #d9d9d9;
 }
 
 .modal__tags {

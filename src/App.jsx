@@ -9,7 +9,7 @@ function App() {
       id: 1,
       content: '# A',
       laneId: 1,
-      tags: []
+      tags: ['testando', 'uma', 'tag']
     },
     {
       title: 'Second Card',
@@ -92,6 +92,8 @@ function App() {
     ]
     .filter(card => card !== null);
     setCards(cardsWithChangedPositions);
+    setCardToBeReplacedId(null);
+    setCardBeingDraggedId(null);
   }
 
   function moveCardToLane(newLaneId) {
@@ -104,7 +106,8 @@ function App() {
     newCard.laneId = newLaneId;
     newCards = newCards.filter((card, i) => i !== cardBeingDraggedIndex);
     newCards.push(newCard);
-    setCards(newCards)
+    setCards(newCards);
+    setCardToBeReplacedId(null);
   }
 
   function changeCardContent(newContent, cardId) {
@@ -224,6 +227,8 @@ function App() {
     ]
     .filter(lane => lane !== null);
     setLanes(lanesWithChangedPositions);
+    setLaneToBeReplacedId(null);
+    setLaneBeingDraggedId(null);
   }
 
   createEffect(() => {
@@ -233,9 +238,9 @@ function App() {
 
   createEffect(() => {
     const lanesFromApi = [
-      { id: 1, name: 'backlog' },
-      { id: 2, name: 'sprint' },
-      { id: 3, name: 'done' }
+      { id: 1, name: 'Backlog' },
+      { id: 2, name: 'Sprint' },
+      { id: 3, name: 'Done' }
     ];
     const sortedLanesFromLocalStorage = localStorage.getItem('lanes');
     const sortedLanesFromLocalStorageArr = sortedLanesFromLocalStorage
@@ -255,10 +260,11 @@ function App() {
   return (
     <>
       <header class="app-header">
-        <div class="search-input">
-          <label for="search">Search</label>
-          <input type="text" name="search" onInput={(e) => setSearch(e.target.value)} />
-        </div>
+        <input
+          placeholder="Search"
+          type="text"
+          onInput={(e) => setSearch(e.target.value)}
+        />
         <div>
           Sort by: 
           <select
@@ -296,34 +302,45 @@ function App() {
         <For each={lanes()}>
           {(lane, i) => (
             <div
-              class="lane"
+              class={`lane ${laneToBeReplacedId() === lane.id ? 'dragged-over' : ''}`}
               onDragEnd={(event) => moveLanePosition(event)}
-              onDragOver={() => setLaneToBeReplacedId(lane.id)}
+              onDragOver={() => laneBeingDraggedId() ? setLaneToBeReplacedId(lane?.id) : null}
             >
-              <header class="lane__header">
+              <header
+                class="lane__header" 
+                draggable={true}
+                onDragStart={() => setLaneBeingDraggedId(lane.id)}
+              >
                 <div class="lane__header-name-and-count">
                   <h2
-                    draggable={true}
-                    onDragStart={() => setLaneBeingDraggedId(lane.id)}
                   >
                     {lane.name}
                   </h2>
-                  <h5>{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
+                  <h5 class="tag">{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
                 </div>
                 <div class="lane__header-buttons">
-                  <button title="Create new card">+</button>
+                  <button
+                    title="Create new card"
+                    class="small"
+                  >
+                    +
+                  </button>
                   <button
                     title="Show lane options"
+                    class="small"
                     onClick={event => {
                       handleOptionBtnOnClick(event, lane.id);
                       setLaneIdOptionsBeingShown(lane.id);
                     }}
                   >
-                    ...
+                    ⋮
                   </button>
                 </div>
               </header>
-              <div class="lane__content" onDragOver={() => moveCardToLane(lane.id)}>
+              <div
+                class="lane__content"
+                onDragOver={() => cardBeingDraggedId() ? moveCardToLane(lane.id) : null}
+              >
                 <For
                   each={
                     sortedCards()
@@ -334,23 +351,24 @@ function App() {
                   {(card, j) => (
                     <>
                       <div
-                        class="card"
+                        class={`card ${cardToBeReplacedId() === card.id ? 'dragged-over' : ''}`}
                         draggable={true}
                         onDragStart={() => setCardBeingDraggedId(card.id)}
                         onDragEnd={(event) => moveCardPosition(event)}
-                        onDragOver={() => setCardToBeReplacedId(card.id)}
+                        onDragOver={() => cardBeingDraggedId() ? setCardToBeReplacedId(card.id) : null}
                         onClick={() => setSelectedCard(card)}
                       >
                         <div class="card__toolbar">
                           <h3>{card.title || 'NO TITLE'}</h3>
                           <button
                             title="Show card options"
+                            class="small"
                             onClick={event => {
                               handleOptionBtnOnClick(event, card.id)
                               setCardIdOptionsBeingShown(card.id);
                             }}
                           >
-                            ...
+                            ⋮
                           </button>
                         </div>
                         <div class="tags">
