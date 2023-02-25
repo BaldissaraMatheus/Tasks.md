@@ -45,11 +45,12 @@ strong {
 
 main {
   background: var(--app-background-color);
-  height: calc(100vh - 44px);
+  height: calc(100vh - 57px);
   padding: 20px;
   box-sizing: border-box;
   display: flex;
   gap: 40px;
+  overflow-x: auto;
 }
 
 input,
@@ -65,6 +66,7 @@ select
   box-shadow: 0 2px 0 rgba(0,0,0,.02);
   box-sizing: border-box;
   color: var(--font-color);
+  white-space: nowrap;
 }
 
 button,
@@ -96,6 +98,8 @@ button.small {
   padding: 12px 24px;
   background: var(--app-header-background-color);
   border-bottom: 1px solid var(--app-header-border-color);
+  box-sizing: border-box;
+  max-height: 57px;
 }
 
 .search-input {
@@ -103,6 +107,16 @@ button.small {
   flex-direction: column;
 }
 
+.app-header__group-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.app-header__group-item-label {
+  white-space: nowrap;
+}
 
 .lane {
   display: flex;
@@ -139,7 +153,7 @@ button.small {
   border-radius: 8px;
   padding: 12px;
   box-sizing: border-box;
-  overflow: auto;
+  overflow-y: auto;
 }
 
 .card {

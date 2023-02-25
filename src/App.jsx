@@ -265,8 +265,8 @@ function App() {
           type="text"
           onInput={(e) => setSearch(e.target.value)}
         />
-        <div>
-          Sort by: 
+        <div class="app-header__group-item">
+          <div class="app-header__group-item-label">Sort by:</div>
           <select
             onChange={handleSortSelectOnChange}
             value={sort() === null ? 'none' : `${sort()}:${sortDirection()}`}
@@ -278,8 +278,8 @@ function App() {
             <option value="tags:desc">Tags desc</option>
           </select>
         </div>
-        <div>
-          Filter by: 
+        <div class="app-header__group-item">
+          <div class="app-header__group-item-label">Filter by:</div>
           <select>
             <For each={usedTags()}>
               {tag => <option>{tag}</option>}
