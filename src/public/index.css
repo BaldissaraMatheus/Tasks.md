@@ -277,3 +277,7 @@ button.small {
   gap: 8px;
   margin-bottom: 12px;
 }
+
+.disabled {
+  pointer-events: none;
+}

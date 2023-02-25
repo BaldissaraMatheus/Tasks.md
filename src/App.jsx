@@ -39,6 +39,8 @@ function App() {
   const [search, setSearch] = createSignal('');
   const [laneBeingRenamed, setLaneBeingRenamed] = createSignal(null);
   const [newLaneName, setNewLaneName] = createSignal('');
+  const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
+  const [newCardName, setNewCardName] = createSignal('');
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -261,6 +263,7 @@ function App() {
 
   function startRenamingLane() {
     setLaneBeingRenamed(laneIdOptionsBeingShown());
+    document.getElementById(`${laneIdOptionsBeingShown()}-rename-input`).focus();
     setLaneIdOptionsBeingShown(null);
   }
 
@@ -276,6 +279,25 @@ function App() {
     console.log(newLaneName(), newLane, newLanes);
     setLanes(newLanes);
     setLaneBeingRenamed(null);
+  }
+
+  function startRenamingCard() {
+    setCardBeingRenamed(cardIdOptionsBeingShown());
+    document.getElementById(`${cardIdOptionsBeingShown()}-rename-input`).focus();
+    setCardIdOptionsBeingShown(null);
+  }
+
+  function renameCard(e) {
+    if (e.key && e.key !== 'Enter') {
+      return;
+    }
+    const newCards = structuredClone(cards());
+    const newCardIndex = newCards.findIndex(card => card.id === cardBeingRenamed());
+    const newCard = newCards[newCardIndex];
+    newCard.title = newCardName();
+    newCards[newCardIndex] = newCard;
+    setCards(newCards);
+    setCardBeingRenamed(null);
   }
 
   return (
@@ -336,6 +358,7 @@ function App() {
                   { laneBeingRenamed() === lane.id
                     ? <input
                       type="text"
+                      id={`${lane.id}-rename-input`}
                       value={newLaneName()}
                       onInput={e => setNewLaneName(e.target.value)}
                       onFocusOut={renameLane}
@@ -383,7 +406,11 @@ function App() {
                   {(card, j) => (
                     <>
                       <div
-                        class={`card ${cardToBeReplacedId() === card.id ? 'dragged-over' : ''}`}
+                        class={`
+                          card
+                          ${cardToBeReplacedId() === card.id ? 'dragged-over' : ''}
+                          ${cardBeingRenamed() === card.id ? 'disabled' : ''}
+                        `}
                         draggable={true}
                         onDragStart={() => setCardBeingDraggedId(card.id)}
                         onDragEnd={(event) => moveCardPosition(event)}
@@ -391,17 +418,32 @@ function App() {
                         onClick={() => setSelectedCard(card)}
                       >
                         <div class="card__toolbar">
-                          <h3>{card.title || 'NO TITLE'}</h3>
-                          <button
-                            title="Show card options"
-                            class="small"
-                            onClick={event => {
-                              handleOptionBtnOnClick(event, card.id)
-                              setCardIdOptionsBeingShown(card.id);
-                            }}
-                          >
-                            ⋮
-                          </button>
+                          { cardBeingRenamed() === card.id
+                            ? <input
+                              type="text"
+                              id={`${card.id}-rename-input`}
+                              value={newCardName()}
+                              onInput={e => setNewCardName(e.target.value)}
+                              onFocusOut={renameCard}
+                              onKeyUp={renameCard}
+                            ></input>
+                            : <strong>
+                              {card.title}
+                            </strong>
+                          }
+                          { cardBeingRenamed() === card.id
+                            ? <></>
+                            : <button
+                              title="Show card options"
+                              class="small"
+                              onClick={event => {
+                                handleOptionBtnOnClick(event, card.id)
+                                setCardIdOptionsBeingShown(card.id);
+                              }}
+                            >
+                              ⋮
+                            </button>
+                          }
                         </div>
                         <div class="tags">
                           <For each={card.tags}>
@@ -429,6 +471,7 @@ function App() {
               left: `${popupCoordinates().x}px`
             }}
           >
+            <button onClick={startRenamingCard}>Rename</button>
             <button onClick={deleteCard}>Delete</button>
           </div>
         </Show>
