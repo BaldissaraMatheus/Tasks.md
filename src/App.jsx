@@ -263,6 +263,7 @@ function App() {
 
   function startRenamingLane() {
     setLaneBeingRenamed(laneIdOptionsBeingShown());
+    setNewLaneName(lanes().find(lane => lane.id === laneIdOptionsBeingShown()).name)
     document.getElementById(`${laneIdOptionsBeingShown()}-rename-input`).focus();
     setLaneIdOptionsBeingShown(null);
   }
@@ -276,13 +277,13 @@ function App() {
     const newLane = newLanes[newLaneIndex];
     newLane.name = newLaneName();
     newLanes[newLaneIndex] = newLane;
-    console.log(newLaneName(), newLane, newLanes);
     setLanes(newLanes);
     setLaneBeingRenamed(null);
   }
 
   function startRenamingCard() {
     setCardBeingRenamed(cardIdOptionsBeingShown());
+    setNewCardName(cards().find(card => card.id === cardIdOptionsBeingShown()).title)
     document.getElementById(`${cardIdOptionsBeingShown()}-rename-input`).focus();
     setCardIdOptionsBeingShown(null);
   }
@@ -298,6 +299,22 @@ function App() {
     newCards[newCardIndex] = newCard;
     setCards(newCards);
     setCardBeingRenamed(null);
+  }
+
+  function createNewCard(laneId) {
+    const newCards = structuredClone(cards());
+    const maxId = Math.max(...newCards.map(card => card.id)) + 1;
+    const newCard = { id: maxId, title: '', laneId }
+    newCards.push(newCard);
+    setCards(newCards);
+  }
+
+  function createNewLane() {
+    const newLanes = structuredClone(lanes());
+    const maxId = Math.max(...newLanes.map(lane => lane.id)) + 1;
+    const newLane = { name: '', id: maxId };
+    newLanes.push(newLane);
+    setLanes(newLanes);
   }
 
   return (
@@ -329,7 +346,7 @@ function App() {
             </For>
           </select>
         </div>
-        <button>New lane</button>
+        <button onClick={createNewLane}>New lane</button>
       </header>
       <main>
         <Show when={!!selectedCard()}>
@@ -374,8 +391,9 @@ function App() {
                   ? <></>
                   : <div class="lane__header-buttons">
                     <button
-                      title="Create new card"
+                      title="Create new lane"
                       class="small"
+                      onClick={() => createNewCard(lane.id)}
                     >
                       +
                     </button>
