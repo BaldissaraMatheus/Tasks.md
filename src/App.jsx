@@ -37,6 +37,8 @@ function App() {
   const [laneIdOptionsBeingShown, setLaneIdOptionsBeingShown] = createSignal(null);
   const [popupCoordinates, setPopupCoordinates] = createSignal();
   const [search, setSearch] = createSignal('');
+  const [laneBeingRenamed, setLaneBeingRenamed] = createSignal(null);
+  const [newLaneName, setNewLaneName] = createSignal('');
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -257,6 +259,25 @@ function App() {
     localStorage.setItem('lanes', lanes().map(lane => lane.id));  
   });
 
+  function startRenamingLane() {
+    setLaneBeingRenamed(laneIdOptionsBeingShown());
+    setLaneIdOptionsBeingShown(null);
+  }
+
+  function renameLane(e) {
+    if (e.key && e.key !== 'Enter') {
+      return;
+    }
+    const newLanes = structuredClone(lanes());
+    const newLaneIndex = newLanes.findIndex(lane => lane.id === laneBeingRenamed());
+    const newLane = newLanes[newLaneIndex];
+    newLane.name = newLaneName();
+    newLanes[newLaneIndex] = newLane;
+    console.log(newLaneName(), newLane, newLanes);
+    setLanes(newLanes);
+    setLaneBeingRenamed(null);
+  }
+
   return (
     <>
       <header class="app-header">
@@ -312,29 +333,41 @@ function App() {
                 onDragStart={() => setLaneBeingDraggedId(lane.id)}
               >
                 <div class="lane__header-name-and-count">
-                  <strong>
-                    {lane.name}
-                  </strong>
+                  { laneBeingRenamed() === lane.id
+                    ? <input
+                      type="text"
+                      value={newLaneName()}
+                      onInput={e => setNewLaneName(e.target.value)}
+                      onFocusOut={renameLane}
+                      onKeyUp={renameLane}
+                    ></input>
+                    : <strong>
+                        {lane.name}
+                      </strong>
+                  }
                   <h5 class="tag">{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
                 </div>
-                <div class="lane__header-buttons">
-                  <button
-                    title="Create new card"
-                    class="small"
-                  >
-                    +
-                  </button>
-                  <button
-                    title="Show lane options"
-                    class="small"
-                    onClick={event => {
-                      handleOptionBtnOnClick(event, lane.id);
-                      setLaneIdOptionsBeingShown(lane.id);
-                    }}
-                  >
-                    ⋮
-                  </button>
-                </div>
+                { laneBeingRenamed() === lane.id
+                  ? <></>
+                  : <div class="lane__header-buttons">
+                    <button
+                      title="Create new card"
+                      class="small"
+                    >
+                      +
+                    </button>
+                    <button
+                      title="Show lane options"
+                      class="small"
+                      onClick={event => {
+                        handleOptionBtnOnClick(event, lane.id);
+                        setLaneIdOptionsBeingShown(lane.id);
+                      }}
+                    >
+                      ⋮
+                    </button>
+                  </div>
+                }
               </header>
               <div
                 class="lane__content"
@@ -408,6 +441,7 @@ function App() {
               left: `${popupCoordinates().x}px`
             }}
           >
+            <button onClick={startRenamingLane}>Rename</button>
             <button onClick={deleteLane}>Delete</button>
           </div>
         </Show>
