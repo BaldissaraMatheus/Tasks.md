@@ -312,10 +312,9 @@ function App() {
                 onDragStart={() => setLaneBeingDraggedId(lane.id)}
               >
                 <div class="lane__header-name-and-count">
-                  <h2
-                  >
+                  <strong>
                     {lane.name}
-                  </h2>
+                  </strong>
                   <h5 class="tag">{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
                 </div>
                 <div class="lane__header-buttons">

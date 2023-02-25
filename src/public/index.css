@@ -1,4 +1,5 @@
 @import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
+@import url(./color-themes/adwaita.css);
 
 body {
   margin: 0;
@@ -7,31 +8,43 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--font-color);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+h1 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
 h4 {
   font-weight: normal;
   font-size: 0.8rem;
   line-height: 1.0rem;
-  margin-bottom: 0;
-  margin-top: 0;
+  margin: 0 !important;
 }
 
 h3 {
   font-size: 0.9rem;
-  line-height: 1.1rem;
-  margin: 0 !important;
-  text-align: left;
   font-weight: normal;
+  line-height: 1.1rem;
+  text-align: left;
+  margin: 0 !important;
+}
+
+h5 {
+  margin: 0;
+}
+
+strong {
+  margin: 0;
 }
 
 main {
-  background: #fefffe;
-  /* TODO store toolbar height in variable */
+  background: var(--app-background-color);
   height: calc(100vh - 44px);
   padding: 20px;
   box-sizing: border-box;
@@ -45,12 +58,13 @@ select
 {
   height: 32px;
   padding: 4px 15px;
-  background: #fff;
+  background: var(--input-background-color);
+  border: 1px solid var(--input-border-color);
   border-radius: 6px;
   font-size: 0.9rem;
-  border: 1px solid #d9d9d9;
   box-shadow: 0 2px 0 rgba(0,0,0,.02);
   box-sizing: border-box;
+  color: var(--font-color);
 }
 
 button,
@@ -75,19 +89,13 @@ button.small {
   font-size: 1rem;
 }
 
-button.primary {
-  background: #1c71d8;
-  color: white;
-  border: none;
-}
-
 .app-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-left: 24px;
-  padding-right: 24px;
-  padding-top: 12px;
+  padding: 12px 24px;
+  background: var(--app-header-background-color);
+  border-bottom: 1px solid var(--app-header-border-color);
 }
 
 .search-input {
@@ -95,11 +103,6 @@ button.primary {
   flex-direction: column;
 }
 
-@media (prefers-color-scheme: dark) {
-  .main {
-    background: slategrey;
-  }
-}
 
 .lane {
   display: flex;
@@ -115,6 +118,7 @@ button.primary {
   justify-content: space-between;
   align-items: center;
   cursor: grab;
+  margin-bottom: 12px;
 }
 
 .lane__header-name-and-count {
@@ -131,7 +135,7 @@ button.primary {
 .lane__content {
   flex-grow: 1;
   width: 300px;
-  background:  	#ebebeb;
+  background: var(--lane-background-color);
   border-radius: 8px;
   padding: 12px;
   box-sizing: border-box;
@@ -141,7 +145,8 @@ button.primary {
 .card {
   min-height: 100px;
   width: 100%;
-  background: #fff;
+  background: var(--card-background-color);
+  border: 1px solid var(--card-border-color);
   margin-bottom: 12px;
   display: flex;
   flex-direction: column;
@@ -149,7 +154,6 @@ button.primary {
   justify-content: space-between;
   cursor: grab;
   font-size: 0.9rem;
-  border: 1px solid #d9d9d9;
   box-shadow: 0 2px 0 rgba(0,0,0,.02);
   border-radius: 6px;
   box-sizing: border-box;
@@ -189,7 +193,7 @@ button.primary {
   height: 100%;
   max-width: 960px;
   max-height: 819px;
-  background: #fefffe;
+  background: var(--modal-background-color);
   top: 50%;
   left: 50%;
   transform: translate(-50%,-50%);
@@ -210,8 +214,6 @@ button.primary {
 }
 
 .modal__toolbar > :nth-child(2) {
-  /* width: 50px;
-  height: 50px; */
   vertical-align: top;
   margin-left: auto;
 }
@@ -224,6 +226,15 @@ button.primary {
 
 .CodeMirror, .CodeMirror-scroll {
   min-height: calc(90% - 51px) !important;
+}
+
+.CodeMirror {
+  background: transparent !important;
+  color: var(--font-color) !important;
+}
+
+.editor-toolbar a::before {
+  color: var(--font-color) !important;
 }
 
 .popup {
@@ -243,8 +254,8 @@ button.primary {
 .tag {
   padding: 4px;
   border-radius: 5px;
-  background:	#ebebeb;
-  border: 1px solid #d9d9d9;
+  background:	var(--tag-background-color);
+  border: 1px solid var(--tag-border-color);
 }
 
 .modal__tags {
