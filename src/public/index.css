@@ -59,14 +59,18 @@ select
 {
   height: 32px;
   padding: 4px 15px;
-  background: var(--input-background-color);
-  border: 1px solid var(--input-border-color);
   border-radius: 6px;
   font-size: 0.9rem;
   box-shadow: 0 2px 0 rgba(0,0,0,.02);
   box-sizing: border-box;
   color: var(--font-color);
   white-space: nowrap;
+}
+
+input,
+select {
+  background: var(--input-background-color);
+  border: 1px solid var(--input-border-color);
 }
 
 button,
@@ -77,6 +81,9 @@ select
 
 button {
   transition: all 0.1s;
+  background: var(--button-background-color);
+  border: 1px solid var(--button-border-color);
+  color: var(--button-font-color);
 }
 
 button:hover {
@@ -263,6 +270,7 @@ button.small {
   display: flex;
   gap: 8px;
   padding: 12px;
+  color: var(--tag-font-color);
 }
 
 .tag {
@@ -270,6 +278,7 @@ button.small {
   border-radius: 5px;
   background:	var(--tag-background-color);
   border: 1px solid var(--tag-border-color);
+  color: var(--tag-font-color);
 }
 
 .modal__tags {

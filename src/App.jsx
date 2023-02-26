@@ -9,7 +9,7 @@ function App() {
       id: 1,
       content: '# A',
       laneId: 1,
-      tags: ['testando', 'uma', 'tag']
+      tags: ['testing', 'a', 'tag']
     },
     {
       title: 'Second Card',
@@ -41,6 +41,7 @@ function App() {
   const [newLaneName, setNewLaneName] = createSignal('');
   const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
   const [newCardName, setNewCardName] = createSignal('');
+  const [filteredTag, setFilteredTag] = createSignal(null)
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -214,6 +215,14 @@ function App() {
     return tagsWithoutDuplicates;
   });
 
+  function handleFilterSelectOnChange(e) {
+    const value = e.target.value;
+    if (value === 'none') {
+      return setFilteredTag(null);
+    }
+    setFilteredTag(value);
+  }
+
   function moveLanePosition(event) {
     event.stopPropagation();
     const newLanes = structuredClone(lanes());
@@ -340,7 +349,11 @@ function App() {
         </div>
         <div class="app-header__group-item">
           <div class="app-header__group-item-label">Filter by:</div>
-          <select>
+          <select
+            onChange={handleFilterSelectOnChange}
+            value={filteredTag() === null ? 'none' : filteredTag()}
+          >
+            <option value="none">None</option>
             <For each={usedTags()}>
               {tag => <option>{tag}</option>}
             </For>
@@ -419,6 +432,7 @@ function App() {
                     sortedCards()
                       .filter(card => card.laneId === lane.id)
                       .filter(card => card.title.toLowerCase().includes(search().toLowerCase()))
+                      .filter(card => filteredTag() === null || card.tags.includes(filteredTag()))
                   }
                 >
                   {(card, j) => (

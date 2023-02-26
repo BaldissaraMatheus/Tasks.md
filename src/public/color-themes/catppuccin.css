@@ -1,0 +1,58 @@
+:root {
+  --dark-theme-color-1: #303446;
+  --dark-theme-color-2: #414559;
+  --dark-theme-color-4: #51576d;
+  --dark-theme-color-3: #626880;
+  --dark-theme-color-5: #c6d0f5;
+  --dark-theme-accent-color-1: #e5c890;
+  --dark-theme-accent-color-2: #ca9ee6;
+
+  --light-theme-color-1: #eff1f5;
+  --light-theme-color-2: #e6e9ef;
+  --light-theme-color-3: #dce0e8;
+  --light-theme-color-4: #ccd0da;
+  --light-theme-color-5: #4c4f69;
+  --light-theme-accent-color-1: #dc8a78;
+  --light-theme-accent-color-2: #7287fd;
+
+  --font-color: var(--dark-theme-color-5);
+  --app-background-color: var(--dark-theme-color-1);
+  --app-header-background-color: var(--dark-theme-color-2);
+  --app-header-border-color: var(--dark-theme-color-4);
+  --input-background-color: var(--dark-theme-color-4);
+  --input-border-color: var(--dark-theme-color-4);
+  --button-background-color: var(--dark-theme-accent-color-2);
+  --button-border-color: var(--dark-theme-accent-color-2);
+  --button-font-color: var(--dark-theme-color-1);
+  --lane-background-color: var(--dark-theme-color-2);
+  --tag-background-color: var(--dark-theme-accent-color-1);
+  --tag-border-color: var(--dark-theme-accent-color-1);
+  --tag-font-color: var(--dark-theme-color-1);
+  --card-background-color: var(--dark-theme-color-4);
+  --card-border-color: var(--dark-theme-color-4);
+  --card-border-color: var(--dark-theme-color-4);
+  --modal-background-color: var(--dark-theme-color-2);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --font-color: var(--light-theme-color-5);
+    --app-background-color: var(--light-theme-color-2);
+    --app-header-background-color: var(--light-theme-color-1);
+    --app-header-border-color: var(--light-theme-color-4);
+    --input-background-color: var(--light-theme-color-3);
+    --input-border-color: var(--light-theme-color-4);
+    --button-background-color: var(--light-theme-accent-color-2);
+    --button-border-color: var(--light-theme-accent-color-2);
+    --button-font-color: var(--light-theme-color-1);
+    --lane-background-color: var(--light-theme-color-4);
+    --tag-background-color: var(--light-theme-color-3);
+    --tag-border-color: var(--light-theme-accent-color-1);
+    --tag-background-color: var(--light-theme-accent-color-1);
+    --tag-border-color: var(--light-theme-accent-color-1);
+    --tag-font-color: var(--light-theme-color-1);
+    --card-background-color: var(--light-theme-color-2);
+    --card-border-color: var(--light-theme-color-4);
+    --modal-background-color: var(--light-theme-color-2);
+  }
+}
