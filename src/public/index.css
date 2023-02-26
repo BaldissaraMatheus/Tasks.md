@@ -24,18 +24,13 @@ h4 {
   font-weight: normal;
   font-size: 0.8rem;
   line-height: 1.0rem;
-  margin: 0 !important;
-}
-
-h3 {
-  font-size: 0.9rem;
-  font-weight: normal;
-  line-height: 1.1rem;
-  text-align: left;
-  margin: 0 !important;
+  margin: 0;
 }
 
 h5 {
+  font-weight: normal;
+  font-size: 0.8rem;
+  line-height: 1.0rem;
   margin: 0;
 }
 
@@ -245,15 +240,6 @@ button.small {
   height: 90%;
 }
 
-.CodeMirror, .CodeMirror-scroll {
-  min-height: calc(90% - 51px) !important;
-}
-
-.CodeMirror {
-  background: transparent !important;
-  color: var(--font-color) !important;
-}
-
 .editor-toolbar a::before {
   color: var(--font-color) !important;
 }
@@ -281,6 +267,10 @@ button.small {
   color: var(--tag-font-color);
 }
 
+.counter {
+  font-weight: bold;
+}
+
 .modal__tags {
   display: flex;
   gap: 8px;
@@ -289,4 +279,13 @@ button.small {
 
 .disabled {
   pointer-events: none;
+}
+
+.CodeMirror, .CodeMirror-scroll {
+  min-height: calc(90% - 51px) !important;
+}
+
+.CodeMirror {
+  background: transparent !important;
+  color: var(--font-color) !important;
 }

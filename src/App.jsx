@@ -398,7 +398,9 @@ function App() {
                         {lane.name}
                       </strong>
                   }
-                  <h5 class="tag">{sortedCards().filter(card => card.laneId === lane.id).length}</h5>
+                  <h5 class="tag counter">
+                    {sortedCards().filter(card => card.laneId === lane.id).length}
+                  </h5>
                 </div>
                 { laneBeingRenamed() === lane.id
                   ? <></>
@@ -481,7 +483,7 @@ function App() {
                           <For each={card.tags}>
                             {tag => (
                               <div class="tag">
-                                <h4>{tag}</h4>
+                                <h5>{tag}</h5>
                               </div>
                             )}
                           </For>

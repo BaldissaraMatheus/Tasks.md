@@ -34,7 +34,7 @@ function ExpandedCard(props) {
           <For each={props.tags}>
             {tag => (
               <div className="tag">
-                <h4>{tag}</h4>
+                <h5>{tag}</h5>
               </div>
             )}
           </For>
