@@ -4,6 +4,14 @@ const router = require('@koa/router')();
 const fs = require('fs');
 const uuid = require('uuid');
 const bodyParser = require('koa-bodyparser');
+const cors = require('@koa/cors');
+
+async function getLanes(ctx) {
+	const lanes = await fs.promises.readdir('files');
+	ctx.body = lanes; 
+};
+
+router.get('/lanes', getLanes);
 
 async function getCards(ctx) {
 	async function getContent(path) {
@@ -85,7 +93,6 @@ router.post('/lanes', createLane);
 async function updateLane(ctx) {
 	const name = ctx.params.lane;
 	const newName = ctx.request.body.name;
-	console.log(name)
 	await fs.promises.rename(`files/${name}`, `files/${newName}`);
 	ctx.status = 204;
 }
@@ -94,12 +101,13 @@ router.patch('/lanes/:lane', updateLane);
 
 async function deleteLane(ctx) {
 	const lane = ctx.params.lane;
-	await fs.promises.rmdir(`files/${lane}`);
+	await fs.promises.rm(`files/${lane}`, { force: true, recursive: true });
 	ctx.status = 204;
 }
 
 router.delete('/lanes/:lane', deleteLane);
 
+app.use(cors());
 app.use(bodyParser())
 app.use(router.routes())
-app.listen(3000);
+app.listen(3001);
