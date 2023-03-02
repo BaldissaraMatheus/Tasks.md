@@ -1,14 +1,15 @@
 import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect } from 'solid-js';
 import ExpandedCard from './components/expanded-card';
-import { scheduleIdle, debounce } from "@solid-primitives/scheduled";
+import { debounce } from "@solid-primitives/scheduled";
 
 function App() {
   const [lanes, setLanes] = createSignal([])
   const [cards, setCards] = createSignal([]);
   const [sort, setSort] = createSignal(getDefaultFromLocalStorage('sort'))
   const [sortDirection, setSortDirection] = createSignal(getDefaultFromLocalStorage('sortDirection'))
-  const [cardBeingDraggedName, setCardBeingDraggedId] = createSignal(null);
-  const [cardToBeReplacedId, setCardToBeReplacedId] = createSignal(null);
+  const [cardBeingDraggedName, setCardBeingDragged] = createSignal(null);
+  const [cardBeingDraggedOriginalLane, setCardBeingDraggedOriginalLane] = createSignal(null);
+  const [cardToBeReplacedName, setCardToBeReplacedName] = createSignal(null);
   const [laneBeingDraggedName, setLaneBeingDraggedId] = createSignal(null);
   const [laneToBeReplacedName, setLaneToBeReplacedId] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
@@ -27,7 +28,7 @@ function App() {
   onMount(async () => {
     const data = await fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
       .then(res => res.json())
-      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content) })))
+      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
     setCards(data);
   });
 
@@ -78,11 +79,11 @@ function App() {
     window.removeEventListener('mousedown', handleClickOutsideOptions)
   });
 
-  function moveCardPosition(event) {
+  function replaceCardPosition(event) {
     event.stopPropagation();
     const newCards = structuredClone(cards());
     const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
-    const cardToBeReplacedIndex = newCards.findIndex(card => card.name === cardToBeReplacedId());
+    const cardToBeReplacedIndex = newCards.findIndex(card => card.name === cardToBeReplacedName());
 
     const cardBeingDraggedlane = newCards[cardBeingDraggedIndex].lane;
     const cardToBeReplacedlane = newCards[cardToBeReplacedIndex].lane;
@@ -101,8 +102,8 @@ function App() {
     ]
     .filter(card => card !== null);
     setCards(cardsWithChangedPositions);
-    setCardToBeReplacedId(null);
-    setCardBeingDraggedId(null);
+    setCardToBeReplacedName(null);
+    setCardBeingDragged(null);
   }
 
   const debounceUpdateCardLaneReq = debounce((card) => {
@@ -112,6 +113,7 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lane: card.newLane })
     });
+    setCardBeingDraggedOriginalLane(card.newLane);
   }, 250);
 
   function moveCardToLane(newLane) {
@@ -121,12 +123,12 @@ function App() {
     if (newCard.lane === newLane) {
       return;
     }
-    debounceUpdateCardLaneReq({ lane: newCard.lane, name: newCard.name, newLane: newLane });
+    debounceUpdateCardLaneReq({ lane: cardBeingDraggedOriginalLane(), name: newCard.name, newLane });
     newCard.lane = newLane;
     newCards = newCards.filter((card, i) => i !== cardBeingDraggedIndex);
     newCards.push(newCard);
     setCards(newCards);
-    setCardToBeReplacedId(null);
+    setCardToBeReplacedName(null);
   }
   const debounceChangeCardContent = debounce((newContent) => changeCardContent(newContent), 250);
 
@@ -134,7 +136,7 @@ function App() {
     const newCards = structuredClone(cards())
     const newCardIndex = structuredClone(newCards.findIndex(card => card.name === selectedCard().name
       && card.lane === selectedCard().lane
-    ))
+    ));
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
     const newTags = getTags(newContent);
@@ -427,7 +429,7 @@ function App() {
                       onKeyUp={renameLane}
                     ></input>
                     : <strong>
-                        {lane.name}
+                        {lane?.name}
                       </strong>
                   }
                   <h5 class="tag counter">
@@ -474,14 +476,17 @@ function App() {
                       <div
                         class={`
                           card
-                          ${cardToBeReplacedId() === card.name ? 'dragged-over' : ''}
+                          ${cardToBeReplacedName() === card.name ? 'dragged-over' : ''}
                           ${cardBeingRenamed()?.name === card.name ? 'disabled' : ''}
                         `}
                         draggable={true}
-                        onDragStart={() => setCardBeingDraggedId(card.name)}
-                        onDragEnd={(event) => moveCardPosition(event)}
-                        onDragOver={() => cardBeingDraggedName() ? setCardToBeReplacedId(card.name) : null}
-                        onClick={() => setSelectedCard(card)}
+                        onDragStart={() => {
+                          setCardBeingDragged(card.name);
+                          setCardBeingDraggedOriginalLane(card.lane)
+                        }}
+                        onDragEnd={(event) => replaceCardPosition(event)}
+                        onDragOver={() => cardBeingDraggedName() ? setCardToBeReplacedName(card.name) : null}
+                        onClick={() => setSelectedCard(card.name)}
                       >
                         <div class="card__toolbar">
                           { cardBeingRenamed()?.name === card.name
