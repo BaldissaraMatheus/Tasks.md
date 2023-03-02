@@ -25,29 +25,6 @@ function App() {
 
   const api = 'http://localhost:3001';
 
-  onMount(async () => {
-    const data = await fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
-      .then(res => res.json())
-      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
-    setCards(data);
-  });
-
-  createEffect(async () => {
-    const newLanes = await fetch(`${api}/lanes`, { method: 'GET', mode: 'cors' })
-      .then(res => res.json())
-      .then(lanes => lanes.map(lane => ({ name: lane })));
-
-    if (newLanes.length <= lanes().length) {
-      return;
-    }
-    const sortedLanesFromLocalStorage = localStorage.getItem('lanes')?.split(',') || [];
-    const sortedLanes = sortedLanesFromLocalStorage
-      .filter(sortedLane => newLanes.find(lane => lane.name === sortedLane))
-      .map(lane => newLanes.find(laneFromApi => laneFromApi.name === lane));
-    const notSortedLanes = newLanes.filter(lane => !sortedLanesFromLocalStorage.includes(lane.name));
-    setLanes([...sortedLanes, ...notSortedLanes]);
-  });
-
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
     if (defaultValue === 'null') {
@@ -59,25 +36,17 @@ function App() {
   function handleClickOutsideOptions(event) {
     if (
       cardOptionsBeingShown() !== null
-      && event.target?.parentElement?.id !== `${cardOptionsBeingShown()}`
+      && event.target?.parentElement?.id !== `${cardOptionsBeingShown().name}`
     ) {
       setCardOptionsBeingShown(null);
     }
     if (
       laneOptionsBeingShown() !== null
-      && event.target?.parentElement?.id !== `${laneOptionsBeingShown()}`
+      && event.target?.parentElement?.id !== `${laneOptionsBeingShown().name}`
     ) {
       setlaneOptionsBeingShown(null);
     }
   }
-
-  onMount(() => {
-    window.addEventListener('mousedown', handleClickOutsideOptions)
-  });
-
-  onCleanup(() => {
-    window.removeEventListener('mousedown', handleClickOutsideOptions)
-  });
 
   function replaceCardPosition(event) {
     event.stopPropagation();
@@ -177,52 +146,6 @@ function App() {
     setPopupCoordinates({ x, y });
   }
 
-  function deleteCard() {
-    const newCards = structuredClone(cards());
-    fetch(`${api}/lanes/${cardOptionsBeingShown().lane}/${cardOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
-    const cardsWithoutDeletedCard = newCards.filter(card => card.name !== cardOptionsBeingShown().name);
-    setCards(cardsWithoutDeletedCard);
-    setCardOptionsBeingShown(null);
-  }
-
-  function deleteLane() {
-    const newLanes = structuredClone(lanes());
-    fetch(`${api}/lanes/${laneOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
-    const lanesWithoutDeletedCard = newLanes.filter(lane => lane.name !== laneOptionsBeingShown().name);
-    setLanes(lanesWithoutDeletedCard);
-    setlaneOptionsBeingShown(null);
-  }
-
-  const sortedCards = createMemo(() => {
-    if (sortDirection() === null) {
-      return cards();
-    }
-    if (sort() === 'name') {
-      return sortCardsByName();
-    }
-    if (sort() === 'tags') {
-      return sortCardsByTags();
-    }
-    return cards();
-  });
-
-  function sortCardsByName() {
-    const newCards = structuredClone(cards());
-    return newCards.sort((a, b) => sortDirection() === 'asc'
-      ? a.name?.localeCompare(b.name)
-      : b.name?.localeCompare(a.name)
-    );
-  }
-
-  function sortCardsByTags() {
-    const newCards = structuredClone(cards());
-    return newCards.sort((a, b) => {
-      return sortDirection() === 'asc'
-        ? a.tags?.[0]?.localeCompare(b.tags?.[0])
-        : b.tags?.[0]?.localeCompare(a.tags?.[0])
-    });
-  }
-
   function handleSortSelectOnChange(e) {
     const value = e.target.value;
     if (value === 'none') {
@@ -234,14 +157,6 @@ function App() {
     setSortDirection(newSortDirection);
   }
 
-  const usedTags = createMemo(() => {
-    const allTags = cards()
-      .map(card => card.tags)
-      .flat();
-    const tagsWithoutDuplicates = Array.from(new Set(allTags));
-    return tagsWithoutDuplicates;
-  });
-
   function handleFilterSelectOnChange(e) {
     const value = e.target.value;
     if (value === 'none') {
@@ -250,63 +165,18 @@ function App() {
     setFilteredTag(value);
   }
 
-  function moveLanePosition(event) {
-    event.stopPropagation();
-    const newLanes = structuredClone(lanes());
-    const laneBeingDraggedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedName());
-    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneToBeReplacedName());
-    const upOrDownDisplacement = laneBeingDraggedIndex < laneToBeReplacedIndex
-      ? 1
-      : 0;
-    const laneBeingDragged = newLanes[laneBeingDraggedIndex];
-    newLanes[laneBeingDraggedIndex] = null;
-    const lanesWithChangedPositions = [
-      ...newLanes.slice(0, laneToBeReplacedIndex + upOrDownDisplacement),
-      laneBeingDragged,
-      ...newLanes.slice(laneToBeReplacedIndex + upOrDownDisplacement)
-    ]
-    .filter(lane => lane !== null);
-    setLanes(lanesWithChangedPositions);
-    setLaneToBeReplacedId(null);
-    setLaneBeingDraggedId(null);
-  }
-
-  createEffect(() => {
-    localStorage.setItem('sort', sort());
-    localStorage.setItem('sortDirection', sortDirection());
-  });
-
-  createEffect(() => {
-    if (!lanes().length) {
-      return;
-    }
-    localStorage.setItem('lanes', lanes().map(lane => lane.name));  
-  });
-
-  function startRenamingLane() {
-    setLaneBeingRenamed(laneOptionsBeingShown());
-    setNewLaneName(lanes().find(lane => lane.name === laneOptionsBeingShown().name).name)
-    document.getElementById(`${laneOptionsBeingShown().name}-rename-input`).focus();
-    setlaneOptionsBeingShown(null);
-  }
-
-  function renameLane(e) {
-    if (e.key && e.key !== 'Enter') {
-      return;
-    }
-    const newLanes = structuredClone(lanes());
-    const newLaneIndex = newLanes.findIndex(lane => lane.name === laneBeingRenamed().name);
-    const newLane = newLanes[newLaneIndex];
-    fetch(`${api}/lanes/${newLane.name}`, {
-      method: 'PATCH',
+  async function createNewCard(lane) {
+    const newCards = structuredClone(cards());
+    const newCard = { lane }
+    const newCardName = await fetch(`${api}/cards`, {
+      method: 'POST',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newLaneName() })
-    });
-    newLane.name = newLaneName();
-    newLanes[newLaneIndex] = newLane;
-    setLanes(newLanes);
-    setLaneBeingRenamed(null);
+      body: JSON.stringify({ lane: newCard.lane })
+    }).then(res => res.text());
+    newCard.name = newCardName;
+    newCards.push(newCard);
+    setCards(newCards);
   }
 
   function startRenamingCard() {
@@ -335,18 +205,12 @@ function App() {
     setCardBeingRenamed(null);
   }
 
-  async function createNewCard(lane) {
+  function deleteCard() {
     const newCards = structuredClone(cards());
-    const newCard = { lane }
-    const newCardName = await fetch(`${api}/cards`, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lane: newCard.lane })
-    }).then(res => res.text());
-    newCard.name = newCardName;
-    newCards.push(newCard);
-    setCards(newCards);
+    fetch(`${api}/lanes/${cardOptionsBeingShown().lane}/${cardOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
+    const cardsWithoutDeletedCard = newCards.filter(card => card.name !== cardOptionsBeingShown().name);
+    setCards(cardsWithoutDeletedCard);
+    setCardOptionsBeingShown(null);
   }
 
   async function createNewLane() {
@@ -359,6 +223,146 @@ function App() {
     newLanes.push({ name: newLaneName });
     setLanes(newLanes);
   }
+
+  function moveLanePosition(event) {
+    event.stopPropagation();
+    const newLanes = structuredClone(lanes());
+    const laneBeingDraggedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedName());
+    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneToBeReplacedName());
+    const upOrDownDisplacement = laneBeingDraggedIndex < laneToBeReplacedIndex
+      ? 1
+      : 0;
+    const laneBeingDragged = newLanes[laneBeingDraggedIndex];
+    newLanes[laneBeingDraggedIndex] = null;
+    const lanesWithChangedPositions = [
+      ...newLanes.slice(0, laneToBeReplacedIndex + upOrDownDisplacement),
+      laneBeingDragged,
+      ...newLanes.slice(laneToBeReplacedIndex + upOrDownDisplacement)
+    ]
+    .filter(lane => lane !== null);
+    setLanes(lanesWithChangedPositions);
+    setLaneToBeReplacedId(null);
+    setLaneBeingDraggedId(null);
+  }
+
+  function startRenamingLane() {
+    setLaneBeingRenamed(laneOptionsBeingShown());
+    setNewLaneName(lanes().find(lane => lane.name === laneOptionsBeingShown().name).name)
+    document.getElementById(`${laneOptionsBeingShown().name}-rename-input`).focus();
+    setlaneOptionsBeingShown(null);
+  }
+
+  function renameLane(e) {
+    if (e.key && e.key !== 'Enter') {
+      return;
+    }
+    const newLanes = structuredClone(lanes());
+    const newLaneIndex = newLanes.findIndex(lane => lane.name === laneBeingRenamed().name);
+    const newLane = newLanes[newLaneIndex];
+    fetch(`${api}/lanes/${newLane.name}`, {
+      method: 'PATCH',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newLaneName() })
+    });
+    const newCards = structuredClone(cards())
+      .map(card => ({
+        ...card,
+        lane: card.lane === newLane.name ? newLaneName() : card.lane
+      }));
+    setCards(newCards);
+    newLane.name = newLaneName();
+    newLanes[newLaneIndex] = newLane;
+    setLanes(newLanes);
+    setLaneBeingRenamed(null);
+  }
+
+  function deleteLane() {
+    const newLanes = structuredClone(lanes());
+    fetch(`${api}/lanes/${laneOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
+    const lanesWithoutDeletedCard = newLanes.filter(lane => lane.name !== laneOptionsBeingShown().name);
+    setLanes(lanesWithoutDeletedCard);
+    setlaneOptionsBeingShown(null);
+  }
+
+  function sortCardsByName() {
+    const newCards = structuredClone(cards());
+    return newCards.sort((a, b) => sortDirection() === 'asc'
+      ? a.name?.localeCompare(b.name)
+      : b.name?.localeCompare(a.name)
+    );
+  }
+
+  function sortCardsByTags() {
+    const newCards = structuredClone(cards());
+    return newCards.sort((a, b) => {
+      return sortDirection() === 'asc'
+        ? a.tags?.[0]?.localeCompare(b.tags?.[0])
+        : b.tags?.[0]?.localeCompare(a.tags?.[0])
+    });
+  }
+
+  const sortedCards = createMemo(() => {
+    if (sortDirection() === null) {
+      return cards();
+    }
+    if (sort() === 'name') {
+      return sortCardsByName();
+    }
+    if (sort() === 'tags') {
+      return sortCardsByTags();
+    }
+    return cards();
+  });
+
+  const usedTags = createMemo(() => {
+    const allTags = cards()
+      .map(card => card.tags)
+      .flat()
+      .filter(tag => !!tag)
+    const tagsWithoutDuplicates = Array.from(new Set(allTags));
+    return tagsWithoutDuplicates;
+  });
+
+  createEffect(async () => {
+    const newLanes = await fetch(`${api}/lanes`, { method: 'GET', mode: 'cors' })
+      .then(res => res.json())
+      .then(lanes => lanes.map(lane => ({ name: lane })));
+
+    if (newLanes.length <= lanes().length) {
+      return;
+    }
+    const sortedLanesFromLocalStorage = localStorage.getItem('lanes')?.split(',') || [];
+    const sortedLanes = sortedLanesFromLocalStorage
+      .filter(sortedLane => newLanes.find(lane => lane.name === sortedLane))
+      .map(lane => newLanes.find(laneFromApi => laneFromApi.name === lane));
+    const notSortedLanes = newLanes.filter(lane => !sortedLanesFromLocalStorage.includes(lane.name));
+    setLanes([...sortedLanes, ...notSortedLanes]);
+  });
+
+  createEffect(() => {
+    localStorage.setItem('sort', sort());
+    localStorage.setItem('sortDirection', sortDirection());
+  });
+
+  createEffect(() => {
+    if (!lanes().length) {
+      return;
+    }
+    localStorage.setItem('lanes', lanes().map(lane => lane.name));  
+  });
+
+  onMount(async () => {
+    window.addEventListener('mousedown', handleClickOutsideOptions)
+    const data = await fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
+      .then(res => res.json())
+      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
+    setCards(data);
+  });
+
+  onCleanup(() => {
+    window.removeEventListener('mousedown', handleClickOutsideOptions)
+  });
 
   return (
     <>
@@ -548,7 +552,7 @@ function App() {
         </Show>
         <Show when={laneOptionsBeingShown()}>
           <div
-            id={laneOptionsBeingShown()}
+            id={laneOptionsBeingShown().name}
             class="popup"
             style={{
               top:`${popupCoordinates().y}px`,
