@@ -490,7 +490,7 @@ function App() {
                         }}
                         onDragEnd={(event) => replaceCardPosition(event)}
                         onDragOver={() => cardBeingDraggedName() ? setCardToBeReplacedName(card.name) : null}
-                        onClick={() => setSelectedCard(card.name)}
+                        onClick={() => setSelectedCard(card)}
                       >
                         <div class="card__toolbar">
                           { cardBeingRenamed()?.name === card.name
