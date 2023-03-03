@@ -30,6 +30,7 @@
   --card-background-color: var(--dark-theme-color-4);
   --card-border-color: var(--dark-theme-color-4);
   --modal-background-color: var(--dark-theme-color-2);
+  --popup-background-color: var(--dark-theme-color-1);
 }
 
 @media (prefers-color-scheme: light) {
@@ -50,5 +51,6 @@
     --card-background-color: var(--light-theme-color-2);
     --card-border-color: var(--light-theme-color-4);
     --modal-background-color: var(--light-theme-color-2);
+    --popup-background-color: var(--light-theme-color-1);
   }
 }

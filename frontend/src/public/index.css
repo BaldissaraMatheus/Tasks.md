@@ -263,8 +263,16 @@ button.small {
 .popup > button {
   width: 100%;
   border: 0;
-  border-radius: 0;
   text-align: left;
+  background: var(--popup-background-color);
+}
+
+.pup > :first-child {
+  border-radius: 6px 0 6px 0;
+}
+
+.pup > :last-child {
+  border-radius: 0 6px 0 6px;
 }
 
 .tags {
