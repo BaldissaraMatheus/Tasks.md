@@ -221,17 +221,21 @@ button.small {
 
 .modal__toolbar {
   width: 100%;
+  display: flex;
 }
 
 .modal__toolbar > :first-child {
+  flex-grow: 1;
   display: inline-block;
   width: calc(100% - 50px);
   margin-top: 0;
 }
 
 .modal__toolbar > :nth-child(2) {
-  vertical-align: top;
-  margin-left: auto;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  font-weight: bold;
 }
 
 .modal__content {
