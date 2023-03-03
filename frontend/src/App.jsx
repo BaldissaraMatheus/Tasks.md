@@ -207,14 +207,15 @@ function App() {
       body: JSON.stringify({ lane: newCard.lane })
     }).then(res => res.text());
     newCard.name = newCardName;
-    newCards.push(newCard);
+    newCards.unshift(newCard);
     setCards(newCards);
+    startRenamingCard(cards()[0]);
   }
 
-  function startRenamingCard() {
-    setCardBeingRenamed(cardOptionsBeingShown());
-    setNewCardName(cards().find(card => card.name === cardOptionsBeingShown().name).name)
-    document.getElementById(`${cardOptionsBeingShown().name}-rename-input`).focus();
+  function startRenamingCard(card) {
+    setCardBeingRenamed(card);
+    setNewCardName(card.name)
+    document.getElementById(`${card.name}-rename-input`).focus();
     setCardOptionsBeingShown(null);
   }
 
@@ -561,14 +562,14 @@ function App() {
         </For>
         <Show when={cardOptionsBeingShown()}>
           <div
-            id={cardOptionsBeingShown()}
+            id={cardOptionsBeingShown()?.name}
             class="popup"
             style={{
               top:`${popupCoordinates().y}px`,
               left: `${popupCoordinates().x}px`
             }}
           >
-            <button onClick={startRenamingCard}>Rename</button>
+            <button onClick={() => startRenamingCard(cardOptionsBeingShown())}>Rename</button>
             <button onClick={deleteCard}>Delete</button>
           </div>
         </Show>
