@@ -52,16 +52,16 @@ function App() {
     const cardsFromApi = await fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
       .then(res => res.json())
       .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
-    const cardsFromLocalStorage = JSON.parse(localStorage.getItem('cards') || '[]');
-    const cardsFromApiAndLocalStorage = cardsFromLocalStorage
-      .map(cardFromLocalStorage => cardsFromApi
-        .find(cardFromApi => cardFromApi.name === cardFromLocalStorage.name))
+    const cardsNamesFromLocalStorage = JSON.parse(localStorage.getItem('cards') || '[]');
+    const cardsFromApiAndLocalStorage = cardsNamesFromLocalStorage
+      .map(cardNameFromLocalStorage => cardsFromApi
+        .find(cardFromApi => cardFromApi.name === cardNameFromLocalStorage))
       .filter(card => !!card)
     const cardsFromApiNotFromLocalStorage = cardsFromApi
-      .filter(card => !cardsFromLocalStorage.find(cardFromLocalStorage => cardFromLocalStorage.name === card.name));
+      .filter(card => !cardsNamesFromLocalStorage.find(cardNameFromLocalStorage => cardNameFromLocalStorage === card.name));
     const newCards = [...cardsFromApiAndLocalStorage, ...cardsFromApiNotFromLocalStorage];
     setCards(newCards);
-    localStorage.setItem('cards', JSON.stringify(newCards.map(card => ({ name: card.name }))));
+    localStorage.setItem('cards', JSON.stringify(newCards.map(card => card.name)));
   }
 
   async function fetchLanes() {
@@ -378,7 +378,7 @@ function App() {
     if (!!sort() || !cards().length) {
       return;
     }
-    const cardsNames = cards().map(card => ({ name: card.name }));
+    const cardsNames = cards().map(card => card.name);
     localStorage.setItem('cards', JSON.stringify(cardsNames));
   })
 
