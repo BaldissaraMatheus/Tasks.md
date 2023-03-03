@@ -265,6 +265,7 @@ button.small {
 
 .tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 12px;
   color: var(--tag-font-color);
