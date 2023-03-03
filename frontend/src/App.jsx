@@ -48,6 +48,38 @@ function App() {
     }
   }
 
+  async function fetchCards() {
+    const cardsFromApi = await fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
+      .then(res => res.json())
+      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
+    const cardsFromLocalStorage = JSON.parse(localStorage.getItem('cards') || '[]');
+    const cardsFromApiAndLocalStorage = cardsFromLocalStorage
+      .map(cardFromLocalStorage => cardsFromApi
+        .find(cardFromApi => cardFromApi.name === cardFromLocalStorage.name))
+      .filter(card => !!card)
+    const cardsFromApiNotFromLocalStorage = cardsFromApi
+      .filter(card => !cardsFromLocalStorage.find(cardFromLocalStorage => cardFromLocalStorage.name === card.name));
+    const newCards = [...cardsFromApiAndLocalStorage, ...cardsFromApiNotFromLocalStorage];
+    setCards(newCards);
+    localStorage.setItem('cards', JSON.stringify(newCards.map(card => ({ name: card.name }))));
+  }
+
+  async function fetchLanes() {
+    const newLanes = await fetch(`${api}/lanes`, { method: 'GET', mode: 'cors' })
+      .then(res => res.json())
+      .then(lanes => lanes.map(lane => ({ name: lane })));
+
+    if (newLanes.length <= lanes().length) {
+      return;
+    }
+    const sortedLanesFromLocalStorage = localStorage.getItem('lanes')?.split(',') || [];
+    const sortedLanes = sortedLanesFromLocalStorage
+      .filter(sortedLane => newLanes.find(lane => lane.name === sortedLane))
+      .map(lane => newLanes.find(laneFromApi => laneFromApi.name === lane));
+    const notSortedLanes = newLanes.filter(lane => !sortedLanesFromLocalStorage.includes(lane.name));
+    setLanes([...sortedLanes, ...notSortedLanes]);
+  }
+
   function replaceCardPosition(event) {
     event.stopPropagation();
     const newCards = structuredClone(cards());
@@ -324,20 +356,10 @@ function App() {
     return tagsWithoutDuplicates;
   });
 
-  createEffect(async () => {
-    const newLanes = await fetch(`${api}/lanes`, { method: 'GET', mode: 'cors' })
-      .then(res => res.json())
-      .then(lanes => lanes.map(lane => ({ name: lane })));
-
-    if (newLanes.length <= lanes().length) {
-      return;
-    }
-    const sortedLanesFromLocalStorage = localStorage.getItem('lanes')?.split(',') || [];
-    const sortedLanes = sortedLanesFromLocalStorage
-      .filter(sortedLane => newLanes.find(lane => lane.name === sortedLane))
-      .map(lane => newLanes.find(laneFromApi => laneFromApi.name === lane));
-    const notSortedLanes = newLanes.filter(lane => !sortedLanesFromLocalStorage.includes(lane.name));
-    setLanes([...sortedLanes, ...notSortedLanes]);
+  onMount(async () => {
+    window.addEventListener('mousedown', handleClickOutsideOptions);
+    fetchCards();
+    fetchLanes();
   });
 
   createEffect(() => {
@@ -352,13 +374,13 @@ function App() {
     localStorage.setItem('lanes', lanes().map(lane => lane.name));  
   });
 
-  onMount(async () => {
-    window.addEventListener('mousedown', handleClickOutsideOptions)
-    const data = await fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
-      .then(res => res.json())
-      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
-    setCards(data);
-  });
+  createEffect(() => {
+    if (!!sort() || !cards().length) {
+      return;
+    }
+    const cardsNames = cards().map(card => ({ name: card.name }));
+    localStorage.setItem('cards', JSON.stringify(cardsNames));
+  })
 
   onCleanup(() => {
     window.removeEventListener('mousedown', handleClickOutsideOptions)
@@ -444,7 +466,7 @@ function App() {
                   ? <></>
                   : <div class="lane__header-buttons">
                     <button
-                      title="Create new lane"
+                      title="Create new card"
                       class="small"
                       onClick={() => createNewCard(lane.name)}
                     >
