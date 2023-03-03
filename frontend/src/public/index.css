@@ -95,6 +95,7 @@ button.small {
 
 .app-header {
   display: flex;
+  overflow: auto;
   align-items: center;
   gap: 12px;
   padding: 12px 24px;
@@ -267,12 +268,12 @@ button.small {
   background: var(--popup-background-color);
 }
 
-.pup > :first-child {
-  border-radius: 6px 0 6px 0;
+.popup > :first-child {
+  border-radius: 6px 6px 0 0 !important;
 }
 
-.pup > :last-child {
-  border-radius: 0 6px 0 6px;
+.popup > :last-child {
+  border-radius: 0 0 6px 6px;
 }
 
 .tags {
