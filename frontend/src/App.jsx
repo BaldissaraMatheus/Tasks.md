@@ -10,8 +10,8 @@ function App() {
   const [cardBeingDraggedName, setCardBeingDragged] = createSignal(null);
   const [cardBeingDraggedOriginalLane, setCardBeingDraggedOriginalLane] = createSignal(null);
   const [cardToBeReplacedName, setCardToBeReplacedName] = createSignal(null);
-  const [laneBeingDraggedName, setLaneBeingDraggedId] = createSignal(null);
-  const [laneToBeReplacedName, setLaneToBeReplacedId] = createSignal(null);
+  const [laneBeingDraggedName, setLaneBeingDraggedName] = createSignal(null);
+  const [laneToBeReplacedName, setLaneToBeReplacedName] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardOptionsBeingShown, setCardOptionsBeingShown] = createSignal(null);
   const [laneOptionsBeingShown, setlaneOptionsBeingShown] = createSignal(null);
@@ -20,9 +20,11 @@ function App() {
   const [laneBeingRenamed, setLaneBeingRenamed] = createSignal(null);
   const [newLaneName, setNewLaneName] = createSignal('');
   const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
-  const [newCardName, setNewCardName] = createSignal('');
+  const [newCardName, setNewCardName] = createSignal(null);
   const [filteredTag, setFilteredTag] = createSignal(null);
   const [title, setTitle] = createSignal(import.meta.env.VITE_TITLE);
+  const [cardError, setCardError] = createSignal(null);
+  const [laneError, setLaneError] = createSignal(null);
 
   const api = 'http://localhost:3001';
 
@@ -222,11 +224,18 @@ function App() {
     setCardBeingRenamed(card);
     setNewCardName(card.name)
     document.getElementById(`${card.name}-rename-input`).focus();
+    document.getElementById(`${card.name}-rename-input`).select();
     setCardOptionsBeingShown(null);
   }
 
   function renameCard(e) {
     if (e.key && e.key !== 'Enter') {
+      return;
+    }
+    if (cardError()) {
+      setNewCardName(null);
+      setCardBeingRenamed(null);
+      setCardError(null);
       return;
     }
     const newCards = structuredClone(cards());
@@ -261,6 +270,7 @@ function App() {
     }).then(res => res.text());
     newLanes.push({ name: newLaneName });
     setLanes(newLanes);
+    startRenamingLane(lanes()[lanes().length - 1]);
   }
 
   function moveLanePosition(event) {
@@ -280,19 +290,26 @@ function App() {
     ]
     .filter(lane => lane !== null);
     setLanes(lanesWithChangedPositions);
-    setLaneToBeReplacedId(null);
-    setLaneBeingDraggedId(null);
+    setLaneToBeReplacedName(null);
+    setLaneBeingDraggedName(null);
   }
 
-  function startRenamingLane() {
-    setLaneBeingRenamed(laneOptionsBeingShown());
-    setNewLaneName(lanes().find(lane => lane.name === laneOptionsBeingShown().name).name)
-    document.getElementById(`${laneOptionsBeingShown().name}-rename-input`).focus();
+  function startRenamingLane(laneToBeRenamed) {
+    setLaneBeingRenamed(laneToBeRenamed);
+    setNewLaneName(lanes().find(lane => lane.name === laneToBeRenamed.name).name)
+    document.getElementById(`${laneToBeRenamed.name}-rename-input`).focus();
+    document.getElementById(`${laneToBeRenamed.name}-rename-input`).select();
     setlaneOptionsBeingShown(null);
   }
 
   function renameLane(e) {
     if (e.key && e.key !== 'Enter') {
+      return;
+    }
+    if (laneError()) {
+      setNewLaneName(null);
+      setLaneBeingRenamed(null);
+      setLaneError(null);
       return;
     }
     const newLanes = structuredClone(lanes());
@@ -393,7 +410,40 @@ function App() {
     }
     const cardsNames = cards().map(card => card.name);
     localStorage.setItem('cards', JSON.stringify(cardsNames));
-  })
+  });
+
+  createEffect(() => {
+    if (newCardName() === null) {
+      return;
+    }
+    if (newCardName() === '') {
+      return setCardError('The card must have a name');
+    }
+    if (cards()
+      .filter(card => card.name === newCardName() && card.name !== cardBeingRenamed().name)
+      .length
+    ) {
+      return setCardError('There\'s already a card with that name');
+    }
+    setCardError(null);
+  });
+
+  createEffect(() => {
+    if (newLaneName() === null) {
+      return;
+    }
+    if (newLaneName() === '') {
+      return setLaneError('The lane must have a name');
+    }
+    if (lanes()
+      .filter(lane => lane.name === newLaneName()
+      && lane.name !== laneBeingRenamed().name)
+      .length
+    ) {
+      return setLaneError('There\'s already a lane with that name');
+    }
+    setLaneError(null);
+  });
 
   onCleanup(() => {
     window.removeEventListener('mousedown', handleClickOutsideOptions)
@@ -452,23 +502,30 @@ function App() {
             <div
               class={`lane ${laneToBeReplacedName() === lane.name ? 'dragged-over' : ''}`}
               onDragEnd={(event) => moveLanePosition(event)}
-              onDragOver={() => laneBeingDraggedName() ? setLaneToBeReplacedId(lane?.name) : null}
+              onDragOver={() => laneBeingDraggedName() ? setLaneToBeReplacedName(lane?.name) : null}
             >
               <header
                 class="lane__header" 
                 draggable={true}
-                onDragStart={() => setLaneBeingDraggedId(lane.name)}
+                onDragStart={() => setLaneBeingDraggedName(lane.name)}
               >
                 <div class="lane__header-name-and-count">
                   { laneBeingRenamed()?.name === lane.name
-                    ? <input
-                      type="text"
-                      id={`${lane.name}-rename-input`}
-                      value={newLaneName()}
-                      onInput={e => setNewLaneName(e.target.value)}
-                      onFocusOut={renameLane}
-                      onKeyUp={renameLane}
-                    ></input>
+                    ? <div class="input-and-error-msg">
+                      {  laneError()
+                        ? <span class="error-msg">{ laneError() }</span>
+                        : <></>
+                      }
+                      <input
+                        type="text"
+                        id={`${lane.name}-rename-input`}
+                        value={newLaneName()}
+                        onInput={e => setNewLaneName(e.target.value)}
+                        onFocusOut={renameLane}
+                        onKeyUp={renameLane}
+                        class={laneError() ? 'error' : ''}
+                      ></input>
+                    </div>
                     : <strong>
                         {lane?.name}
                       </strong>
@@ -531,17 +588,22 @@ function App() {
                       >
                         <div class="card__toolbar">
                           { cardBeingRenamed()?.name === card.name
-                            ? <input
-                              type="text"
-                              id={`${card.name}-rename-input`}
-                              value={newCardName()}
-                              onInput={e => setNewCardName(e.target.value)}
-                              onFocusOut={renameCard}
-                              onKeyUp={renameCard}
-                            ></input>
-                            : <div>
-                              {card.name}
-                            </div>
+                            ? <div class="input-and-error-msg">
+                              { cardError()
+                                ? <span class="error-msg">{ cardError() }</span>
+                                : <></>
+                              }
+                              <input
+                                type="text"
+                                id={`${card.name}-rename-input`}
+                                value={newCardName()}
+                                onInput={e => setNewCardName(e.target.value)}
+                                onFocusOut={renameCard}
+                                onKeyUp={renameCard}
+                                class={cardError() ? 'error' : ''}
+                              ></input>
+                              </div>
+                            : <div>{card.name}</div>
                           }
                           { cardBeingRenamed()?.name === card.name
                             ? <></>
@@ -596,7 +658,7 @@ function App() {
               left: `${popupCoordinates().x}px`
             }}
           >
-            <button onClick={startRenamingLane}>Rename</button>
+            <button onClick={() => startRenamingLane(laneOptionsBeingShown())}>Rename</button>
             <button onClick={deleteLane}>Delete</button>
           </div>
         </Show>

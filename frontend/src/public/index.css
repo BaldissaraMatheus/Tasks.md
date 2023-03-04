@@ -137,10 +137,12 @@ button.small {
 
 .lane__header {
   display: flex;
+  gap: 6px;
   justify-content: space-between;
   align-items: center;
   cursor: grab;
   margin-bottom: 12px;
+  max-width: 300px;
 }
 
 .lane__header-name-and-count {
@@ -151,7 +153,7 @@ button.small {
 
 .lane__header-buttons {
   display: flex;
-  gap: 5px;
+  gap: 6px;
 }
 
 .lane__content {
@@ -329,4 +331,19 @@ button.small {
 
 .CodeMirror-cursor {
   border-color: var(--font-color) !important;
+}
+
+.error {
+  outline: 1px solid red;
+}
+
+.input-and-error-msg {
+  position: relative;
+}
+
+.error-msg {
+  position: absolute;
+  top: -20px;
+  color: red;
+  font-size: 0.8rem;
 }
