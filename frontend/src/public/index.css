@@ -194,61 +194,6 @@ button.small {
   flex-grow: 1;
 }
 
-.modal-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.modal {
-  z-index: 2;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 960px;
-  max-height: 819px;
-  background: var(--modal-background-color);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  box-sizing: border-box;
-  border-radius: 5px;
-  padding: 12px;
-  text-align: left;
-}
-
-.modal__toolbar {
-  width: 100%;
-  display: flex;
-}
-
-.modal__toolbar > :first-child {
-  flex-grow: 1;
-  display: inline-block;
-  width: calc(100% - 50px);
-  margin-top: 0;
-}
-
-.modal__toolbar > :nth-child(2) {
-  width: 35px;
-  height: 35px;
-  padding: 0;
-  font-weight: bold;
-}
-
-.modal__content {
-  position: relative;
-  overflow: auto;
-  height: 90%;
-}
-
-.editor-toolbar a::before {
-  color: var(--font-color) !important;
-}
-
 .popup {
   position: absolute;
   border-radius: 6px;
@@ -302,6 +247,55 @@ button.small {
   font-weight: bold;
 }
 
+.modal-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+  z-index: 2;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 960px;
+  max-height: 819px;
+  background: var(--modal-background-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  box-sizing: border-box;
+  border-radius: 5px;
+  padding: 12px;
+  text-align: left;
+}
+
+.modal__toolbar {
+  width: 100%;
+  display: flex;
+}
+
+.modal__toolbar > :first-child {
+  flex-grow: 1;
+  display: inline-block;
+  width: calc(100% - 50px);
+  margin-top: 0;
+}
+
+.modal__toolbar > :nth-child(2) {
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  font-weight: bold;
+}
+
+.editor-toolbar a::before {
+  color: var(--font-color) !important;
+}
+
 .modal__tags {
   display: flex;
   gap: 8px;
@@ -312,11 +306,21 @@ button.small {
   pointer-events: none;
 }
 
-.CodeMirror, .CodeMirror-scroll {
-  min-height: calc(90% - 51px) !important;
+.modal__content {
+  overflow: hidden;
+  height: 90%;
+}
+
+.CodeMirror-scroll {
+  overflow: auto !important;
 }
 
 .CodeMirror {
   background: transparent !important;
   color: var(--font-color) !important;
+  height: calc(90% - 51px) !important;
+}
+
+.CodeMirror-cursor {
+  border-color: var(--font-color) !important;
 }
