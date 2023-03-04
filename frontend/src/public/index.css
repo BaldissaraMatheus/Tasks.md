@@ -259,17 +259,19 @@ button.small {
     0 4px 4px rgba(0,0,0,0.05),
     0 6px 8px rgba(0,0,0,0.05),
     0 8px 16px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
 }
 
 .popup > button {
-  width: 100%;
   border: 0;
   text-align: left;
   background: var(--popup-background-color);
+  border-radius: 0;
 }
 
 .popup > :first-child {
-  border-radius: 6px 6px 0 0 !important;
+  border-radius: 6px 6px 0 0;
 }
 
 .popup > :last-child {
@@ -290,6 +292,10 @@ button.small {
   background:	var(--tag-background-color);
   border: 1px solid var(--tag-border-color);
   color: var(--tag-font-color);
+}
+
+.tag--clicable {
+  cursor: pointer;
 }
 
 .counter {

@@ -428,6 +428,7 @@ function App() {
             title={selectedCard().name}
             content={selectedCard().content}
             tags={selectedCard().tags}
+            allTags={usedTags()}
             onExit={() => setSelectedCard(null)}
             onChange={(value) => debounceChangeCardContent(value, selectedCard().id)}
             onTagClick={(tagId) => removeTagFromCard(tagId)}
