@@ -120,8 +120,8 @@ function ExpandedCard(props) {
     <div className="modal-bg" onClick={props.onExit}>
       <div className="modal" onClick={event => event.stopPropagation()}>
         <div className="modal__toolbar">
-          <h1>{props.title || 'NO TITLE'}</h1>
-          <button onClick={props.onExit}>X</button>
+          <h1 class="modal__toolbar-title">{props.title || 'NO TITLE'}</h1>
+          <button class="modal__toolbar-close-btn" onClick={props.onExit}>X</button>
         </div>
         <div className="modal__tags">
           {

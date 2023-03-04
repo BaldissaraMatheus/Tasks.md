@@ -22,6 +22,7 @@ function App() {
   const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
   const [newCardName, setNewCardName] = createSignal('');
   const [filteredTag, setFilteredTag] = createSignal(null);
+  const [title, setTitle] = createSignal(import.meta.env.VITE_TITLE);
 
   const api = 'http://localhost:3001';
 
@@ -369,6 +370,12 @@ function App() {
   });
 
   createEffect(() => {
+    if (title()) {
+      document.title = title();
+    }
+  })
+
+  createEffect(() => {
     localStorage.setItem('sort', sort());
     localStorage.setItem('sortDirection', sortDirection());
   });
@@ -427,7 +434,8 @@ function App() {
         </div>
         <button onClick={createNewLane}>New lane</button>
       </header>
-      <main>
+      { title() ? <h1 class="app-title">{ title() }</h1> : <></> }
+      <main class={`lanes ${title() ? 'lanes--has-title' : ''}`}>
         <Show when={!!selectedCard()}>
           <ExpandedCard
             title={selectedCard().name}

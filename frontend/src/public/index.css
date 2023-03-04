@@ -15,11 +15,6 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-h1 {
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
 h4 {
   font-weight: normal;
   font-size: 0.8rem;
@@ -38,7 +33,7 @@ strong {
   margin: 0;
 }
 
-main {
+.lanes {
   background: var(--app-background-color);
   height: calc(100vh - 57px);
   padding: 20px;
@@ -46,6 +41,10 @@ main {
   display: flex;
   gap: 40px;
   overflow-x: auto;
+}
+
+.lanes--has-title {
+  height: calc(100vh - 57px - 49px);
 }
 
 input,
@@ -119,6 +118,12 @@ button.small {
 
 .app-header__group-item-label {
   white-space: nowrap;
+}
+
+.app-title {
+  margin-top: 12px;
+  margin-left: 20px;
+  margin-bottom: 0;
 }
 
 .lane {
@@ -278,14 +283,15 @@ button.small {
   display: flex;
 }
 
-.modal__toolbar > :first-child {
+.modal__toolbar-title {
   flex-grow: 1;
   display: inline-block;
   width: calc(100% - 50px);
   margin-top: 0;
+  margin-bottom: 12px;
 }
 
-.modal__toolbar > :nth-child(2) {
+.modal__toolbar-close-btn {
   width: 35px;
   height: 35px;
   padding: 0;
