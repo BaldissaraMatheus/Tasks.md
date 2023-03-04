@@ -173,8 +173,13 @@ function App() {
 
   function handleOptionBtnOnClick(event) {
     event.stopPropagation();
-    const x = event.target.offsetLeft;
-    const y = event.target.offsetTop + 25;
+    const btnCoordinates = event.target.getBoundingClientRect();
+    let x = btnCoordinates.x + event.target.offsetWidth - 3;
+    const menuWidth = 82;
+    const offsetX = x + menuWidth >= window.innerWidth ? 82 : 0;
+    x -= offsetX;
+    const offsetY = offsetX ? 0 : 3;
+    const y = btnCoordinates.y + event.target.offsetHeight - offsetY;
     setPopupCoordinates({ x, y });
   }
 
