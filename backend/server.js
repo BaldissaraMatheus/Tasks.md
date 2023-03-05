@@ -120,5 +120,14 @@ router.delete('/lanes/:lane', deleteLane);
 
 app.use(cors());
 app.use(bodyParser())
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err) {
+		console.error(err)
+    err.status = err.statusCode || err.status || 500;
+    throw err;
+  }
+});
 app.use(router.routes())
 app.listen(3001);
