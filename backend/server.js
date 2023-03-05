@@ -6,6 +6,23 @@ const uuid = require('uuid');
 const bodyParser = require('koa-bodyparser');
 const cors = require('@koa/cors');
 
+function getContent(path) {
+	return fs.promises.readFile(path).then(res => res.toString());
+}
+
+function getLanesNames() {
+	return fs.promises.readdir('files');
+}
+
+async function getLaneByCardName(cardName) {
+	const lanes = await getLanesNames();
+	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`files/${lane}`)
+		.then(files => files.map(file => ({ lane, name: file }))))
+	);
+	const files = lanesFiles.flat();
+	return files.find(file => file.name === `${cardName}.md`).lane;
+}
+
 async function getLanes(ctx) {
 	const lanes = await fs.promises.readdir('files');
 	ctx.body = lanes; 
@@ -14,13 +31,7 @@ async function getLanes(ctx) {
 router.get('/lanes', getLanes);
 
 async function getCards(ctx) {
-	async function getContent(path) {
-		return fs.promises.readFile(path).then(res => res.toString());
-	}
-	function getLanes() {
-		return fs.promises.readdir('files');
-	}
-	const lanes = await getLanes();
+	const lanes = await getLanesNames();
 	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`files/${lane}`)
 		.then(files => files.map(file => ({ lane, name: file }))))
 	);
@@ -48,13 +59,13 @@ async function createCard(ctx) {
 router.post('/cards', createCard);
 
 async function updateCard(ctx) {
-	const lane = ctx.params.lane;
+	const oldLane = await getLaneByCardName(ctx.params.card);
 	const name = ctx.params.card;
-	const newLane = ctx.request.body.lane || lane;
+	const newLane = ctx.request.body.lane || oldLane;
 	const newName = ctx.request.body.name || name;
 	const newcontent = ctx.request.body.content;
-	if (newLane !== lane || name !== newName) {
-		await fs.promises.rename(`files/${lane}/${name}.md`, `files/${newLane}/${newName}.md`);
+	if (newLane !== oldLane || name !== newName) {
+		await fs.promises.rename(`files/${oldLane}/${name}.md`, `files/${newLane}/${newName}.md`);
 	}
 	if (newcontent) {
 		await fs.promises.writeFile(`files/${newLane}/${newName}.md`, newcontent);
@@ -62,16 +73,16 @@ async function updateCard(ctx) {
 	ctx.status = 204;
 }
 
-router.patch('/lanes/:lane/:card', updateCard);
+router.patch('/cards/:card', updateCard);
 
 async function deleteCard(ctx) {
-	const lane = ctx.params.lane;
+	const lane = await getLaneByCardName(ctx.params.card);
 	const name = ctx.params.card;
 	await fs.promises.rm(`files/${lane}/${name}.md`);
 	ctx.status = 204;
 }
 
-router.delete('/lanes/:lane/:card', deleteCard);
+router.delete('/cards/:card', deleteCard);
 
 async function createCard(ctx) {
 	const lane = ctx.request.body.lane;

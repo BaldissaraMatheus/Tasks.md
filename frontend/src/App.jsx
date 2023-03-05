@@ -111,7 +111,7 @@ function App() {
   }
 
   const debounceUpdateCardLaneReq = debounce((card) => {
-    fetch(`${api}/lanes/${card.lane}/${card.name}`, {
+    fetch(`${api}/cards/${card.name}`, {
       method: 'PATCH',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
@@ -148,7 +148,7 @@ function App() {
     newCards[newCardIndex] = newCard;
     setCards(newCards);
     setSelectedCard(newCard);
-    fetch(`${api}/lanes/${newCard.lane}/${newCard.name}`, {
+    fetch(`${api}/cards/${newCard.name}`, {
       method: 'PATCH',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
@@ -241,7 +241,7 @@ function App() {
     const newCards = structuredClone(cards());
     const newCardIndex = newCards.findIndex(card => card.name === cardBeingRenamed()?.name);
     const newCard = newCards[newCardIndex];
-    fetch(`${api}/lanes/${newCard.lane}/${newCard.name}`, {
+    fetch(`${api}/cards/${newCard.name}`, {
       method: 'PATCH',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
@@ -255,7 +255,7 @@ function App() {
 
   function deleteCard() {
     const newCards = structuredClone(cards());
-    fetch(`${api}/lanes/${cardOptionsBeingShown().lane}/${cardOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
+    fetch(`${api}/cards/${cardOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
     const cardsWithoutDeletedCard = newCards.filter(card => card.name !== cardOptionsBeingShown().name);
     setCards(cardsWithoutDeletedCard);
     setCardOptionsBeingShown(null);
