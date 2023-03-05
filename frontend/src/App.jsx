@@ -420,7 +420,7 @@ function App() {
       return setCardError('The card must have a name');
     }
     if (cards()
-      .filter(card => card.name === newCardName() && card.name !== cardBeingRenamed().name)
+      .filter(card => card.name === newCardName() && card.name !== cardBeingRenamed()?.name)
       .length
     ) {
       return setCardError('There\'s already a card with that name');
@@ -437,7 +437,7 @@ function App() {
     }
     if (lanes()
       .filter(lane => lane.name === newLaneName()
-      && lane.name !== laneBeingRenamed().name)
+      && lane.name !== laneBeingRenamed()?.name)
       .length
     ) {
       return setLaneError('There\'s already a lane with that name');
@@ -506,7 +506,7 @@ function App() {
             >
               <header
                 class="lane__header" 
-                draggable={true}
+                draggable={!laneBeingRenamed()}
                 onDragStart={() => setLaneBeingDraggedName(lane.name)}
               >
                 <div class="lane__header-name-and-count">
@@ -575,16 +575,15 @@ function App() {
                         class={`
                           card
                           ${cardToBeReplacedName() === card.name ? 'dragged-over' : ''}
-                          ${cardBeingRenamed()?.name === card.name ? 'disabled' : ''}
                         `}
-                        draggable={true}
+                        draggable={!cardBeingRenamed()}
                         onDragStart={() => {
                           setCardBeingDragged(card.name);
                           setCardBeingDraggedOriginalLane(card.lane)
                         }}
                         onDragEnd={(event) => replaceCardPosition(event)}
                         onDragOver={() => cardBeingDraggedName() ? setCardToBeReplacedName(card.name) : null}
-                        onClick={() => setSelectedCard(card)}
+                        onClick={() => !cardBeingRenamed() ? setSelectedCard(card) : null}
                       >
                         <div class="card__toolbar">
                           { cardBeingRenamed()?.name === card.name
@@ -597,6 +596,7 @@ function App() {
                                 type="text"
                                 id={`${card.name}-rename-input`}
                                 value={newCardName()}
+                                onClick={e => e.stopPropagation()}
                                 onInput={e => setNewCardName(e.target.value)}
                                 onFocusOut={renameCard}
                                 onKeyUp={renameCard}
