@@ -8,6 +8,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--app-background-color);
   color: var(--font-color);
 }
 
@@ -204,7 +205,7 @@ button.small {
 .popup {
   position: absolute;
   border-radius: 6px;
-  border: 1px solid var(--button-border-color);
+  border: 1px solid var(--popup-border-color);
   box-sizing: border-box;
   box-shadow: 0 1px 1px rgba(0,0,0,0.05),
     0 2px 2px rgba(0,0,0,0.05),
@@ -220,6 +221,7 @@ button.small {
   text-align: left;
   background: var(--popup-background-color);
   border-radius: 0;
+  color: var(--popup-font-color);
 }
 
 .popup > :first-child {
@@ -334,7 +336,7 @@ button.small {
 }
 
 .error {
-  outline: 1px solid red;
+  outline: 1px solid var(--danger-color);
 }
 
 .input-and-error-msg {
@@ -344,6 +346,6 @@ button.small {
 .error-msg {
   position: absolute;
   top: -20px;
-  color: red;
+  color: var(--danger-color);
   font-size: 0.8rem;
 }

@@ -14,6 +14,8 @@
   --light-theme-color-5: #4c4f69;
   --light-theme-accent-color-1: #dc8a78;
   --light-theme-accent-color-2: #7287fd;
+  --light-theme-danger-color: #d20f39;
+  --dark-theme-danger-color: #e78284;
 
   --font-color: var(--dark-theme-color-5);
   --app-background-color: var(--dark-theme-color-1);
@@ -33,6 +35,9 @@
   --card-border-color: var(--dark-theme-color-4);
   --modal-background-color: var(--dark-theme-color-2);
   --popup-background-color: var(--dark-theme-color-1);
+  --popup-font-color: var(--dark-theme-color-5);
+  --popup-border-color: var(--dark-theme-color-4);
+  --danger-color: var(--dark-theme-danger-color);
 }
 
 @media (prefers-color-scheme: light) {
@@ -55,6 +60,9 @@
     --card-background-color: var(--light-theme-color-2);
     --card-border-color: var(--light-theme-color-4);
     --modal-background-color: var(--light-theme-color-2);
-    --popup-background-color: var(--light-theme-color-1);
+    --popup-background-color: var(--light-theme-color-2);
+    --popup-font-color: var(--light-theme-color-5);
+    --popup-border-color: var(--light-theme-color-4);
+    --danger-color: var(--light-theme-danger-color);
   }
 }
