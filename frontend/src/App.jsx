@@ -26,7 +26,7 @@ function App() {
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
 
-  const api = 'http://localhost:3001';
+  const api = `${window.location.href}api`;
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
