@@ -22,4 +22,6 @@ RUN [ $BASE_PATH != "" ] && { sed -i "s~BASE_PROXY~location BASE_PATH/ { proxy_p
 RUN sed -i "s~BASE_PATH~${BASE_PATH}~g" /etc/nginx/conf.d/*.conf
 RUN cat /etc/nginx/conf.d/*.conf
 EXPOSE 80
+VOLUME /stylesheets 
+VOLUME /api/files 
 CMD nginx & node server.js
