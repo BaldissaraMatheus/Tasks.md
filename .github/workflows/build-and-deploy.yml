@@ -29,7 +29,7 @@ jobs:
                         -t baldissaramatheus/tasks.md:$CI_REF_NAME \
                         -t baldissaramatheus/tasks.md:${{ env.TAG_MAJOR }} \
                         -t baldissaramatheus/tasks.md:${{ env.TAG_MINOR }} \
-                        --target base .
+                        --target base ../../.
             -   name: Save Docker image as artifact
                 run: |
                     docker save -o /tmp/image.tar \
