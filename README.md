@@ -16,12 +16,11 @@ Via Docker:
 ```
 docker run -d \
   --name tasks.md \
-  -e TZ=Asia/Tokyo \
   -e TITLE="My tasks board" `#optional` \
   -e BASE_PATH=/tasks `#optional` \
   -p 80:80 \
-  -v /path/to/cards/:/api/files \
-  -v /path/to/styles/:/stylesheets `#optional \
+  -v /path/to/cards/:/api/files/ \
+  -v /path/to/styles/:/usr/share/nginx/html/stylesheets/ `#optional \
   --restart unless-stopped \
   baldissaramatheus/tasks.md
 ```
