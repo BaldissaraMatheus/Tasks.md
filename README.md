@@ -35,5 +35,5 @@ With the goal of have a good mix of performance and maintainability, the appliac
 Feel free to create issues for encountered bugs or to request new features, just make sure to include a proper label. If you want to contribute with its development, select one of the existing issues and create a pull request, it will be reviewed and may be merged with the existing code. 
 
 ### Running the source code
-Open a terminal instance in the frontend directory and one terminal in the backend directory, then in both of them run `npm install` and `npm start`.
+Open a terminal instance in the frontend directory and another instance in the backend directory, then in both of them run `npm install` and `npm start`.
 
