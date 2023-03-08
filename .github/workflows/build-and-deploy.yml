@@ -36,7 +36,7 @@ jobs:
                         baldissaramatheus/tasks.md:latest \
                         baldissaramatheus/tasks.md:$CI_REF_NAME \
                         baldissaramatheus/tasks.md:${{ env.TAG_MAJOR }} \
-                        baldissaramatheus:${{ env.TAG_MINOR }}
+                        baldissaramatheus/tasks:${{ env.TAG_MINOR }}
             -   name: Upload artifact
                 uses: actions/upload-artifact@v2
                 with:
