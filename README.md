@@ -36,3 +36,4 @@ Feel free to create issues for encountered bugs or to request new features, just
 
 ### Running the source code
 Open a terminal instance in the frontend directory and one terminal in the backend directory, then in both of them run `npm install` and `npm start`.
+
