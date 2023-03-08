@@ -26,7 +26,7 @@ function App() {
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
 
-  const api = `${window.location.href}api`;
+  const api = import.meta.env.DEV ? 'http://localhost:3001' : `${window.location.href}api`;
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -566,7 +566,7 @@ function App() {
                     sortedCards()
                       .filter(card => card.lane === lane.name)
                       .filter(card => card.name.toLowerCase().includes(search().toLowerCase()))
-                      .filter(card => filteredTag() === null || card.tags.includes(filteredTag()))
+                      .filter(card => filteredTag() === null || (card.tags?.includes(filteredTag())))
                   }
                 >
                   {card => (
