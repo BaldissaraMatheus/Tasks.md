@@ -2,7 +2,10 @@
 import { render } from 'solid-js/web';
 
 import App from './App';
-import '../public/stylesheets/index.css';
+
+if (import.meta.env.DEV) {
+  await import('../public/stylesheets/index.css');
+}
 
 const root = document.getElementById('root');
 
