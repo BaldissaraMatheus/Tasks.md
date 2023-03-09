@@ -39,7 +39,7 @@ async function getCards(ctx) {
 	const filesContents = await Promise.all(
 		files.map(async file => {
 			const content = await getContent(`files/${file.lane}/${file.name}`);
-			const newName = file.name.split('.md')[0];
+			const newName = file.name.substring(0, file.name.length - 3);
 			return { ...file, content, name: newName }
 		})
 	);
