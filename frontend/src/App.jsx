@@ -241,13 +241,14 @@ function App() {
     const newCards = structuredClone(cards());
     const newCardIndex = newCards.findIndex(card => card.name === cardBeingRenamed()?.name);
     const newCard = newCards[newCardIndex];
+    const newCardNameWithoutSpaces = newCardName().trim();
     fetch(`${api}/cards/${newCard.name}`, {
       method: 'PATCH',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCardName() })
+      body: JSON.stringify({ name: newCardNameWithoutSpaces })
     });
-    newCard.name = newCardName();
+    newCard.name = newCardNameWithoutSpaces;
     newCards[newCardIndex] = newCard;
     setCards(newCards);
     setCardBeingRenamed(null);
