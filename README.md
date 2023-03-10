@@ -16,9 +16,11 @@ Via Docker:
 ```
 docker run -d \
   --name tasks.md \
+  -e PUID=1000 `#optional` \
+  -e PGID=1000 `#optional` \
   -e TITLE="My tasks board" `#optional` \
   -e BASE_PATH=/tasks `#optional` \
-  -p 80:80 \
+  -p 8080:8080 \
   -v /path/to/cards/:/api/files/ \
   -v /path/to/styles/:/usr/share/nginx/html/stylesheets/ `#optional \
   --restart unless-stopped \

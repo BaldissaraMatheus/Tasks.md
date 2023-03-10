@@ -5,6 +5,8 @@ const fs = require('fs');
 const uuid = require('uuid');
 const bodyParser = require('koa-bodyparser');
 const cors = require('@koa/cors');
+const PUID = Number(process.env.PUID || '1000');
+const PGID = Number(process.env.PGID || '1000');
 
 function getContent(path) {
 	return fs.promises.readFile(path).then(res => res.toString());
@@ -52,6 +54,7 @@ async function createCard(ctx) {
 	const lane = ctx.request.body.lane;
 	const name = uuid.v4();
 	await fs.promises.writeFile(`files/${lane}/${name}.md`, '');
+	await fs.promises.chown(`files/${lane}/${name}.md`, PUID, PGID);
 	ctx.body = name; 
 	ctx.status = 201;
 }
@@ -70,6 +73,7 @@ async function updateCard(ctx) {
 	if (newcontent) {
 		await fs.promises.writeFile(`files/${newLane}/${newName}.md`, newcontent);
 	}
+	await fs.promises.chown(`files/${newLane}/${newName}.md`, PUID, PGID);
 	ctx.status = 204;
 }
 
@@ -88,6 +92,7 @@ async function createCard(ctx) {
 	const lane = ctx.request.body.lane;
 	const name = uuid.v4();
 	await fs.promises.writeFile(`files/${lane}/${name}.md`, '');
+	await fs.promises.chown(`files/${lane}/${name}.md`, PUID, PGID);
 	ctx.body = name; 
 	ctx.status = 201;
 }
@@ -95,6 +100,7 @@ async function createCard(ctx) {
 async function createLane(ctx) {
 	const lane = uuid.v4();
 	await fs.promises.mkdir(`files/${lane}`);
+	await fs.promises.chown(`files/${lane}`, PUID, PGID);
 	ctx.body = lane; 
 	ctx.status = 201;
 }
@@ -105,6 +111,7 @@ async function updateLane(ctx) {
 	const name = ctx.params.lane;
 	const newName = ctx.request.body.name;
 	await fs.promises.rename(`files/${name}`, `files/${newName}`);
+	await fs.promises.chown(`files/${newName}`, PUID, PGID);
 	ctx.status = 204;
 }
 
