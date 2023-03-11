@@ -33,8 +33,8 @@ All CSS files are available in the public stylesheets directory, which can be mo
 With the goal of have a good mix of performance and maintainability, the application was built [SolidJS](https://github.com/solidjs/solid) and [Koa](https://github.com/koajs/koa). It also uses [SimpleMDE](https://github.com/sparksuite/simplemde-markdown-editor) for text editing and [serve-static](https://github.com/expressjs/serve-static) for serving the css files as-is.
 
 ## 🔨 Contribute
-### Bufixes and new features requests
-Feel free to create issues for encountered bugs or to request new features, just make sure to include a proper label. Also gives a thumbs up to the issues you feel more relevant to be implemented for the next releases.
+### Bugfixes and new features requests
+Feel free to create issues for encountered bugs or to request new features, just make sure to include a proper label. Also give a thumbs up to the issues you feel that are relevant to be implemented for the next releases.
 
 ### Development
 If you want to contribute with its development, select one of the existing issues, develop your solution and submit a pull request, it will be reviewed and may be merged with the existing code. To run the source code, open a terminal instance in the frontend directory and another instance in the backend directory, then in both of them run `npm install` and `npm start`.
