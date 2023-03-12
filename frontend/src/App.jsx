@@ -402,7 +402,7 @@ function App() {
     if (!lanes().length) {
       return;
     }
-    localStorage.setItem('lanes', lanes().map(lane => lane.name));  
+    localStorage.setItem('lanes', lanes().map(lane => lane.name));
   });
 
   createEffect(() => {
@@ -472,7 +472,7 @@ function App() {
           </select>
         </div>
         <div class="app-header__group-item">
-          <div class="app-header__group-item-label">Filter by:</div>
+          <div class="app-header__group-item-label">Filter by tag:</div>
           <select
             onChange={handleFilterSelectOnChange}
             value={filteredTag() === null ? 'none' : filteredTag()}
@@ -506,7 +506,7 @@ function App() {
               onDragOver={() => laneBeingDraggedName() ? setLaneToBeReplacedName(lane?.name) : null}
             >
               <header
-                class="lane__header" 
+                class="lane__header"
                 draggable={!laneBeingRenamed()}
                 onDragStart={() => setLaneBeingDraggedName(lane.name)}
               >
