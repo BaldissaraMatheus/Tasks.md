@@ -2,7 +2,6 @@ FROM node:18-alpine3.17 as build-stage
 
 RUN set -eux \
 	&& mkdir -p /app \
-	&& mkdir -p /stylesheets \
 	&& mkdir -p /api \
 	&& mkdir -p /api/files
 
@@ -31,11 +30,16 @@ USER root
 RUN set -eux \
 	&& apk add --no-cache nodejs npm
 
+RUN mkdir /stylesheets
+
 COPY --from=build-stage --chown=$PUID:$PGID /app/dist/. /usr/share/nginx/html/
+COPY --from=build-stage --chown=$PUID:$PGID /app/dist/stylesheets/. /stylesheets/
 COPY --from=build-stage --chown=$PUID:$PGID /api/ /api/
 
 COPY nginx.conf /etc/nginx/conf.d/
-RUN [ $BASE_PATH != "" ] && { sed -i "s~BASE_PROXY~location BASE_PATH/ { proxy_pass http://localhost:8080/ }~g" /etc/nginx/conf.d/*.conf; } || { sed -i "s~BASE_PROXY~ ~g" /etc/nginx/conf.d/*.conf; }
+RUN [ $BASE_PATH != "" ] && \
+	{ sed -i "s~BASE_PROXY~location BASE_PATH/ { proxy_pass http://localhost:8080/ }~g" /etc/nginx/conf.d/*.conf; } || \
+	{ sed -i "s~BASE_PROXY~ ~g" /etc/nginx/conf.d/*.conf; }
 RUN sed -i "s~BASE_PATH~${BASE_PATH}~g" /etc/nginx/conf.d/*.conf
 
 VOLUME /api/files
@@ -44,7 +48,7 @@ WORKDIR /api
 EXPOSE 8080
 EXPOSE 3001
 ENTRYPOINT [ -z "$(ls -A /usr/share/nginx/html/stylesheets)" ] && { \
-	cp -R /app/dist/stylesheets/. /usr/share/nginx/html/stylesheets/ & \
+	cp -R /stylesheets/. /usr/share/nginx/html/stylesheets/ & \
 	chown -R $PUID:$PGID /usr/share/nginx/html & \
 	chown -R $PUID:$PGID /api/files & \
 	} || { echo ""; } \
