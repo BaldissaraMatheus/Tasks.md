@@ -19,7 +19,7 @@ jobs:
                 uses: docker/metadata-action@v4
                 with:
                     images: |
-                        aldissaramatheus/tasks.md
+                        baldissaramatheus/tasks.md
                     tags: |
                         # Process semver like tags
                         # For a tag x.y.z or vX.Y.Z, output an x.y.z,  x.y and x image tag
