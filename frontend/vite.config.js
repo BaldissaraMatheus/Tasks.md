@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
-import generalAssets from './plugins/general-assets'
+import generalAssets from './plugins/general-assets';
 
 export default defineConfig({
   plugins: [solidPlugin(), generalAssets()],
@@ -10,4 +10,6 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
+  base: '',
 });
+

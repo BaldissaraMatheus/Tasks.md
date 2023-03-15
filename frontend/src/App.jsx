@@ -22,11 +22,12 @@ function App() {
   const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
   const [newCardName, setNewCardName] = createSignal(null);
   const [filteredTag, setFilteredTag] = createSignal(null);
-  const [title, setTitle] = createSignal(import.meta.env.VITE_TITLE);
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
 
-  const api = import.meta.env.DEV ? 'http://localhost:3001' : `${window.location.href}api`;
+  const title = createMemo(() => import.meta.env.VITE_TITLE);
+
+  const api = import.meta.env.DEV ? 'http://localhost:8080' : `${window.location.href}api`;
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -382,6 +383,10 @@ function App() {
   });
 
   onMount(async () => {
+    const url = window.location.href;
+    if (!url.match(/\/$/)) {
+      window.location.replace(`${url}/`)
+    }
     window.addEventListener('mousedown', handleClickOutsideOptions);
     fetchCards();
     fetchLanes();

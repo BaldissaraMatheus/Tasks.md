@@ -1,12 +1,16 @@
+const path = require('path')
+const fs = require('fs');
+const uuid = require('uuid');
 const Koa = require('koa');
 const app = new Koa();
 const router = require('@koa/router')();
-const fs = require('fs');
-const uuid = require('uuid');
 const bodyParser = require('koa-bodyparser');
 const cors = require('@koa/cors');
+const mount = require('koa-mount');
+const serve = require('koa-static');
 const PUID = Number(process.env.PUID || '1000');
 const PGID = Number(process.env.PGID || '1000');
+const BASE_PATH = process.env.BASE_PATH ? `${process.env.BASE_PATH}/` : '/';
 
 function getContent(path) {
 	return fs.promises.readFile(path).then(res => res.toString());
@@ -136,5 +140,16 @@ app.use(async (ctx, next) => {
     throw err;
   }
 });
-app.use(router.routes())
-app.listen(3001);
+app.use(async (ctx, next) => {
+	if (BASE_PATH === '/') {
+		return next();
+	}
+	if (ctx.URL.href === `${ctx.URL.origin}${BASE_PATH.substring(0, BASE_PATH.length - 1)}`) {
+		ctx.status = 301;
+		return ctx.redirect(`${ctx.URL.origin}${BASE_PATH}`);
+	}
+	await next();
+});
+app.use(mount(`${BASE_PATH}api`, router.routes()));
+app.use(mount(BASE_PATH, serve(process.env.NODE_ENV === 'development' ? '/static' : path.join(__dirname, '/static'))));
+app.listen(8080);
