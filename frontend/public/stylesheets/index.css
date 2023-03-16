@@ -334,6 +334,21 @@ button.small {
   height: 90%;
 }
 
+.error {
+  outline: 1px solid var(--danger-color);
+}
+
+.input-and-error-msg {
+  position: relative;
+}
+
+.error-msg {
+  position: absolute;
+  top: -20px;
+  color: var(--danger-color);
+  font-size: 0.8rem;
+}
+
 .CodeMirror-scroll {
   overflow: auto !important;
 }
@@ -348,17 +363,14 @@ button.small {
   border-color: var(--font-color) !important;
 }
 
-.error {
-  outline: 1px solid var(--danger-color);
+.CodeMirror .editor-preview {
+  background: var(--app-background-color) !important;
 }
 
-.input-and-error-msg {
-  position: relative;
+.editor-toolbar.disabled-for-preview a:not(.no-disable) {
+  background: var(--app-background-color) !important;
 }
 
-.error-msg {
-  position: absolute;
-  top: -20px;
-  color: var(--danger-color);
-  font-size: 0.8rem;
+.editor-toolbar a.active, .editor-toolbar a:hover {
+  background: none;
 }
