@@ -22,7 +22,7 @@ docker run -d \
   -e BASE_PATH=/tasks `#optional` \
   -p 8080:8080 \
   -v /path/to/cards/:/api/files/ \
-  -v /path/to/styles/:/usr/share/nginx/html/stylesheets/ `#optional \
+  -v /path/to/styles/:/api/static/stylesheets/ `#optional \
   --restart unless-stopped \
   baldissaramatheus/tasks.md
 ```
