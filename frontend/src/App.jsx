@@ -674,7 +674,7 @@ function App() {
             <button onClick={() => setIsDeleting(true)}>Delete</button>
           </div>
         </Show>
-        <Show when={isDeleting() && isDeleting()}>
+        <Show when={cardOptionsBeingShown() && isDeleting()}>
           <div
             id={cardOptionsBeingShown()?.name}
             class="popup"
