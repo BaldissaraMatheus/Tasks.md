@@ -8,9 +8,10 @@ services:
         - PUID=1000 #optional
         - PGID=1000 #optional
         - TITLE="My tasks board" #optional
+        - BASE_PATH="/tasks" #optional
       volumes:
           - api-data:/api/files
-          - stylesheets-data:/usr/share/nginx/html/stylesheets/
+          - stylesheets-data:/api/static/stylesheets/
       restart: unless-stopped
       ports:
         - 8080:8080
