@@ -613,7 +613,7 @@ function App() {
                                 class={cardError() ? 'error' : ''}
                               ></input>
                               </div>
-                            : <div>{card.name}</div>
+                            : <div>{card.content ? '📝 ' : ''}{card.name}</div>
                           }
                           { cardBeingRenamed()?.name === card.name
                             ? <></>
