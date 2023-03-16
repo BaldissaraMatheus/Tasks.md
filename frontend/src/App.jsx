@@ -1,4 +1,4 @@
-import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect } from 'solid-js';
+import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect, createResource } from 'solid-js';
 import ExpandedCard from './components/expanded-card';
 import { debounce } from "@solid-primitives/scheduled";
 
@@ -25,9 +25,13 @@ function App() {
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
 
-  const title = createMemo(() => import.meta.env.VITE_TITLE);
-
   const api = import.meta.env.DEV ? 'http://localhost:8080/api' : `${window.location.href}api`;
+
+  function fetchTitle() {
+    return fetch(`${api}/title`).then(res => res.text());
+  }
+
+  const [title] = createResource(fetchTitle)
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);

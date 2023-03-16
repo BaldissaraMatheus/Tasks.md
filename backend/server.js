@@ -129,6 +129,12 @@ async function deleteLane(ctx) {
 
 router.delete('/lanes/:lane', deleteLane);
 
+async function getTitle(ctx) {
+	ctx.body = process.env.TITLE;
+}
+
+router.get('/title', getTitle);
+
 app.use(cors());
 app.use(bodyParser())
 app.use(async (ctx, next) => {
