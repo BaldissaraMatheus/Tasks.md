@@ -14,7 +14,7 @@ function App() {
   const [laneToBeReplacedName, setLaneToBeReplacedName] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardOptionsBeingShown, setCardOptionsBeingShown] = createSignal(null);
-  const [laneOptionsBeingShown, setlaneOptionsBeingShown] = createSignal(null);
+  const [laneOptionsBeingShown, setLaneOptionsBeingShown] = createSignal(null);
   const [popupCoordinates, setPopupCoordinates] = createSignal();
   const [search, setSearch] = createSignal('');
   const [laneBeingRenamed, setLaneBeingRenamed] = createSignal(null);
@@ -24,6 +24,7 @@ function App() {
   const [filteredTag, setFilteredTag] = createSignal(null);
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
+  const [isDeleting, setIsDeleting] = createSignal(false);
 
   const api = import.meta.env.DEV ? 'http://localhost:8080/api' : `${window.location.href}api`;
 
@@ -52,7 +53,7 @@ function App() {
       laneOptionsBeingShown() !== null
       && event.target?.parentElement?.id !== `${laneOptionsBeingShown().name}`
     ) {
-      setlaneOptionsBeingShown(null);
+      setLaneOptionsBeingShown(null);
     }
   }
 
@@ -267,6 +268,7 @@ function App() {
     const cardsWithoutDeletedCard = newCards.filter(card => card.name !== cardOptionsBeingShown().name);
     setCards(cardsWithoutDeletedCard);
     setCardOptionsBeingShown(null);
+    setIsDeleting(false);
   }
 
   async function createNewLane() {
@@ -307,7 +309,7 @@ function App() {
     setNewLaneName(lanes().find(lane => lane.name === laneToBeRenamed.name).name)
     document.getElementById(`${laneToBeRenamed.name}-rename-input`).focus();
     document.getElementById(`${laneToBeRenamed.name}-rename-input`).select();
-    setlaneOptionsBeingShown(null);
+    setLaneOptionsBeingShown(null);
   }
 
   function renameLane(e) {
@@ -346,7 +348,8 @@ function App() {
     fetch(`${api}/lanes/${laneOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
     const lanesWithoutDeletedCard = newLanes.filter(lane => lane.name !== laneOptionsBeingShown().name);
     setLanes(lanesWithoutDeletedCard);
-    setlaneOptionsBeingShown(null);
+    setLaneOptionsBeingShown(null);
+    setIsDeleting(false);
   }
 
   function sortCardsByName() {
@@ -569,7 +572,7 @@ function App() {
                       class="small"
                       onClick={event => {
                         handleOptionBtnOnClick(event);
-                        setlaneOptionsBeingShown(lane);
+                        setLaneOptionsBeingShown(lane);
                       }}
                     >
                       ⋮
@@ -658,7 +661,7 @@ function App() {
             </div>
           )}
         </For>
-        <Show when={cardOptionsBeingShown()}>
+        <Show when={cardOptionsBeingShown() && !isDeleting()}>
           <div
             id={cardOptionsBeingShown()?.name}
             class="popup"
@@ -668,10 +671,28 @@ function App() {
             }}
           >
             <button onClick={() => startRenamingCard(cardOptionsBeingShown())}>Rename</button>
-            <button onClick={deleteCard}>Delete</button>
+            <button onClick={() => setIsDeleting(true)}>Delete</button>
           </div>
         </Show>
-        <Show when={laneOptionsBeingShown()}>
+        <Show when={isDeleting() && isDeleting()}>
+          <div
+            id={cardOptionsBeingShown()?.name}
+            class="popup"
+            style={{
+              top:`${popupCoordinates().y}px`,
+              left: `${popupCoordinates().x}px`
+            }}
+          >
+            <button onClick={deleteCard}>Are you sure?</button>
+            <button onClick={() => {
+              setIsDeleting(false);
+              setCardOptionsBeingShown(null);
+            }}>
+              Cancel
+            </button>
+          </div>
+        </Show>
+        <Show when={laneOptionsBeingShown() && !isDeleting()}>
           <div
             id={laneOptionsBeingShown().name}
             class="popup"
@@ -681,7 +702,25 @@ function App() {
             }}
           >
             <button onClick={() => startRenamingLane(laneOptionsBeingShown())}>Rename</button>
-            <button onClick={deleteLane}>Delete</button>
+            <button onClick={() => setIsDeleting(true)}>Delete</button>
+          </div>
+        </Show>
+        <Show when={laneOptionsBeingShown() && isDeleting()}>
+          <div
+            id={laneOptionsBeingShown().name}
+            class="popup"
+            style={{
+              top:`${popupCoordinates().y}px`,
+              left: `${popupCoordinates().x}px`
+            }}
+          >
+            <button onClick={deleteLane}>Are you sure?</button>
+            <button onClick={() => {
+              setIsDeleting(false);
+              setLaneOptionsBeingShown(null);
+            }}>
+              Cancel
+            </button>
           </div>
         </Show>
       </main>
