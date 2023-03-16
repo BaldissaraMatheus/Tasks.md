@@ -135,6 +135,44 @@ async function getTitle(ctx) {
 
 router.get('/title', getTitle);
 
+async function getLanesSort(ctx) {
+	const lanes = await fs.promises.readFile('sort/lanes.json')
+		.catch(err => [])
+	ctx.status = 200;
+	ctx.body = lanes;
+}
+
+router.get('/sort/lanes', getLanesSort);
+
+async function saveLanesSort(ctx) {
+	const newSort = JSON.stringify(ctx.request.body || []);
+	await fs.promises.mkdir('sort', { recursive: true });
+	await fs.promises.writeFile('sort/lanes.json', newSort);
+	await fs.promises.chown('sort/lanes.json', PUID, PGID);
+	ctx.status = 200;
+}
+
+router.post('/sort/lanes', saveLanesSort);
+
+async function getCardsSort(ctx) {
+	const cards = await fs.promises.readFile('sort/cards.json')
+		.catch(err => [])
+	ctx.status = 200;
+	ctx.body = cards;
+}
+
+router.get('/sort/cards', getCardsSort);
+
+async function saveCardsSort(ctx) {
+	const newSort = (JSON.stringify(ctx.request.body || []));
+	await fs.promises.mkdir('sort', { recursive: true });
+	await fs.promises.writeFile('sort/cards.json', newSort);
+	await fs.promises.chown('sort/cards.json', PUID, PGID);
+	ctx.status = 200;
+}
+
+router.post('/sort/cards', saveCardsSort);
+
 app.use(cors());
 app.use(bodyParser())
 app.use(async (ctx, next) => {
