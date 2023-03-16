@@ -26,7 +26,7 @@ docker run -d \
   --restart unless-stopped \
   baldissaramatheus/tasks.md
 ```
-For docker-compose, you can see an example [here](https://github.com/BaldissaraMatheus/Tasks.md/examples/docker-compose/yaml).
+For docker-compose, you can see an example [here](https://github.com/BaldissaraMatheus/Tasks.md/examples/docker-compose.yaml).
 ## 🎨 Customize
 All CSS files are available in the public stylesheets directory, which can be mounted as a docker volume. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, open the file `/stylesheets/index.css` and change the second line to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
 
