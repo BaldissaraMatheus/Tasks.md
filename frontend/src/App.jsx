@@ -575,7 +575,9 @@ function App() {
                   each={
                     sortedCards()
                       .filter(card => card.lane === lane.name)
-                      .filter(card => card.name.toLowerCase().includes(search().toLowerCase()))
+                      .filter(card => card.name.toLowerCase().includes(search().toLowerCase())
+                        || card.content.toLowerCase().includes(search().toLowerCase())
+                      )
                       .filter(card => filteredTag() === null || (card.tags?.includes(filteredTag())))
                   }
                 >
