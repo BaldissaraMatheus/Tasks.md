@@ -27,7 +27,7 @@ function App() {
 
   const title = createMemo(() => import.meta.env.VITE_TITLE);
 
-  const api = import.meta.env.DEV ? 'http://localhost:8080' : `${window.location.href}api`;
+  const api = import.meta.env.DEV ? 'http://localhost:8080/api' : `${window.location.href}api`;
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);

@@ -151,5 +151,5 @@ app.use(async (ctx, next) => {
 	await next();
 });
 app.use(mount(`${BASE_PATH}api`, router.routes()));
-app.use(mount(BASE_PATH, serve(process.env.NODE_ENV === 'development' ? '/static' : path.join(__dirname, '/static'))));
+app.use(mount(BASE_PATH, serve(path.join(__dirname, '/static'))));
 app.listen(8080);
