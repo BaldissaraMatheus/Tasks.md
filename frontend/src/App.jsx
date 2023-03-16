@@ -48,12 +48,14 @@ function App() {
       && event.target?.parentElement?.id !== `${cardOptionsBeingShown().name}`
     ) {
       setCardOptionsBeingShown(null);
+      setIsDeleting(false);
     }
     if (
       laneOptionsBeingShown() !== null
       && event.target?.parentElement?.id !== `${laneOptionsBeingShown().name}`
     ) {
       setLaneOptionsBeingShown(null);
+      setIsDeleting(false);
     }
   }
 
