@@ -5,10 +5,10 @@ services:
       container_name: tasks-md
       image: baldissaramatheus/tasks.md
       environment:
-        - PUID=1000 #optional
-        - PGID=1000 #optional
-        - TITLE="My tasks board" #optional
-        - BASE_PATH="/tasks" #optional
+        - PUID=1000
+        - PGID=1000
+        - TITLE="My tasks board"
+        - BASE_PATH=/tasks
       volumes:
           - api-data:/api/files
           - stylesheets-data:/api/static/stylesheets/
