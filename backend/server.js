@@ -16,7 +16,8 @@ function getContent(path) {
 	return fs.promises.readFile(path).then(res => res.toString());
 }
 
-function getLanesNames() {
+async function getLanesNames() {
+	await fs.promises.mkdir('files', { recursive: true });
 	return fs.promises.readdir('files');
 }
 
