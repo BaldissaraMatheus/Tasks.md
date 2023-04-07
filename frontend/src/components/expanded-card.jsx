@@ -30,15 +30,18 @@ function ExpandedCard(props) {
     }
   }
 
-  function leavesCreateTagInput(e) {
+  function handleTagInputFocusOut(e) {
     if (e && e.key && e.key !== 'Enter') {
       return;
     }
     setIsCreatingNewTag(false);
 
     if (props.tags?.includes(tagInputValue())) {
-      setTagInputValue(null);
-      return;
+      return setTagInputValue(null);
+    }
+
+    if (!tagInputValue()) {
+      return setTagInputValue(null);
     }
 
     let actualContent = simplemde().value();
@@ -188,7 +191,7 @@ function ExpandedCard(props) {
                   type="text"
                   value={tagInputValue()}
                   onInput={e => setTagInputValue(e.target.value)}
-                  onFocusOut={leavesCreateTagInput}
+                  onFocusOut={handleTagInputFocusOut}
                   onKeyUp={focusOutOnEnter}
                   list="tags"
                 />
