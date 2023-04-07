@@ -25,7 +25,7 @@ function App() {
   const [filteredTag, setFilteredTag] = createSignal(null);
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
-  const [isDeleting, setIsDeleting] = createSignal(false);
+  const [confirmationPromptCb, setConfirmationPromptCb] = createSignal(false);
 
   function fetchTitle() {
     return fetch(`${api}/title`).then(res => res.text());
@@ -47,14 +47,14 @@ function App() {
       && event.target?.parentElement?.id !== `${cardOptionsBeingShown().name}`
     ) {
       setCardOptionsBeingShown(null);
-      setIsDeleting(false);
+      setConfirmationPromptCb(null);
     }
     if (
       laneOptionsBeingShown() !== null
       && event.target?.parentElement?.id !== `${laneOptionsBeingShown().name}`
     ) {
       setLaneOptionsBeingShown(null);
-      setIsDeleting(false);
+      setConfirmationPromptCb(null);
     }
   }
 
@@ -269,7 +269,7 @@ function App() {
     const cardsWithoutDeletedCard = newCards.filter(card => card.name !== cardOptionsBeingShown().name);
     setCards(cardsWithoutDeletedCard);
     setCardOptionsBeingShown(null);
-    setIsDeleting(false);
+    setConfirmationPromptCb(null);
   }
 
   async function createNewLane() {
@@ -350,7 +350,7 @@ function App() {
     const lanesWithoutDeletedCard = newLanes.filter(lane => lane.name !== laneOptionsBeingShown().name);
     setLanes(lanesWithoutDeletedCard);
     setLaneOptionsBeingShown(null);
-    setIsDeleting(false);
+    setConfirmationPromptCb(null);
   }
 
   function sortCardsByName() {
@@ -380,6 +380,16 @@ function App() {
     newCards[newCardIndex] = newCard;
     setCards(newCards);
     setSelectedCard(newCard);
+  }
+
+  function deleteCardsFromLane() {
+    const lane = laneOptionsBeingShown();
+    const cardsToDelete = cards().filter(card => card.lane === lane.name);
+    cardsToDelete
+      .forEach(card => fetch(`${api}/cards/${card.name}`, { method: 'DELETE', mode: 'cors' }));
+    const cardsToKeep = cards().filter(card => card.lane !== lane.name);
+    setCards(cardsToKeep);
+    setLaneOptionsBeingShown(null);
   }
 
   const sortedCards = createMemo(() => {
@@ -683,7 +693,7 @@ function App() {
             </div>
           )}
         </For>
-        <Show when={cardOptionsBeingShown() && !isDeleting()}>
+        <Show when={cardOptionsBeingShown() && !confirmationPromptCb()}>
           <div
             id={cardOptionsBeingShown()?.name}
             class="popup"
@@ -693,28 +703,10 @@ function App() {
             }}
           >
             <button onClick={() => startRenamingCard(cardOptionsBeingShown())}>Rename</button>
-            <button onClick={() => setIsDeleting(true)}>Delete</button>
+            <button onClick={() => setConfirmationPromptCb(deleteCard)}>Delete</button>
           </div>
         </Show>
-        <Show when={cardOptionsBeingShown() && isDeleting()}>
-          <div
-            id={cardOptionsBeingShown()?.name}
-            class="popup"
-            style={{
-              top:`${popupCoordinates().y}px`,
-              left: `${popupCoordinates().x}px`
-            }}
-          >
-            <button onClick={deleteCard}>Are you sure?</button>
-            <button onClick={() => {
-              setIsDeleting(false);
-              setCardOptionsBeingShown(null);
-            }}>
-              Cancel
-            </button>
-          </div>
-        </Show>
-        <Show when={laneOptionsBeingShown() && !isDeleting()}>
+        <Show when={laneOptionsBeingShown() && !confirmationPromptCb()}>
           <div
             id={laneOptionsBeingShown().name}
             class="popup"
@@ -724,10 +716,11 @@ function App() {
             }}
           >
             <button onClick={() => startRenamingLane(laneOptionsBeingShown())}>Rename</button>
-            <button onClick={() => setIsDeleting(true)}>Delete</button>
+            <button onClick={() => setConfirmationPromptCb(() => deleteCardsFromLane)}>Delete cards</button>
+            <button onClick={() => setConfirmationPromptCb(() => deleteLane)}>Delete lane</button>
           </div>
         </Show>
-        <Show when={laneOptionsBeingShown() && isDeleting()}>
+        <Show when={laneOptionsBeingShown() && confirmationPromptCb()}>
           <div
             id={laneOptionsBeingShown().name}
             class="popup"
@@ -736,10 +729,16 @@ function App() {
               left: `${popupCoordinates().x}px`
             }}
           >
-            <button onClick={deleteLane}>Are you sure?</button>
             <button onClick={() => {
-              setIsDeleting(false);
+              confirmationPromptCb()();
+              setConfirmationPromptCb(null);
+            }}>
+              Are you sure?
+            </button>
+            <button onClick={() => {
+              setConfirmationPromptCb(null);
               setLaneOptionsBeingShown(null);
+              setCardOptionsBeingShown(null);
             }}>
               Cancel
             </button>
