@@ -82,8 +82,14 @@ button {
 }
 
 button:hover {
-  opacity: 0.75;
   transition: all 0.1s;
+  filter: brightness(1.2);
+}
+
+@media (prefers-color-scheme: light) {
+  button:hover {
+    filter: brightness(1.05);
+  }
 }
 
 button.small {
