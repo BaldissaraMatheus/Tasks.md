@@ -207,7 +207,6 @@ button.small {
 }
 
 .card__toolbar > :first-child {
-  display: inline-block;
   flex-grow: 1;
 }
 
@@ -294,14 +293,23 @@ button.small {
 .modal__toolbar {
   width: 100%;
   display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.modal__toolbar-title {
+.modal__toolbar-name-input {
+  padding: 1.1rem 1.1rem 1.1rem 0.5rem;
+  font-size: 1.5rem;
+  flex-grow: 1;
+}
+
+.modal__toolbar-name {
   flex-grow: 1;
   display: inline-block;
   width: calc(100% - 50px);
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .modal__toolbar-close-btn {
@@ -340,11 +348,12 @@ button.small {
 
 .input-and-error-msg {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .error-msg {
-  position: absolute;
-  top: -20px;
   color: var(--danger-color);
   font-size: 0.8rem;
 }

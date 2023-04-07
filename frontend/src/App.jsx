@@ -1,6 +1,7 @@
 import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect, createResource } from 'solid-js';
 import ExpandedCard from './components/expanded-card';
 import { debounce } from "@solid-primitives/scheduled";
+import { api } from './api'
 
 function App() {
   const [lanes, setLanes] = createSignal([])
@@ -25,8 +26,6 @@ function App() {
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
   const [isDeleting, setIsDeleting] = createSignal(false);
-
-  const api = import.meta.env.DEV ? 'http://localhost:8080/api' : `${window.location.href}api`;
 
   function fetchTitle() {
     return fetch(`${api}/title`).then(res => res.text());
@@ -371,6 +370,18 @@ function App() {
     });
   }
 
+  function handleOnSelectedCardNameChange(newName) {
+    const newCards = structuredClone(cards())
+    const newCardIndex = structuredClone(newCards.findIndex(card => card.name === selectedCard().name
+      && card.lane === selectedCard().lane
+    ));
+    const newCard = newCards[newCardIndex];
+    newCard.name = newName;
+    newCards[newCardIndex] = newCard;
+    setCards(newCards);
+    setSelectedCard(newCard);
+  }
+
   const sortedCards = createMemo(() => {
     if (sortDirection() === null) {
       return cards();
@@ -437,20 +448,24 @@ function App() {
     });
   });
 
-  createEffect(() => {
-    if (newCardName() === null) {
+  function validateNewCardName(newName) {
+    if (newName === null) {
       return;
     }
-    if (newCardName() === '') {
-      return setCardError('The card must have a name');
+    if (newName === '') {
+      return 'The card must have a name';
     }
-    if (cards()
-      .filter(card => card.name === newCardName() && card.name !== cardBeingRenamed()?.name)
-      .length
-    ) {
-      return setCardError('There\'s already a card with that name');
+    if (cards().filter(card => card.name === newName).length > 0) {
+      return 'There\'s already a card with that name';
     }
-    setCardError(null);
+    return null;
+  }
+
+  createEffect(() => {
+    if (cardBeingRenamed()?.name === newCardName()) {
+      return setCardError(null);
+    }
+    setCardError(validateNewCardName(newCardName()));
   });
 
   createEffect(() => {
@@ -513,13 +528,15 @@ function App() {
       <main class={`lanes ${title() ? 'lanes--has-title' : ''}`}>
         <Show when={!!selectedCard()}>
           <ExpandedCard
-            title={selectedCard().name}
+            name={selectedCard().name}
             content={selectedCard().content}
             tags={selectedCard().tags}
             allTags={usedTags()}
             onExit={() => setSelectedCard(null)}
-            onChange={(value) => debounceChangeCardContent(value, selectedCard().id)}
+            onContentChange={(value) => debounceChangeCardContent(value, selectedCard().id)}
+            onNameChange={handleOnSelectedCardNameChange}
             onTagClick={(tagId) => removeTagFromCard(tagId)}
+            validateFn={validateNewCardName}
           />
         </Show>
         <For each={lanes()}>
@@ -537,10 +554,6 @@ function App() {
                 <div class="lane__header-name-and-count">
                   { laneBeingRenamed()?.name === lane.name
                     ? <div class="input-and-error-msg">
-                      {  laneError()
-                        ? <span class="error-msg">{ laneError() }</span>
-                        : <></>
-                      }
                       <input
                         type="text"
                         id={`${lane.name}-rename-input`}
@@ -550,14 +563,21 @@ function App() {
                         onKeyUp={renameLane}
                         class={laneError() ? 'error' : ''}
                       ></input>
+                      { laneError()
+                        ? <span class="error-msg">{ laneError() }</span>
+                        : <></>
+                      }
                     </div>
                     : <strong>
-                        {lane?.name}
-                      </strong>
+                      {lane?.name}
+                    </strong>
                   }
-                  <h5 class="tag counter">
-                    {sortedCards().filter(card => card.lane === lane.name).length}
-                  </h5>
+                  { laneBeingRenamed()?.name === lane.name
+                    ? <></>
+                    : <h5 class="tag counter">
+                      {sortedCards().filter(card => card.lane === lane.name).length}
+                    </h5>
+                  }
                 </div>
                 { laneBeingRenamed()?.name === lane.name
                   ? <></>
@@ -615,10 +635,6 @@ function App() {
                         <div class="card__toolbar">
                           { cardBeingRenamed()?.name === card.name
                             ? <div class="input-and-error-msg">
-                              { cardError()
-                                ? <span class="error-msg">{ cardError() }</span>
-                                : <></>
-                              }
                               <input
                                 type="text"
                                 id={`${card.name}-rename-input`}
@@ -629,6 +645,10 @@ function App() {
                                 onKeyUp={renameCard}
                                 class={cardError() ? 'error' : ''}
                               ></input>
+                              { cardError()
+                                ? <span class="error-msg">{ cardError() }</span>
+                                : <></>
+                              }
                               </div>
                             : <div>{card.content ? '📝 ' : ''}{card.name}</div>
                           }

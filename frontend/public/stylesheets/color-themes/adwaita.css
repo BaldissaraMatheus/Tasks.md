@@ -13,8 +13,8 @@
 
   --light-theme-accent-color: #62A0EA;
   --dark-theme-accent-color: #1A5FB4;
+  --dark-theme-danger-color: #ed333b;
   --light-theme-danger-color: #ed333b;
-  --dark-theme-danger-color: #c01c28;
 
   --font-color: var(--dark-theme-color-5);
   --app-background-color: var(--dark-theme-color-1);
