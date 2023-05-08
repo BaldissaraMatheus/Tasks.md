@@ -157,6 +157,7 @@ function ExpandedCard(props) {
       {
         classList: ['theme-system'],
         targetClassList: ['editor', 'theme-system'],
+        editorHelpLink: 'https://github.com/BaldissaraMatheus/Tasks.md/issues'
       },
     );
     setEditor(newEditor);
