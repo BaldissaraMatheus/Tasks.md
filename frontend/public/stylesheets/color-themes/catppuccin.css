@@ -38,6 +38,9 @@
   --popup-font-color: var(--dark-theme-color-5);
   --popup-border-color: var(--dark-theme-color-4);
   --danger-color: var(--dark-theme-danger-color);
+  --link-color: var(--dark-theme-accent-color-1);
+  --editor-background-color: var(--dark-theme-color-1);
+  --editor-code-background-color: var(--dark-theme-color-2);
 }
 
 @media (prefers-color-scheme: light) {
@@ -64,5 +67,8 @@
     --popup-font-color: var(--light-theme-color-5);
     --popup-border-color: var(--light-theme-color-4);
     --danger-color: var(--light-theme-danger-color);
+    --link-color: var(--light-theme-accent-color-1);
+    --editor-background-color: var(--light-theme-color-1);
+    --editor-code-background-color: var(--light-theme-color-2);
   }
 }

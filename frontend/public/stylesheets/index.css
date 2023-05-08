@@ -1,6 +1,11 @@
 @import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
 @import url(./color-themes/adwaita.css);
 
+html, body {
+  font-size: 16px !important;
+  line-height: 1.15 !important;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -281,6 +286,8 @@ button.small {
 
 .modal {
   z-index: 2;
+  display: flex;
+  flex-direction: column;
   position: relative;
   width: 100%;
   height: 100%;
@@ -345,7 +352,7 @@ button.small {
 
 .modal__content {
   overflow: hidden;
-  height: 90%;
+  flex-grow: 1;
 }
 
 .error {
@@ -364,28 +371,65 @@ button.small {
   font-size: 0.8rem;
 }
 
-.CodeMirror-scroll {
-  overflow: auto !important;
+a, a > * {
+  color: var(--link-color) !important;
 }
 
-.CodeMirror {
-  background: transparent !important;
+#editor-container {
+  height: 100%;
+  position: relative;
+}
+
+.editor {
+  height: 100%;
+  max-height: none;
+  resize: none;
+  margin-bottom: 4rem;
+  background: var(--editor-background-color) !important;
+  border-color: var(--input-border-color) !important;
   color: var(--font-color) !important;
-  height: calc(90% - 51px) !important;
 }
 
-.CodeMirror-cursor {
-  border-color: var(--font-color) !important;
+.editor .s-btn {
+  color: var(--font-color);
 }
 
-.CodeMirror .editor-preview {
-  background: var(--app-background-color) !important;
+.editor .s-btn:hover {
+  background: var(--button-background-color) !important;
 }
 
-.editor-toolbar.disabled-for-preview a:not(.no-disable) {
-  background: var(--app-background-color) !important;
+.editor .is-selected {
+  background: var(--tag-background-color) !important;
+  color: var(--tag-font-color);
 }
 
-.editor-toolbar a.active, .editor-toolbar a:hover {
-  background: none;
+.editor .s-popover {
+  background: var(--popup-background-color);
+  border-color: var(--popup-border-color);
+  color: var(--popup-font-color);
+}
+
+.editor .s-popover button {
+  color: var(--popup-font-color);
+  border: none 0;
+}
+
+.editor .s-popover--arrow {
+  color: var(--popup-background-color) ;
+}
+
+.editor pre {
+  background: var(--editor-code-background-color);
+}
+
+.editor .s-btn__outlined {
+  border-color: var(--button-border-color);
+}
+
+.editor input:checked + .s-btn.s-btn__outlined {
+  background-color: var(--tag-background-color) !important;
+}
+
+.editor input:checked + .s-btn.s-btn__outlined * {
+  color: var(--tag-font-color);
 }

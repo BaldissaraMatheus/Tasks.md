@@ -1,7 +1,9 @@
-import SimpleMDE from 'simplemde/dist/simplemde.min.js'
-import 'simplemde/dist/simplemde.min.css'
 import { createEffect, createSignal, onMount } from 'solid-js';
 import { api } from '../api'
+import { StacksEditor } from "@stackoverflow/stacks-editor";
+import "@stackoverflow/stacks-editor/dist/styles.css";
+import "@stackoverflow/stacks";
+import "@stackoverflow/stacks/dist/css/stacks.css";
 
 /**
  * 
@@ -17,12 +19,12 @@ import { api } from '../api'
  * @param {Function} props.validateFn Callback function to validate new card name
  */
 function ExpandedCard(props) {
-  const [simplemde, setSimplemde] = createSignal(null);
   const [isCreatingNewTag, setIsCreatingNewTag] = createSignal(null);
   const [availableTags, setAvailableTags] = createSignal([]);
   const [tagInputValue, setTagInputValue] = createSignal(null);
   const [nameInputValue, setNameInputValue] = createSignal(null);
   const [nameInputError, setNameInputError] = createSignal(null);
+  const [editor, setEditor] = createSignal(null);
 
   function focusOutOnEnter(e) {
     if (e.key === 'Enter') {
@@ -44,7 +46,7 @@ function ExpandedCard(props) {
       return setTagInputValue(null);
     }
 
-    let actualContent = simplemde().value();
+    let actualContent = editor().content;
     let indexOfTagsKeyword = actualContent.toLowerCase().indexOf('tags: ');
     if (indexOfTagsKeyword === -1) {
       actualContent = `tags: \n${actualContent}`;
@@ -60,7 +62,8 @@ function ExpandedCard(props) {
     const newContent = actualContent.substring(0, tagsIndex)
       + concatenatedTags
       + actualContent.substring(tagsIndex + tagsSubstring.length, actualContent.length);
-    simplemde().value(newContent);
+    props.onContentChange(newContent);
+    editor().content = newContent;
     setTagInputValue(null);
   }
 
@@ -70,15 +73,15 @@ function ExpandedCard(props) {
   }
 
   function removeTag(tag) {
-    let actualContent = simplemde().value();
-    let indexOfTagsKeyword = actualContent.toLowerCase().indexOf('tags: ');
+    let currentContent = editor().content;
+    let indexOfTagsKeyword = currentContent.toLowerCase().indexOf('tags: ');
     if (indexOfTagsKeyword === -1) {
-      actualContent = `tags: \n${actualContent}`;
+      currentContent = `tags: \n${currentContent}`;
       indexOfTagsKeyword = 0;
     }
     let tagsIndex = indexOfTagsKeyword + 'tags: '.length;
-    let tagsSubstring = actualContent.substring(tagsIndex);
-    const lineBreak = actualContent.indexOf('\n');
+    let tagsSubstring = currentContent.substring(tagsIndex);
+    const lineBreak = currentContent.indexOf('\n');
     if (lineBreak > 0) {
       tagsSubstring = tagsSubstring.split('\n')[0];
     }
@@ -89,25 +92,15 @@ function ExpandedCard(props) {
       .filter(newTag => newTag !== tag);
     const newTagsSubstring = newTags
       .join(', ');
-    const endPart = actualContent.substring(tagsIndex + tagsSubstring.length, actualContent.length);
+    const endPart = currentContent.substring(tagsIndex + tagsSubstring.length, currentContent.length);
     const newContent = newTags.length
-      ? actualContent.substring(0, tagsIndex)
+      ? currentContent.substring(0, tagsIndex)
         + newTagsSubstring
         + endPart
       : endPart;
-    simplemde().value(newContent);
+    editor().content = newContent;
+    props.onContentChange(newContent);
   }
-
-  onMount(() => {
-    const newSimpleMde = new SimpleMDE({
-      spellChecker: false,
-    });
-    newSimpleMde.value(props.content)
-    newSimpleMde.codemirror.on('change', () => {
-      props.onContentChange(newSimpleMde.value());
-    });
-    setSimplemde(newSimpleMde);
-  });
 
   createEffect(() => {
     if (isCreatingNewTag()) {
@@ -157,6 +150,22 @@ function ExpandedCard(props) {
     document.getElementById(`name-input`).focus();
   }
 
+  onMount(() => {
+    const newEditor = new StacksEditor(
+      document.getElementById('editor-container'),
+      props.content || '',
+      {
+        classList: ['theme-system'],
+        targetClassList: ['editor', 'theme-system'],
+      },
+    );
+    setEditor(newEditor);
+  });
+
+  function handleEditorOnChange() {
+    setTimeout(() => props.onContentChange(editor()?.content), 0)
+  }
+
 	return (
     <div className="modal-bg" onClick={props.onExit}>
       <div className="modal" onClick={event => event.stopPropagation()}>
@@ -165,21 +174,21 @@ function ExpandedCard(props) {
             nameInputValue() !== null
             ? <div class="input-and-error-msg">
               <input
-                  type="text"
-                  id="name-input"
-                  class="modal__toolbar-name-input"
-                  value={nameInputValue()}
-                  onFocusOut={handleOnNameInputChange}
-                  onKeyUp={handleOnNameInputChange}
-                />
-                { nameInputError()
-                  ? <span class="error-msg">{ nameInputError() }</span>
-                  : <></>
-                }
-              </div>
-              : <h1 class="modal__toolbar-name" onClick={startRenamingCard} title="Click to rename card">
-                {props.name || 'NO NAME'}
-              </h1>
+                type="text"
+                id="name-input"
+                class="modal__toolbar-name-input"
+                value={nameInputValue()}
+                onFocusOut={handleOnNameInputChange}
+                onKeyUp={handleOnNameInputChange}
+              />
+              { nameInputError()
+                ? <span class="error-msg">{ nameInputError() }</span>
+                : <></>
+              }
+            </div>
+            : <h1 class="modal__toolbar-name" onClick={startRenamingCard} title="Click to rename card">
+              {props.name || 'NO NAME'}
+            </h1>
           }
           <button class="modal__toolbar-close-btn" onClick={props.onExit}>X</button>
         </div>
@@ -211,8 +220,14 @@ function ExpandedCard(props) {
             )}
           </For>
         </div>
-        <div className="modal__content">
-          <textarea id="editor" />
+        <div class="modal__content">
+          <div
+            id="editor-container"
+            onKeyUp={handleEditorOnChange}
+            onCut={handleEditorOnChange}
+            onPaste={handleEditorOnChange}
+          >
+          </div>
         </div>
       </div>
     </div>
