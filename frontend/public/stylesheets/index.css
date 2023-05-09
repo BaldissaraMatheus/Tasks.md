@@ -1,6 +1,12 @@
 @import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
 @import url(./color-themes/adwaita.css);
 
+html, body, input, button, select {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif !important;
+}
+
 html, body {
   font-size: 16px !important;
   line-height: 1.15 !important;
@@ -8,9 +14,6 @@ html, body {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--app-background-color);
@@ -60,7 +63,7 @@ select
   height: 32px;
   padding: 4px 15px;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
   box-shadow: 0 2px 0 rgba(0,0,0,.02);
   box-sizing: border-box;
   color: var(--font-color);
@@ -419,7 +422,7 @@ a, a > * {
 }
 
 .editor .s-popover--arrow {
-  color: var(--popup-background-color) ;
+  color: var(--popup-background-color) important;
 }
 
 .editor pre {
