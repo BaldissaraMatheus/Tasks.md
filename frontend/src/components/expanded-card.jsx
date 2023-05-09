@@ -10,6 +10,7 @@ import "@stackoverflow/stacks/dist/css/stacks.css";
  * @param {Object} props 
  * @param {string} props.name Card name
  * @param {string} props.content Initial card content
+ * @param {boolean} props.disableImageUpload Disable local image upload button
  * @param {string[]} props.tags Card tags
  * @param {string[]} props.allTags List of all available tags
  * @param {Function} props.onExit Callback function for when user clicks outside of the modal 
@@ -150,22 +151,56 @@ function ExpandedCard(props) {
     document.getElementById(`name-input`).focus();
   }
 
+  function uploadImage(file) {
+    const formData = new FormData();
+    formData.set('file', file);
+    return fetch(`${api}/images`, {
+      method: 'POST',
+      mode: 'cors',
+      body: formData
+    })
+    .then(res => {
+      handleEditorOnChange();
+      return `${api}/images/${file.name}`
+    });
+  }
+
+  function handleEditorOnChange() {
+    setTimeout(() => props.onContentChange(editor()?.content), 0)
+  }
+
   onMount(() => {
+    const editorClasses = ['editor', 'theme-system'];
+    if (props.disableImageUpload) {
+      editorClasses.push('disable-image-upload');
+    }
     const newEditor = new StacksEditor(
       document.getElementById('editor-container'),
       props.content || '',
       {
         classList: ['theme-system'],
-        targetClassList: ['editor', 'theme-system'],
-        editorHelpLink: 'https://github.com/BaldissaraMatheus/Tasks.md/issues'
+        targetClassList: editorClasses,
+        editorHelpLink: 'https://github.com/BaldissaraMatheus/Tasks.md/issues',
+        imageUpload: { handler: uploadImage },
       },
     );
     setEditor(newEditor);
   });
 
-  function handleEditorOnChange() {
-    setTimeout(() => props.onContentChange(editor()?.content), 0)
-  }
+  createEffect(() => {
+    if (isCreatingNewTag()) {
+      return;
+    }
+    if (!isCreatingNewTag() && tagInputValue()) {
+      return;
+    }
+    setIsCreatingNewTag(false);
+    setTagInputValue(null);
+  });
+
+  createEffect(() => {
+    setAvailableTags(props.allTags.filter(tag => tag.toLowerCase().includes(tagInputValue()?.toLowerCase())));
+  });
 
 	return (
     <div className="modal-bg" onClick={props.onExit}>

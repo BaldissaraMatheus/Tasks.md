@@ -6,11 +6,16 @@ const app = new Koa();
 const router = require('@koa/router')();
 const bodyParser = require('koa-bodyparser');
 const cors = require('@koa/cors');
+const multer = require('@koa/multer');
+const send = require('koa-send')
 const mount = require('koa-mount');
 const serve = require('koa-static');
 const PUID = Number(process.env.PUID || '1000');
 const PGID = Number(process.env.PGID || '1000');
+const ENABLE_LOCAL_IMAGES = process.env.ENABLE_LOCAL_IMAGES === 'true';
 const BASE_PATH = process.env.BASE_PATH ? `${process.env.BASE_PATH}/` : '/';
+
+const multerInstance = multer();
 
 function getContent(path) {
 	return fs.promises.readFile(path).then(res => res.toString());
@@ -173,6 +178,28 @@ async function saveCardsSort(ctx) {
 }
 
 router.post('/sort/cards', saveCardsSort);
+
+async function getImage(ctx) {
+	await send(ctx, `images/${ctx.params.image}`);
+}
+
+router.get('/images/:image', getImage);
+
+async function saveImage(ctx) {
+	const imageName = ctx.request.file.originalname;
+	await fs.promises.mkdir('images', { recursive: true });
+	await fs.promises.writeFile(`images/${imageName}`, ctx.request.file.buffer);
+	await fs.promises.chown(`images/${imageName}`, PUID, PGID);
+	ctx.status = 204;
+}
+
+router.post('/images', multerInstance.single('file'), saveImage);
+
+async function getIsLocalImageUploadEnabled(ctx) {
+	ctx.body = ENABLE_LOCAL_IMAGES;
+}
+
+router.get('/isLocalImageUploadEnabled', getIsLocalImageUploadEnabled);
 
 app.use(cors());
 app.use(bodyParser())
