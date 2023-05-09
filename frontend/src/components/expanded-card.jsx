@@ -260,8 +260,7 @@ function ExpandedCard(props) {
           <div
             id="editor-container"
             onKeyUp={handleEditorOnChange}
-            onCut={handleEditorOnChange}
-            onPaste={handleEditorOnChange}
+            onClick={handleEditorOnChange}
           >
           </div>
         </div>
