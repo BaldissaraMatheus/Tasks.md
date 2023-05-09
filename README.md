@@ -20,9 +20,11 @@ docker run -d \
   -e PGID=1000 `#optional` \
   -e TITLE="My tasks board" `#optional` \
   -e BASE_PATH=/tasks `#optional` \
+  -e ENABLE_LOCAL_IMAGES=true `#optional` \
   -p 8080:8080 \
   -v /path/to/cards/:/api/files/ \
   -v /path/to/styles/:/api/static/stylesheets/ `#optional \
+  -v /path/to/images/:/api/images/ `#optional \
   --restart unless-stopped \
   baldissaramatheus/tasks.md
 ```

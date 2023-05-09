@@ -2,6 +2,7 @@ backend/files
 backend/node_modules
 backend/static
 backend/sort
+backend/images
 frontend/node_modules
 frontend/dist
 frontend/.env

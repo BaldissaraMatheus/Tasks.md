@@ -390,6 +390,10 @@ a, a > * {
   color: var(--font-color) !important;
 }
 
+.disable-image-upload .js-insert-image-btn {
+  display: none;
+}
+
 .editor .s-btn {
   color: var(--font-color);
 }
