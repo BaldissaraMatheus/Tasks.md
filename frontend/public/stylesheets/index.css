@@ -397,6 +397,10 @@ a, a > * {
   display: none;
 }
 
+.editor {
+  resize: none !important;
+}
+
 .editor .s-btn {
   color: var(--font-color);
 }
