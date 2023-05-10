@@ -7,8 +7,6 @@ services:
       environment:
         - PUID=1000
         - PGID=1000
-        - TITLE="My tasks board"
-        - BASE_PATH=/tasks
       volumes:
           - api-data:/api/files
           - stylesheets-data:/api/static/stylesheets/
