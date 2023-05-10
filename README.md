@@ -12,15 +12,16 @@ A self-hosted file based task management board that supports Markdown syntax.
 - Support for subpath based reverse-proxy with an environment variable for base path;
 
 ## 🐋 Installation
-Via Docker:
+### Docker
+Paste this command:
 ```
 docker run -d \
   --name tasks.md \
-  -e PUID=1000 `#optional` \
-  -e PGID=1000 `#optional` \
-  -e TITLE="My tasks board" `#optional` \
-  -e BASE_PATH=/tasks `#optional` \
-  -e ENABLE_LOCAL_IMAGES=true `#optional` \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e TITLE="" `#optional` \
+  -e BASE_PATH="" `#optional` \
+  -e ENABLE_LOCAL_IMAGES=false `#optional` \
   -p 8080:8080 \
   -v /path/to/cards/:/api/files/ \
   -v /path/to/styles/:/api/static/stylesheets/ `#optional \
@@ -28,7 +29,11 @@ docker run -d \
   --restart unless-stopped \
   baldissaramatheus/tasks.md
 ```
-For docker-compose, you can see an example [here](https://github.com/BaldissaraMatheus/Tasks.md/blob/main/examples/docker-compose.yaml).
+Remove the optional variables and paths you don't want to keep, remove `#optional` flags for the ones you want to keep, replace `/path/to/something` with directories that exist in your filesystem, then run it. If you decide to set the optional env variable `ENABLE_LOCAL_IMAGES` as `true`, you should also map a volume for `:/api/images/` since Tasks.md does not delete local images when a card is deleted.
+
+### docker-compose
+For docker-compose, you can see an example [here](https://github.com/BaldissaraMatheus/Tasks.md/blob/main/examples/docker-compose.yaml). Use the Docker section above as reference for optional variables and volumes.
+
 ## 🎨 Customize
 All CSS files are available in the public stylesheets directory, which can be mounted as a docker volume. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, open the file `/stylesheets/index.css` and change the second line to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
 
