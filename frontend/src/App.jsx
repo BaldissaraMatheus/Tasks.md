@@ -2,6 +2,7 @@ import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect, 
 import ExpandedCard from './components/expanded-card';
 import { debounce } from "@solid-primitives/scheduled";
 import { api } from './api'
+import {polyfill} from "mobile-drag-drop";
 
 function App() {
   const [lanes, setLanes] = createSignal([])
@@ -12,7 +13,7 @@ function App() {
   const [cardBeingDraggedOriginalLane, setCardBeingDraggedOriginalLane] = createSignal(null);
   const [cardToBeReplacedName, setCardToBeReplacedName] = createSignal(null);
   const [laneBeingDraggedName, setLaneBeingDraggedName] = createSignal(null);
-  const [laneToBeReplacedName, setLaneToBeReplacedName] = createSignal(null);
+  const [laneBeingDraggedOverName, setLaneBeingDraggedOverName] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardOptionsBeingShown, setCardOptionsBeingShown] = createSignal(null);
   const [laneOptionsBeingShown, setLaneOptionsBeingShown] = createSignal(null);
@@ -97,8 +98,7 @@ function App() {
     setLanes([...lanesFromApiAndSorted, ...lanesFromApiNotYetSorted]);
   }
 
-  function replaceCardPosition(event) {
-    event.stopPropagation();
+  function replaceCardPosition() {
     const newCards = structuredClone(cards());
     const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
     const cardToBeReplacedIndex = newCards.findIndex(card => card.name === cardToBeReplacedName());
@@ -134,7 +134,9 @@ function App() {
     setCardBeingDraggedOriginalLane(card.newLane);
   }, 250);
 
-  function moveCardToLane(newLane) {
+  function moveCardToLane() {
+    const newLane = laneBeingDraggedOverName();
+    setLaneBeingDraggedOverName(null);
     let newCards = structuredClone(cards());
     const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
     const newCard = structuredClone(newCards[cardBeingDraggedIndex]);
@@ -293,7 +295,7 @@ function App() {
     event.stopPropagation();
     const newLanes = structuredClone(lanes());
     const laneBeingDraggedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedName());
-    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneToBeReplacedName());
+    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedOverName());
     const upOrDownDisplacement = laneBeingDraggedIndex < laneToBeReplacedIndex
       ? 1
       : 0;
@@ -306,7 +308,7 @@ function App() {
     ]
     .filter(lane => lane !== null);
     setLanes(lanesWithChangedPositions);
-    setLaneToBeReplacedName(null);
+    setLaneBeingDraggedOverName(null);
     setLaneBeingDraggedName(null);
   }
 
@@ -427,6 +429,7 @@ function App() {
     window.addEventListener('mousedown', handleClickOutsideOptions);
     fetchCards();
     fetchLanes();
+    polyfill({});
   });
 
   createEffect(() => {
@@ -558,13 +561,15 @@ function App() {
         <For each={lanes()}>
           {lane => (
             <div
-              class={`lane ${laneToBeReplacedName() === lane.name ? 'dragged-over' : ''}`}
-              onDragEnd={(event) => moveLanePosition(event)}
-              onDragOver={() => laneBeingDraggedName() ? setLaneToBeReplacedName(lane?.name) : null}
+              class={`lane ${laneBeingDraggedOverName() === lane.name ? 'dragged-over' : ''}`}
+              onDragEnter={e => e.preventDefault()}
+              onDragEnd={e => laneBeingDraggedName() ? moveLanePosition(e) : null}
+              onDragOver={() => setLaneBeingDraggedOverName(lane?.name)}
             >
               <header
                 class="lane__header"
                 draggable={!laneBeingRenamed()}
+                onDragEnter={e => e.preventDefault()}
                 onDragStart={() => setLaneBeingDraggedName(lane.name)}
               >
                 <div class="lane__header-name-and-count">
@@ -618,10 +623,7 @@ function App() {
                   </div>
                 }
               </header>
-              <div
-                class="lane__content"
-                onDragOver={() => cardBeingDraggedName() ? moveCardToLane(lane.name) : null}
-              >
+              <div class="lane__content">
                 <For
                   each={
                     sortedCards()
@@ -633,66 +635,68 @@ function App() {
                   }
                 >
                   {card => (
-                    <>
-                      <div
-                        class={`
-                          card
-                          ${cardToBeReplacedName() === card.name ? 'dragged-over' : ''}
-                        `}
-                        draggable={!cardBeingRenamed()}
-                        onDragStart={() => {
-                          setCardBeingDragged(card.name);
-                          setCardBeingDraggedOriginalLane(card.lane)
-                        }}
-                        onDragEnd={(event) => replaceCardPosition(event)}
-                        onDragOver={() => cardBeingDraggedName() ? setCardToBeReplacedName(card.name) : null}
-                        onClick={() => !cardBeingRenamed() ? setSelectedCard(card) : null}
-                      >
-                        <div class="card__toolbar">
-                          { cardBeingRenamed()?.name === card.name
-                            ? <div class="input-and-error-msg">
-                              <input
-                                type="text"
-                                id={`${card.name}-rename-input`}
-                                value={newCardName()}
-                                onClick={e => e.stopPropagation()}
-                                onInput={e => setNewCardName(e.target.value)}
-                                onFocusOut={renameCard}
-                                onKeyUp={renameCard}
-                                class={cardError() ? 'error' : ''}
-                              ></input>
-                              { cardError()
-                                ? <span class="error-msg">{ cardError() }</span>
-                                : <></>
-                              }
-                              </div>
-                            : <div>{card.content ? '📝 ' : ''}{card.name}</div>
-                          }
-                          { cardBeingRenamed()?.name === card.name
-                            ? <></>
-                            : <button
-                              title="Show card options"
-                              class="small"
-                              onClick={event => {
-                                handleOptionBtnOnClick(event)
-                                setCardOptionsBeingShown(card);
-                              }}
-                            >
-                              ⋮
-                            </button>
-                          }
-                        </div>
-                        <div class="tags">
-                          <For each={card.tags}>
-                            {tag => (
-                              <div class="tag">
-                                <h5>{tag}</h5>
-                              </div>
-                            )}
-                          </For>
-                        </div>
+                    <div
+                      class={`card ${cardToBeReplacedName() === card.name ? 'dragged-over' : ''}`}
+                      draggable={!cardBeingRenamed()}
+                      onDragEnter={e => e.preventDefault()}
+                      onDragStart={() => {
+                        setCardBeingDragged(card.name);
+                        setCardBeingDraggedOriginalLane(card.lane)
+                      }}
+                      onDragOver={(e) => {
+                        e.stopPropagation();
+                        if (cardBeingDraggedName()) {
+                          setCardToBeReplacedName(card.name);
+                          setLaneBeingDraggedOverName(null);
+                        }
+                      }}
+                      onDragEnd={(e) => laneBeingDraggedOverName() ? moveCardToLane() : replaceCardPosition(e)}
+                      onClick={() => !cardBeingRenamed() ? setSelectedCard(card) : null}
+                    >
+                      <div class="card__toolbar">
+                        { cardBeingRenamed()?.name === card.name
+                          ? <div class="input-and-error-msg">
+                            <input
+                              type="text"
+                              id={`${card.name}-rename-input`}
+                              value={newCardName()}
+                              onClick={e => e.stopPropagation()}
+                              onInput={e => setNewCardName(e.target.value)}
+                              onFocusOut={renameCard}
+                              onKeyUp={renameCard}
+                              class={cardError() ? 'error' : ''}
+                            ></input>
+                            { cardError()
+                              ? <span class="error-msg">{ cardError() }</span>
+                              : <></>
+                            }
+                            </div>
+                          : <div>{card.content ? '📝 ' : ''}{card.name}</div>
+                        }
+                        { cardBeingRenamed()?.name === card.name
+                          ? <></>
+                          : <button
+                            title="Show card options"
+                            class="small"
+                            onClick={event => {
+                              handleOptionBtnOnClick(event)
+                              setCardOptionsBeingShown(card);
+                            }}
+                          >
+                            ⋮
+                          </button>
+                        }
                       </div>
-                    </>
+                      <div class="tags">
+                        <For each={card.tags}>
+                          {tag => (
+                            <div class="tag">
+                              <h5>{tag}</h5>
+                            </div>
+                          )}
+                        </For>
+                      </div>
+                    </div>
                   )}
                 </For>
               </div>
