@@ -11,9 +11,9 @@ function App() {
   const [sortDirection, setSortDirection] = createSignal(getDefaultFromLocalStorage('sortDirection'))
   const [cardBeingDraggedName, setCardBeingDragged] = createSignal(null);
   const [cardBeingDraggedOriginalLane, setCardBeingDraggedOriginalLane] = createSignal(null);
-  const [cardToBeReplacedName, setCardToBeReplacedName] = createSignal(null);
+  const [cardDraggedOver, setCardDraggedOver] = createSignal(null);
   const [laneBeingDraggedName, setLaneBeingDraggedName] = createSignal(null);
-  const [laneBeingDraggedOverName, setLaneBeingDraggedOverName] = createSignal(null);
+  const [laneDraggedOverName, setLaneDraggedOverName] = createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [cardOptionsBeingShown, setCardOptionsBeingShown] = createSignal(null);
   const [laneOptionsBeingShown, setLaneOptionsBeingShown] = createSignal(null);
@@ -98,29 +98,35 @@ function App() {
     setLanes([...lanesFromApiAndSorted, ...lanesFromApiNotYetSorted]);
   }
 
-  function replaceCardPosition() {
+  function moveCardBeingDraggedNextToCardDraggedOver() {
     const newCards = structuredClone(cards());
     const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
-    const cardToBeReplacedIndex = newCards.findIndex(card => card.name === cardToBeReplacedName());
+    const cardDraggedOverIndex = newCards.findIndex(card => card.name === cardDraggedOver());
 
     const cardBeingDraggedlane = newCards[cardBeingDraggedIndex].lane;
-    const cardToBeReplacedlane = newCards[cardToBeReplacedIndex].lane;
-    newCards[cardBeingDraggedIndex].lane = cardToBeReplacedlane;
-    newCards[cardToBeReplacedIndex].lane = cardBeingDraggedlane;
+    const cardDraggedOverlane = newCards[cardDraggedOverIndex].lane;
+    newCards[cardBeingDraggedIndex].lane = cardDraggedOverlane;
+
+    const areBothCardsInSameLane = cardBeingDraggedlane === cardDraggedOverlane;
+    let upOrDownDisplacement = 0;
+
+    if (areBothCardsInSameLane) {
+      upOrDownDisplacement = cardBeingDraggedIndex < cardDraggedOverIndex
+        ? 1
+        : 0;
+    }
 
     const cardBeingDragged = newCards[cardBeingDraggedIndex];
     newCards[cardBeingDraggedIndex] = null;
-    const upOrDownDisplacement = cardBeingDraggedIndex < cardToBeReplacedIndex
-      ? 1
-      : 0;
+
     const cardsWithChangedPositions = [
-      ...newCards.slice(0, cardToBeReplacedIndex + upOrDownDisplacement),
+      ...newCards.slice(0, cardDraggedOverIndex + upOrDownDisplacement),
       cardBeingDragged,
-      ...newCards.slice(cardToBeReplacedIndex + upOrDownDisplacement)
+      ...newCards.slice(cardDraggedOverIndex + upOrDownDisplacement)
     ]
     .filter(card => card !== null);
     setCards(cardsWithChangedPositions);
-    setCardToBeReplacedName(null);
+    setCardDraggedOver(null);
     setCardBeingDragged(null);
   }
 
@@ -135,8 +141,8 @@ function App() {
   }, 250);
 
   function moveCardToLane() {
-    const newLane = laneBeingDraggedOverName();
-    setLaneBeingDraggedOverName(null);
+    const newLane = laneDraggedOverName();
+    setLaneDraggedOverName(null);
     let newCards = structuredClone(cards());
     const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
     const newCard = structuredClone(newCards[cardBeingDraggedIndex]);
@@ -148,7 +154,7 @@ function App() {
     newCards = newCards.filter((card, i) => i !== cardBeingDraggedIndex);
     newCards.push(newCard);
     setCards(newCards);
-    setCardToBeReplacedName(null);
+    setCardDraggedOver(null);
   }
   const debounceChangeCardContent = debounce((newContent) => changeCardContent(newContent), 250);
 
@@ -295,7 +301,7 @@ function App() {
     event.stopPropagation();
     const newLanes = structuredClone(lanes());
     const laneBeingDraggedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedName());
-    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedOverName());
+    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneDraggedOverName());
     const upOrDownDisplacement = laneBeingDraggedIndex < laneToBeReplacedIndex
       ? 1
       : 0;
@@ -308,7 +314,7 @@ function App() {
     ]
     .filter(lane => lane !== null);
     setLanes(lanesWithChangedPositions);
-    setLaneBeingDraggedOverName(null);
+    setLaneDraggedOverName(null);
     setLaneBeingDraggedName(null);
   }
 
@@ -561,10 +567,10 @@ function App() {
         <For each={lanes()}>
           {lane => (
             <div
-              class={`lane ${laneBeingDraggedOverName() === lane.name ? 'dragged-over' : ''}`}
+              class={`lane ${laneDraggedOverName() === lane.name ? 'dragged-over' : ''}`}
               onDragEnter={e => e.preventDefault()}
               onDragEnd={e => laneBeingDraggedName() ? moveLanePosition(e) : null}
-              onDragOver={() => setLaneBeingDraggedOverName(lane?.name)}
+              onDragOver={() => setLaneDraggedOverName(lane?.name)}
             >
               <header
                 class="lane__header"
@@ -636,7 +642,7 @@ function App() {
                 >
                   {card => (
                     <div
-                      class={`card ${cardToBeReplacedName() === card.name ? 'dragged-over' : ''}`}
+                      class={`card ${cardDraggedOver() === card.name ? 'dragged-over' : ''}`}
                       draggable={!cardBeingRenamed()}
                       onDragEnter={e => e.preventDefault()}
                       onDragStart={() => {
@@ -646,11 +652,11 @@ function App() {
                       onDragOver={(e) => {
                         e.stopPropagation();
                         if (cardBeingDraggedName()) {
-                          setCardToBeReplacedName(card.name);
-                          setLaneBeingDraggedOverName(null);
+                          setCardDraggedOver(card.name);
+                          setLaneDraggedOverName(null);
                         }
                       }}
-                      onDragEnd={(e) => laneBeingDraggedOverName() ? moveCardToLane() : replaceCardPosition(e)}
+                      onDragEnd={(e) => laneDraggedOverName() ? moveCardToLane() : moveCardBeingDraggedNextToCardDraggedOver()}
                       onClick={() => !cardBeingRenamed() ? setSelectedCard(card) : null}
                     >
                       <div class="card__toolbar">
