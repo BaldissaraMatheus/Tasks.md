@@ -71,6 +71,7 @@ function ExpandedCard(props) {
   function handleAddTagBtnOnClick(event) {
     event.stopPropagation();
     setIsCreatingNewTag(true);
+    document.getElementById('tags-input')?.focus();
   }
 
   function removeTag(tag) {
@@ -233,6 +234,7 @@ function ExpandedCard(props) {
             isCreatingNewTag()
               ? <>
                 <input
+                  id="tags-input"
                   type="text"
                   value={tagInputValue()}
                   onInput={e => setTagInputValue(e.target.value)}
