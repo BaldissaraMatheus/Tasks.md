@@ -128,6 +128,7 @@ function App() {
     setCards(cardsWithChangedPositions);
     setCardDraggedOver(null);
     setCardBeingDragged(null);
+    debounceUpdateCardLaneReq({ lane: cardBeingDraggedlane, name: cardBeingDragged.name, newLane: cardDraggedOverlane });
   }
 
   const debounceUpdateCardLaneReq = debounce((card) => {
