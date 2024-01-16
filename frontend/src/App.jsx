@@ -32,12 +32,7 @@ function App() {
     return fetch(`${api}/title`).then(res => res.text());
   }
 
-  function fetchLocalImagesUploadEnabled() {
-    return fetch(`${api}/isLocalImageUploadEnabled`).then(res => res.json());
-  }
-
   const [title] = createResource(fetchTitle);
-  const [islocalImagesUploadEnabled] = createResource(fetchLocalImagesUploadEnabled);
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
@@ -562,7 +557,7 @@ function App() {
             onNameChange={handleOnSelectedCardNameChange}
             onTagClick={(tagId) => removeTagFromCard(tagId)}
             validateFn={validateNewCardName}
-            disableImageUpload={!islocalImagesUploadEnabled()}
+            disableImageUpload={false}
           />
         </Show>
         <For each={lanes()}>
