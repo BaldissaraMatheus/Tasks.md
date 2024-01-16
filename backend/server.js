@@ -12,8 +12,8 @@ const mount = require('koa-mount');
 const serve = require('koa-static');
 const PUID = Number(process.env.PUID || '1000');
 const PGID = Number(process.env.PGID || '1000');
-const ENABLE_LOCAL_IMAGES = process.env.ENABLE_LOCAL_IMAGES === 'true';
 const BASE_PATH = process.env.BASE_PATH ? `${process.env.BASE_PATH}/` : '/';
+const FILES_PATH = process.env.FILES_PATH ? process.env.FILES_PATH : 'files';
 
 const multerInstance = multer();
 
@@ -22,13 +22,13 @@ function getContent(path) {
 }
 
 async function getLanesNames() {
-	await fs.promises.mkdir('files', { recursive: true });
-	return fs.promises.readdir('files');
+	await fs.promises.mkdir(FILES_PATH, { recursive: true });
+	return fs.promises.readdir(FILES_PATH);
 }
 
 async function getLaneByCardName(cardName) {
 	const lanes = await getLanesNames();
-	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`files/${lane}`)
+	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`${FILES_PATH}/${lane}`)
 		.then(files => files.map(file => ({ lane, name: file }))))
 	);
 	const files = lanesFiles.flat();
@@ -36,7 +36,7 @@ async function getLaneByCardName(cardName) {
 }
 
 async function getLanes(ctx) {
-	const lanes = await fs.promises.readdir('files');
+	const lanes = await fs.promises.readdir(FILES_PATH);
 	ctx.body = lanes; 
 };
 
@@ -44,13 +44,13 @@ router.get('/lanes', getLanes);
 
 async function getCards(ctx) {
 	const lanes = await getLanesNames();
-	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`files/${lane}`)
+	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`${FILES_PATH}/${lane}`)
 		.then(files => files.map(file => ({ lane, name: file }))))
 	);
 	const files = lanesFiles.flat();
 	const filesContents = await Promise.all(
 		files.map(async file => {
-			const content = await getContent(`files/${file.lane}/${file.name}`);
+			const content = await getContent(`${FILES_PATH}/${file.lane}/${file.name}`);
 			const newName = file.name.substring(0, file.name.length - 3);
 			return { ...file, content, name: newName }
 		})
@@ -63,8 +63,8 @@ router.get('/cards', getCards);
 async function createCard(ctx) {
 	const lane = ctx.request.body.lane;
 	const name = uuid.v4();
-	await fs.promises.writeFile(`files/${lane}/${name}.md`, '');
-	await fs.promises.chown(`files/${lane}/${name}.md`, PUID, PGID);
+	await fs.promises.writeFile(`${FILES_PATH}/${lane}/${name}.md`, '');
+	await fs.promises.chown(`${FILES_PATH}/${lane}/${name}.md`, PUID, PGID);
 	ctx.body = name; 
 	ctx.status = 201;
 }
@@ -78,12 +78,12 @@ async function updateCard(ctx) {
 	const newName = ctx.request.body.name || name;
 	const newcontent = ctx.request.body.content;
 	if (newLane !== oldLane || name !== newName) {
-		await fs.promises.rename(`files/${oldLane}/${name}.md`, `files/${newLane}/${newName}.md`);
+		await fs.promises.rename(`${FILES_PATH}/${oldLane}/${name}.md`, `${FILES_PATH}/${newLane}/${newName}.md`);
 	}
 	if (newcontent) {
-		await fs.promises.writeFile(`files/${newLane}/${newName}.md`, newcontent);
+		await fs.promises.writeFile(`${FILES_PATH}/${newLane}/${newName}.md`, newcontent);
 	}
-	await fs.promises.chown(`files/${newLane}/${newName}.md`, PUID, PGID);
+	await fs.promises.chown(`${FILES_PATH}/${newLane}/${newName}.md`, PUID, PGID);
 	ctx.status = 204;
 }
 
@@ -92,7 +92,7 @@ router.patch('/cards/:card', updateCard);
 async function deleteCard(ctx) {
 	const lane = await getLaneByCardName(ctx.params.card);
 	const name = ctx.params.card;
-	await fs.promises.rm(`files/${lane}/${name}.md`);
+	await fs.promises.rm(`${FILES_PATH}/${lane}/${name}.md`);
 	ctx.status = 204;
 }
 
@@ -101,16 +101,16 @@ router.delete('/cards/:card', deleteCard);
 async function createCard(ctx) {
 	const lane = ctx.request.body.lane;
 	const name = uuid.v4();
-	await fs.promises.writeFile(`files/${lane}/${name}.md`, '');
-	await fs.promises.chown(`files/${lane}/${name}.md`, PUID, PGID);
+	await fs.promises.writeFile(`${FILES_PATH}/${lane}/${name}.md`, '');
+	await fs.promises.chown(`${FILES_PATH}/${lane}/${name}.md`, PUID, PGID);
 	ctx.body = name; 
 	ctx.status = 201;
 }
 
 async function createLane(ctx) {
 	const lane = uuid.v4();
-	await fs.promises.mkdir(`files/${lane}`);
-	await fs.promises.chown(`files/${lane}`, PUID, PGID);
+	await fs.promises.mkdir(`${FILES_PATH}/${lane}`);
+	await fs.promises.chown(`${FILES_PATH}/${lane}`, PUID, PGID);
 	ctx.body = lane; 
 	ctx.status = 201;
 }
@@ -120,8 +120,8 @@ router.post('/lanes', createLane);
 async function updateLane(ctx) {
 	const name = ctx.params.lane;
 	const newName = ctx.request.body.name;
-	await fs.promises.rename(`files/${name}`, `files/${newName}`);
-	await fs.promises.chown(`files/${newName}`, PUID, PGID);
+	await fs.promises.rename(`${FILES_PATH}/${name}`, `${FILES_PATH}/${newName}`);
+	await fs.promises.chown(`${FILES_PATH}/${newName}`, PUID, PGID);
 	ctx.status = 204;
 }
 
@@ -129,7 +129,7 @@ router.patch('/lanes/:lane', updateLane);
 
 async function deleteLane(ctx) {
 	const lane = ctx.params.lane;
-	await fs.promises.rm(`files/${lane}`, { force: true, recursive: true });
+	await fs.promises.rm(`${FILES_PATH}/${lane}`, { force: true, recursive: true });
 	ctx.status = 204;
 }
 
@@ -180,26 +180,20 @@ async function saveCardsSort(ctx) {
 router.post('/sort/cards', saveCardsSort);
 
 async function getImage(ctx) {
-	await send(ctx, `images/${ctx.params.image}`);
+	await send(ctx, `/config/images/${ctx.params.image}`, { root: '/' });
 }
 
 router.get('/images/:image', getImage);
 
 async function saveImage(ctx) {
 	const imageName = ctx.request.file.originalname;
-	await fs.promises.mkdir('images', { recursive: true });
-	await fs.promises.writeFile(`images/${imageName}`, ctx.request.file.buffer);
-	await fs.promises.chown(`images/${imageName}`, PUID, PGID);
+	await fs.promises.mkdir('/config/images', { recursive: true });
+	await fs.promises.writeFile(`/config/images/${imageName}`, ctx.request.file.buffer);
+	await fs.promises.chown(`/config/images/${imageName}`, PUID, PGID);
 	ctx.status = 204;
 }
 
 router.post('/images', multerInstance.single('file'), saveImage);
-
-async function getIsLocalImageUploadEnabled(ctx) {
-	ctx.body = ENABLE_LOCAL_IMAGES;
-}
-
-router.get('/isLocalImageUploadEnabled', getIsLocalImageUploadEnabled);
 
 app.use(cors());
 app.use(bodyParser())
@@ -223,5 +217,6 @@ app.use(async (ctx, next) => {
 	await next();
 });
 app.use(mount(`${BASE_PATH}api`, router.routes()));
-app.use(mount(BASE_PATH, serve(path.join(__dirname, '/static'))));
+app.use(mount(BASE_PATH, serve('/static')));
+app.use(mount(`${BASE_PATH}stylesheets/`, serve('/config/stylesheets')));
 app.listen(8080);
