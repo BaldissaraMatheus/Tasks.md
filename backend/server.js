@@ -1,4 +1,3 @@
-const path = require('path')
 const fs = require('fs');
 const uuid = require('uuid');
 const Koa = require('koa');
@@ -15,6 +14,9 @@ const PGID = Number(process.env.PGID || '1000');
 const BASE_PATH = process.env.BASE_PATH ? `${process.env.BASE_PATH}/` : '/';
 const TASKS_DIR = process.env.NODE_ENV === 'prod' ? '/tasks' : 'tasks';
 const CONFIG_DIR = process.env.NODE_ENV === 'prod' ? '/config' : 'config';
+const LOCAL_IMAGES_CLEANUP_INTERVAL = process.env.LOCAL_IMAGES_CLEANUP_INTERVAL === undefined
+	? 1440
+	: Number(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL);
 
 const multerInstance = multer();
 
@@ -220,4 +222,29 @@ app.use(async (ctx, next) => {
 app.use(mount(`${BASE_PATH}api`, router.routes()));
 app.use(mount(BASE_PATH, serve('/static')));
 app.use(mount(`${BASE_PATH}stylesheets/`, serve(`${CONFIG_DIR}/stylesheets`)));
+
+async function removeUnusedImages() {
+	const lanes = await getLanesNames();
+	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`${TASKS_DIR}/${lane}`)
+		.then(files => files.map(file => ({ lane, name: file }))))
+	);
+	const files = lanesFiles.flat();
+	const filesContents = await Promise.all(
+		files.map(async file => getContent(`${TASKS_DIR}/${file.lane}/${file.name}`))
+	);
+	const imagesBeingUsed = filesContents
+		.map(content => content.match(/!\[[^\]]*\]\(([^\s]+[.]*)\)/g))
+		.flat()
+		.filter(image => !!image && image.includes('/api/images/'))
+		.map(image => image.split('/api/images/')[1].slice(0, -1));
+	const allImages = await fs.promises.readdir(`${CONFIG_DIR}/images`);
+	const unusedImages = allImages.filter(image => !imagesBeingUsed.includes(image));
+	await Promise.all(unusedImages.map(image => fs.promises.rm(`${CONFIG_DIR}/images/${image}`)));
+};
+
+if (LOCAL_IMAGES_CLEANUP_INTERVAL > 0) {
+	const intervalInMs = LOCAL_IMAGES_CLEANUP_INTERVAL * 60000;
+	setInterval(removeUnusedImages, intervalInMs);
+}
+
 app.listen(8080);
