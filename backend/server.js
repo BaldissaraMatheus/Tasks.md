@@ -13,7 +13,8 @@ const serve = require('koa-static');
 const PUID = Number(process.env.PUID || '1000');
 const PGID = Number(process.env.PGID || '1000');
 const BASE_PATH = process.env.BASE_PATH ? `${process.env.BASE_PATH}/` : '/';
-const TASKS_DIR = process.env.TASKS_DIR ? process.env.TASKS_DIR : 'files';
+const TASKS_DIR = process.env.NODE_ENV === 'prod' ? '/tasks' : 'tasks';
+const CONFIG_DIR = process.env.NODE_ENV === 'prod' ? '/config' : 'config';
 
 const multerInstance = multer();
 
@@ -142,7 +143,7 @@ async function getTitle(ctx) {
 router.get('/title', getTitle);
 
 async function getLanesSort(ctx) {
-	const lanes = await fs.promises.readFile('sort/lanes.json')
+	const lanes = await fs.promises.readFile(`${CONFIG_DIR}/sort/lanes.json`)
 		.catch(err => [])
 	ctx.status = 200;
 	ctx.body = lanes;
@@ -152,16 +153,16 @@ router.get('/sort/lanes', getLanesSort);
 
 async function saveLanesSort(ctx) {
 	const newSort = JSON.stringify(ctx.request.body || []);
-	await fs.promises.mkdir('sort', { recursive: true });
-	await fs.promises.writeFile('sort/lanes.json', newSort);
-	await fs.promises.chown('sort/lanes.json', PUID, PGID);
+	await fs.promises.mkdir(`${CONFIG_DIR}/sort`, { recursive: true });
+	await fs.promises.writeFile(`${CONFIG_DIR}/sort/lanes.json`, newSort);
+	await fs.promises.chown(`${CONFIG_DIR}/sort/lanes.json`, PUID, PGID);
 	ctx.status = 200;
 }
 
 router.post('/sort/lanes', saveLanesSort);
 
 async function getCardsSort(ctx) {
-	const cards = await fs.promises.readFile('sort/cards.json')
+	const cards = await fs.promises.readFile(`${CONFIG_DIR}/sort/cards.json`)
 		.catch(err => [])
 	ctx.status = 200;
 	ctx.body = cards;
@@ -170,26 +171,26 @@ async function getCardsSort(ctx) {
 router.get('/sort/cards', getCardsSort);
 
 async function saveCardsSort(ctx) {
-	const newSort = (JSON.stringify(ctx.request.body || []));
-	await fs.promises.mkdir('sort', { recursive: true });
-	await fs.promises.writeFile('sort/cards.json', newSort);
-	await fs.promises.chown('sort/cards.json', PUID, PGID);
+	const newSort = JSON.stringify(ctx.request.body || []);
+	await fs.promises.mkdir(`${CONFIG_DIR}/sort`, { recursive: true });
+	await fs.promises.writeFile(`${CONFIG_DIR}/sort/cards.json`, newSort);
+	await fs.promises.chown(`${CONFIG_DIR}/sort/cards.json`, PUID, PGID);
 	ctx.status = 200;
 }
 
 router.post('/sort/cards', saveCardsSort);
 
 async function getImage(ctx) {
-	await send(ctx, `/config/images/${ctx.params.image}`, { root: '/' });
+	await send(ctx, `${CONFIG_DIR}/images/${ctx.params.image}`, { root: process.env.NODE_ENV === 'prod' ? '/' : __dirname });
 }
 
 router.get('/images/:image', getImage);
 
 async function saveImage(ctx) {
 	const imageName = ctx.request.file.originalname;
-	await fs.promises.mkdir('/config/images', { recursive: true });
-	await fs.promises.writeFile(`/config/images/${imageName}`, ctx.request.file.buffer);
-	await fs.promises.chown(`/config/images/${imageName}`, PUID, PGID);
+	await fs.promises.mkdir(`${CONFIG_DIR}/images`, { recursive: true });
+	await fs.promises.writeFile(`${CONFIG_DIR}/images/${imageName}`, ctx.request.file.buffer);
+	await fs.promises.chown(`${CONFIG_DIR}/images/${imageName}`, PUID, PGID);
 	ctx.status = 204;
 }
 
@@ -218,5 +219,5 @@ app.use(async (ctx, next) => {
 });
 app.use(mount(`${BASE_PATH}api`, router.routes()));
 app.use(mount(BASE_PATH, serve('/static')));
-app.use(mount(`${BASE_PATH}stylesheets/`, serve('/config/stylesheets')));
+app.use(mount(`${BASE_PATH}stylesheets/`, serve(`${CONFIG_DIR}/stylesheets`)));
 app.listen(8080);
