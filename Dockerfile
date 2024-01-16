@@ -25,7 +25,7 @@ ARG TITLE=""
 ARG BASE_PATH=""
 ENV VITE_TITLE $TITLE
 ENV BASE_PATH $BASE_PATH
-ENV TASKS_DIR /tasks
+ENV NODE_ENV prod
 USER root
 
 RUN set -eux \
@@ -44,6 +44,7 @@ WORKDIR /api
 EXPOSE 8080
 ENTRYPOINT mkdir -p /config/stylesheets/ && \
 	mkdir -p /config/images/ && \
+	mkdir -p /config/sort/ && \
 	cp -r /config/stylesheets/. /stylesheets/ && \
 	cp -r /stylesheets/. /config/stylesheets/ && \
 	chown -R $PUID:$PGID /config && \
