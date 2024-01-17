@@ -27,6 +27,7 @@ function App() {
   const [cardError, setCardError] = createSignal(null);
   const [laneError, setLaneError] = createSignal(null);
   const [confirmationPromptCb, setConfirmationPromptCb] = createSignal(false);
+  const [tagsOptions, setTagsOptions] = createSignal([]);
 
   function fetchTitle() {
     return fetch(`${api}/title`).then(res => res.text());
@@ -59,21 +60,34 @@ function App() {
     }
   }
 
+  function getTagsByTagNames(tags, tagNames) {
+    return tagNames.map(tagName => {
+      const foundTag = tags.find(tag => tag.name.toLowerCase() === tagName.toLowerCase());
+      const backgroundColor = foundTag?.backgroundColor || 'var(--tag-color-1)';
+      return { name: tagName, backgroundColor };
+    });
+  }
+
   async function fetchCards() {
-    const cardsFromApiReq = fetch(`${api}/cards`, { method: 'GET', mode: 'cors' })
-      .then(res => res.json())
-      .then(cards => cards.map(card => ({ ...card, tags: getTags(card.content), laneBeforeDragging: card.lane })))
-    const cardsSortedReq = fetch(`${api}/sort/cards`, { method: 'GET' })
-      .then(res => res.json());
-    const [cardsFromApi, cardsSorted] = await Promise.all([cardsFromApiReq, cardsSortedReq]);
-    const cardsFromApiAndSorted = cardsSorted
+    const tagsReq = fetch(`${api}/tags`, { method: 'GET', mode: 'cors' }).then(res => res.json());
+    const cardsReq = fetch(`${api}/cards`, { method: 'GET', mode: 'cors' }).then(res => res.json());
+    const cardsSortReq = fetch(`${api}/sort/cards`, { method: 'GET' }).then(res => res.json());
+    const [tags, cardsFromApi, cardsSort] = await Promise.all([tagsReq, cardsReq, cardsSortReq])
+    setTagsOptions(tags);
+    const cardsFromApiAndSorted = cardsSort
       .map(cardNameFromLocalStorage => cardsFromApi
         .find(cardFromApi => cardFromApi.name === cardNameFromLocalStorage))
       .filter(card => !!card)
     const cardsFromApiNotYetSorted = cardsFromApi
-      .filter(card => !cardsSorted.find(cardNameFromLocalStorage => cardNameFromLocalStorage === card.name));
+      .filter(card => !cardsSort.find(cardNameFromLocalStorage => cardNameFromLocalStorage === card.name));
     const newCards = [...cardsFromApiAndSorted, ...cardsFromApiNotYetSorted];
-    setCards(newCards);
+    const newCardsWithTags = newCards.map(card => {
+      const newCard = structuredClone(card);
+      const cardTagsNames = getTags(card.content) || [];
+      newCard.tags = getTagsByTagNames(tags, cardTagsNames);
+      return newCard;
+    })
+    setCards(newCardsWithTags);
   }
 
   async function fetchLanes() {
@@ -154,30 +168,32 @@ function App() {
   }
   const debounceChangeCardContent = debounce((newContent) => changeCardContent(newContent), 250);
 
-  function changeCardContent(newContent) {
+  async function changeCardContent(newContent) {
     const newCards = structuredClone(cards())
     const newCardIndex = structuredClone(newCards.findIndex(card => card.name === selectedCard().name
       && card.lane === selectedCard().lane
     ));
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
-    const newTags = getTags(newContent);
-    newCard.tags = newTags;
-    newCards[newCardIndex] = newCard;
-    setCards(newCards);
-    setSelectedCard(newCard);
-    fetch(`${api}/cards/${newCard.name}`, {
+    await fetch(`${api}/cards/${newCard.name}`, {
       method: 'PATCH',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: newContent })
-    });
+    })
+    const tags = await fetch(`${api}/tags`, { method: 'GET', mode: 'cors' }).then(res => res.json());
+    setTagsOptions(tags);
+    const cardTagsNames = getTags(newContent);
+    newCard.tags = getTagsByTagNames(tags, cardTagsNames);
+    newCards[newCardIndex] = newCard;
+    setCards(newCards);
+    setSelectedCard(newCard);
   }
 
   function getTags(text) {
     const indexOfTagsKeyword = text.toLowerCase().indexOf('tags: ');
     if (indexOfTagsKeyword === -1) {
-      return null;
+      return [];
     }
     let startOfTags = text.substring(indexOfTagsKeyword + 'tags: '.length);
     const lineBreak = text.indexOf('\n');
@@ -187,8 +203,7 @@ function App() {
     const tags = startOfTags
       .split(',')
       .map(tag => tag.trim())
-      .filter(tag => tag !== '')
-      .sort((a, b) => a.localeCompare(b))
+      .filter(tag => tag !== '');
     return tags;
   }
 
@@ -197,7 +212,7 @@ function App() {
     const btnCoordinates = event.target.getBoundingClientRect();
     let x = btnCoordinates.x + event.target.offsetWidth - 3;
     const menuWidth = 82;
-    const offsetX = x + menuWidth >= window.innerWidth ? 82 : 0;
+    const offsetX = x + menuWidth >= window.innerWidth ? menuWidth : 0;
     x -= offsetX;
     const offsetY = offsetX ? 0 : 3;
     const y = btnCoordinates.y + event.target.offsetHeight - offsetY;
@@ -401,6 +416,14 @@ function App() {
     setLaneOptionsBeingShown(null);
   }
 
+  async function handleTagColorChange() {
+    await fetchCards();
+    const newCardIndex = structuredClone(cards().findIndex(card => card.name === selectedCard().name
+      && card.lane === selectedCard().lane
+    ));
+    setSelectedCard(cards()[newCardIndex])
+  }
+
   const sortedCards = createMemo(() => {
     if (sortDirection() === null) {
       return cards();
@@ -414,14 +437,18 @@ function App() {
     return cards();
   });
 
-  const usedTags = createMemo(() => {
-    const allTags = cards()
-      .map(card => card.tags)
-      .flat()
-      .filter(tag => !!tag)
-    const tagsWithoutDuplicates = Array.from(new Set(allTags));
-    return tagsWithoutDuplicates;
-  });
+  function validateNewCardName(newName) {
+    if (newName === null) {
+      return;
+    }
+    if (newName === '') {
+      return 'The card must have a name';
+    }
+    if (cards().filter(card => card.name === newName).length > 0) {
+      return 'There\'s already a card with that name';
+    }
+    return null;
+  }
 
   onMount(async () => {
     const url = window.location.href;
@@ -467,19 +494,6 @@ function App() {
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
     });
   });
-
-  function validateNewCardName(newName) {
-    if (newName === null) {
-      return;
-    }
-    if (newName === '') {
-      return 'The card must have a name';
-    }
-    if (cards().filter(card => card.name === newName).length > 0) {
-      return 'There\'s already a card with that name';
-    }
-    return null;
-  }
 
   createEffect(() => {
     if (cardBeingRenamed()?.name === newCardName()) {
@@ -537,8 +551,8 @@ function App() {
             value={filteredTag() === null ? 'none' : filteredTag()}
           >
             <option value="none">None</option>
-            <For each={usedTags()}>
-              {tag => <option>{tag}</option>}
+            <For each={tagsOptions()}>
+              {tag => <option>{tag.name}</option>}
             </For>
           </select>
         </div>
@@ -551,9 +565,10 @@ function App() {
             name={selectedCard().name}
             content={selectedCard().content}
             tags={selectedCard().tags}
-            allTags={usedTags()}
+            tagsOptions={tagsOptions()}
             onExit={() => setSelectedCard(null)}
             onContentChange={(value) => debounceChangeCardContent(value, selectedCard().id)}
+            onTagColorChange={handleTagColorChange}
             onNameChange={handleOnSelectedCardNameChange}
             onTagClick={(tagId) => removeTagFromCard(tagId)}
             validateFn={validateNewCardName}
@@ -597,9 +612,11 @@ function App() {
                   }
                   { laneBeingRenamed()?.name === lane.name
                     ? <></>
-                    : <h5 class="tag counter">
-                      {sortedCards().filter(card => card.lane === lane.name).length}
-                    </h5>
+                    : <div class="tag">
+                        <h5 class="counter">
+                          {sortedCards().filter(card => card.lane === lane.name).length}
+                        </h5>
+                    </div>
                   }
                 </div>
                 { laneBeingRenamed()?.name === lane.name
@@ -673,7 +690,7 @@ function App() {
                               : <></>
                             }
                             </div>
-                          : <div>{card.content ? '📝 ' : ''}{card.name}</div>
+                          : <div class='card__name'>{card.content ? '📝 ' : ''}{card.name}</div>
                         }
                         { cardBeingRenamed()?.name === card.name
                           ? <></>
@@ -692,8 +709,14 @@ function App() {
                       <div class="tags">
                         <For each={card.tags}>
                           {tag => (
-                            <div class="tag">
-                              <h5>{tag}</h5>
+                            <div
+                              class="tag"
+                              style={{
+                                "background-color": tag.backgroundColor,
+                                "border-color": tag.backgroundColor
+                              }}
+                            >
+                              <h5>{tag.name}</h5>
                             </div>
                           )}
                         </For>

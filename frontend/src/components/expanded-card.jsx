@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onMount } from 'solid-js';
+import { createEffect, createSignal, onMount, onCleanup } from 'solid-js';
 import { api } from '../api'
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 import "@stackoverflow/stacks-editor/dist/styles.css";
@@ -12,9 +12,10 @@ import "@stackoverflow/stacks/dist/css/stacks.css";
  * @param {string} props.content Initial card content
  * @param {boolean} props.disableImageUpload Disable local image upload button
  * @param {string[]} props.tags Card tags
- * @param {string[]} props.allTags List of all available tags
+ * @param {string[]} props.tagsOptions List of all available tags
  * @param {Function} props.onExit Callback function for when user clicks outside of the modal 
  * @param {Function} props.onContentChange Callback function for when the content of the card is changed
+ * @param {Function} props.onTagColorChange Callback function for when the color of a tag is changed
  * @param {Function} props.onNameChange Callback function for when the name of the card is changed
  * @param {Function} props.onTagClick Callback function for when a tag is clicked
  * @param {Function} props.validateFn Callback function to validate new card name
@@ -26,6 +27,10 @@ function ExpandedCard(props) {
   const [nameInputValue, setNameInputValue] = createSignal(null);
   const [nameInputError, setNameInputError] = createSignal(null);
   const [editor, setEditor] = createSignal(null);
+  const [popupCoordinates, setPopupCoordinates] = createSignal(null);
+  const [clickedTag, setClickedTag] = createSignal(null);
+  const [showTagPopup, setShowTagPopup] = createSignal(false);
+  const [showColorPopup, setShowColorPopup] = createSignal(false);
 
   function focusOutOnEnter(e) {
     if (e.key === 'Enter') {
@@ -74,7 +79,9 @@ function ExpandedCard(props) {
     document.getElementById('tags-input')?.focus();
   }
 
-  function removeTag(tag) {
+  function deleteTag(tagName) {
+    setShowTagPopup(false);
+    setPopupCoordinates(null);
     let currentContent = editor().content;
     let indexOfTagsKeyword = currentContent.toLowerCase().indexOf('tags: ');
     if (indexOfTagsKeyword === -1) {
@@ -91,7 +98,7 @@ function ExpandedCard(props) {
     const newTags = tagsSubstring
       .split(', ')
       .map(newTag => newTag.trim())
-      .filter(newTag => newTag !== tag);
+      .filter(newTag => newTag !== tagName);
     const newTagsSubstring = newTags
       .join(', ');
     const endPart = currentContent.substring(tagsIndex + tagsSubstring.length, currentContent.length);
@@ -101,6 +108,7 @@ function ExpandedCard(props) {
         + endPart
       : endPart;
     editor().content = newContent;
+    setClickedTag(null);
     props.onContentChange(newContent);
   }
 
@@ -113,10 +121,6 @@ function ExpandedCard(props) {
     }
     setIsCreatingNewTag(false);
     setTagInputValue(null);
-  });
-
-  createEffect(() => {
-    setAvailableTags(props.allTags.filter(tag => tag.toLowerCase().includes(tagInputValue()?.toLowerCase())));
   });
 
   function handleOnNameInputChange(e) {
@@ -170,6 +174,48 @@ function ExpandedCard(props) {
     setTimeout(() => props.onContentChange(editor()?.content), 0)
   }
 
+  function handleTagClick(event, tag) {
+    event.stopPropagation();
+    const btnCoordinates = event.target.getBoundingClientRect();
+    let x = btnCoordinates.x + event.target.offsetWidth - 3;
+    const menuWidth = 82;
+    const offsetX = x + menuWidth >= window.innerWidth ? menuWidth : 0;
+    x -= offsetX;
+    const offsetY = offsetX ? 0 : 3;
+    const y = btnCoordinates.y + event.target.offsetHeight - offsetY;
+    setClickedTag(tag);
+    setPopupCoordinates({ x, y });
+    setShowTagPopup(true);
+  }
+
+  function handleClickOutsideOptions(event) {
+    if (event.target?.parentElement?.id !== clickedTag()?.name) {
+      setShowTagPopup(null);
+      setShowColorPopup(null);
+      setPopupCoordinates(null);
+      setClickedTag(null);
+    }
+  }
+
+  function handleChangeColorOptionClick() {
+    setShowTagPopup(false);
+    setShowColorPopup(true);
+  }
+
+  function handleColorOptionClick(option) {
+    setShowColorPopup(null);
+    setPopupCoordinates(null);
+    const tagName = clickedTag().name;
+    setClickedTag(null);
+    fetch(`${api}/tags/${tagName}`, {
+      method: 'PATCH',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ backgroundColor: `var(--tag-color-${option + 1})` })
+    })
+    .then(res => props.onTagColorChange());
+  }
+
   onMount(() => {
     const editorClasses = ['editor', 'theme-system'];
     if (props.disableImageUpload) {
@@ -186,6 +232,7 @@ function ExpandedCard(props) {
       },
     );
     setEditor(newEditor);
+    window.addEventListener('mousedown', handleClickOutsideOptions);
   });
 
   createEffect(() => {
@@ -200,15 +247,18 @@ function ExpandedCard(props) {
   });
 
   createEffect(() => {
-    setAvailableTags(props.allTags.filter(tag => tag.toLowerCase().includes(tagInputValue()?.toLowerCase())));
+    setAvailableTags(props.tagsOptions.filter(tag => tag.name.toLowerCase().includes(tagInputValue()?.toLowerCase())));
   });
 
-	return (
+  onCleanup(() => {
+    window.removeEventListener('mousedown', handleClickOutsideOptions)
+  });
+
+	return (<>
     <div className="modal-bg" onClick={props.onExit}>
       <div className="modal" onClick={event => event.stopPropagation()}>
         <div className="modal__toolbar">
-          {
-            nameInputValue() !== null
+          {nameInputValue() !== null
             ? <div class="input-and-error-msg">
               <input
                 type="text"
@@ -216,44 +266,42 @@ function ExpandedCard(props) {
                 class="modal__toolbar-name-input"
                 value={nameInputValue()}
                 onFocusOut={handleOnNameInputChange}
-                onKeyUp={handleOnNameInputChange}
-              />
-              { nameInputError()
-                ? <span class="error-msg">{ nameInputError() }</span>
-                : <></>
-              }
+                onKeyUp={handleOnNameInputChange} />
+              {nameInputError()
+                ? <span class="error-msg">{nameInputError()}</span>
+                : <></>}
             </div>
             : <h1 class="modal__toolbar-name" onClick={startRenamingCard} title="Click to rename card">
               {props.name || 'NO NAME'}
-            </h1>
-          }
+            </h1>}
           <button class="modal__toolbar-close-btn" onClick={props.onExit}>X</button>
         </div>
         <div className="modal__tags">
-          {
-            isCreatingNewTag()
-              ? <>
-                <input
-                  id="tags-input"
-                  type="text"
-                  value={tagInputValue()}
-                  onInput={e => setTagInputValue(e.target.value)}
-                  onFocusOut={handleTagInputFocusOut}
-                  onKeyUp={focusOutOnEnter}
-                  list="tags"
-                />
-                <datalist id="tags">
-                  <For each={availableTags()}>
-                    {tag => <option value={tag} />}
-                  </For>
-                </datalist>
-              </>
-              : <button onClick={handleAddTagBtnOnClick}>Add tag</button>
-          }
+          {isCreatingNewTag()
+            ? <>
+              <input
+                id="tags-input"
+                type="text"
+                value={tagInputValue()}
+                onInput={e => setTagInputValue(e.target.value)}
+                onFocusOut={handleTagInputFocusOut}
+                onKeyUp={focusOutOnEnter}
+                list="tags" />
+              <datalist id="tags">
+                <For each={availableTags()}>
+                  {tag => <option value={tag.name} />}
+                </For>
+              </datalist>
+            </>
+            : <button onClick={handleAddTagBtnOnClick}>Add tag</button>}
           <For each={props.tags || []}>
             {tag => (
-              <div className="tag tag--clicable" onClick={() => removeTag(tag)}>
-                <h5>{tag}</h5>
+              <div
+                className="tag tag--clicable"
+                style={{ "background-color": tag.backgroundColor, "border-color": tag.backgroundColor }}
+                onClick={e => handleTagClick(e, tag)}
+              >
+                <h5>{tag.name}</h5>
               </div>
             )}
           </For>
@@ -268,6 +316,40 @@ function ExpandedCard(props) {
         </div>
       </div>
     </div>
+    <Show when={showTagPopup()}>
+      <div
+        id={clickedTag().name}
+        class="popup"
+        style={{
+          top: `${popupCoordinates().y}px`,
+          left: `${popupCoordinates().x}px`,
+        }}
+      >
+        <button onClick={handleChangeColorOptionClick}>Change color</button>
+        <button onClick={() => deleteTag(clickedTag().name)}>Delete tag</button>
+      </div>
+    </Show>
+    <Show when={showColorPopup()}>
+      <div
+        id={clickedTag().name}
+        class="popup"
+        style={{
+          top: `${popupCoordinates().y}px`,
+          left: `${popupCoordinates().x}px`,
+        }}
+      >
+        {
+          new Array(7).fill(1).map((option, i) => (
+            <button onClick={() => handleColorOptionClick(i)}>Color {i + 1} <div
+              class='color-preview-option'
+              style={{ "background-color": `var(--tag-color-${i + 1})` }}
+            />
+            </button>
+          ))
+        }
+      </div>
+    </Show>
+  </>
 	)
 }
 
