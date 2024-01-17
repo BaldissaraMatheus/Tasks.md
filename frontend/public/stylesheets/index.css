@@ -224,6 +224,10 @@ button.small {
   flex-grow: 1;
 }
 
+.card__name {
+  overflow-x: hidden;
+}
+
 .popup {
   position: absolute;
   border-radius: 6px;
@@ -236,9 +240,13 @@ button.small {
     0 8px 16px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
+  z-index: 99999;
 }
 
 .popup > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: 0;
   text-align: left;
   background: var(--popup-background-color);
@@ -259,19 +267,21 @@ button.small {
   flex-wrap: wrap;
   gap: 8px;
   padding: 12px;
-  color: var(--tag-font-color);
 }
 
 .tag {
   padding: 4px;
   border-radius: 5px;
-  background:	var(--tag-background-color);
-  border: 1px solid var(--tag-border-color);
-  color: var(--tag-font-color);
+  border: 1px solid var(--tag-color-1);
+  background-color: var(--tag-color-1);
 }
 
 .tag--clicable {
   cursor: pointer;
+}
+
+.tag h5 {
+  color: var(--tag-text-color);
 }
 
 .counter {
@@ -410,8 +420,8 @@ a, a > * {
 }
 
 .editor .is-selected {
-  background: var(--tag-background-color) !important;
-  color: var(--tag-font-color);
+  background: var(--tag-color-1) !important;
+  color: var(--tag-color-1);
 }
 
 .editor .s-popover {
@@ -437,10 +447,8 @@ a, a > * {
   border-color: var(--button-border-color);
 }
 
-.editor input:checked + .s-btn.s-btn__outlined {
-  background-color: var(--tag-background-color) !important;
-}
-
-.editor input:checked + .s-btn.s-btn__outlined * {
-  color: var(--tag-font-color);
+.color-preview-option {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }

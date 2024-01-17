@@ -29,6 +29,69 @@ async function getLanesNames() {
 	return fs.promises.readdir(TASKS_DIR);
 }
 
+async function getTags(ctx) {
+	const lanes = await getLanesNames();
+	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`${TASKS_DIR}/${lane}`)
+		.then(files => files.map(file => ({ lane, name: file }))))
+	);
+	const files = lanesFiles.flat();
+	const filesContents = await Promise.all(
+		files.map(file => getContent(`${TASKS_DIR}/${file.lane}/${file.name}`))
+	);
+	const usedTagsTexts = filesContents
+		.map(content => getTagsTextsFromCardContent(content))
+		.flat()
+		.sort((a, b) => a.localeCompare(b));
+	const usedTagsTextsWithoutDuplicates = Array.from(new Set(usedTagsTexts.map(tagText => tagText.toLowerCase())));
+	const allTags = await fs.promises.readFile(`${CONFIG_DIR}/tags.json`)
+		.then(res => JSON.parse(res.toString()))
+		.catch(err => []);
+	const usedTags = usedTagsTextsWithoutDuplicates
+		.map(tag => allTags.find(tagToFind => tagToFind.name.toLowerCase() === tag) || { name: tag, backgroundColor: 'var(--tag-color-1)' })
+	await fs.promises.writeFile(`${CONFIG_DIR}/tags.json`, JSON.stringify(usedTags));
+	ctx.status = 200;
+	ctx.body = usedTags;
+}
+
+router.get('/tags', getTags);
+
+async function updateTagBackgroundColor(ctx) {
+	const name = ctx.params.tagName;
+	const backgroundColor = ctx.request.body.backgroundColor;
+	const tags = await fs.promises.readFile(`${CONFIG_DIR}/tags.json`)
+		.then(res => JSON.parse(res.toString()))
+		.catch(err => []);
+	const tagIndex = tags.findIndex(tag => tag.name.toLowerCase() === name.toLowerCase());
+	if (tagIndex === -1) {
+		ctx.status = 404;
+		ctx.body = `Tag ${name} not found`;
+		return;
+	}
+	tags[tagIndex].backgroundColor = backgroundColor;
+	await fs.promises.writeFile(`${CONFIG_DIR}/tags.json`, JSON.stringify(tags));
+	ctx.status = 204;
+}
+
+router.patch('/tags/:tagName', updateTagBackgroundColor);
+
+function getTagsTextsFromCardContent(cardContent) {
+	const indexOfTagsKeyword = cardContent.toLowerCase().indexOf('tags: ');
+	if (indexOfTagsKeyword === -1) {
+		return [];
+	}
+	let startOfTags = cardContent.substring(indexOfTagsKeyword + 'tags: '.length);
+	const lineBreak = cardContent.indexOf('\n');
+	if (lineBreak > 0) {
+		startOfTags = startOfTags.split('\n')[0];
+	}
+	const tags = startOfTags
+		.split(',')
+		.map(tag => tag.trim())
+		.filter(tag => tag !== '')
+	
+	return tags;
+}
+
 async function getLaneByCardName(cardName) {
 	const lanes = await getLanesNames();
 	const lanesFiles = await Promise.all(lanes.map(lane => fs.promises.readdir(`${TASKS_DIR}/${lane}`)
@@ -146,6 +209,7 @@ router.get('/title', getTitle);
 
 async function getLanesSort(ctx) {
 	const lanes = await fs.promises.readFile(`${CONFIG_DIR}/sort/lanes.json`)
+		.then(res => JSON.parse(res.toString()))
 		.catch(err => [])
 	ctx.status = 200;
 	ctx.body = lanes;
@@ -165,6 +229,7 @@ router.post('/sort/lanes', saveLanesSort);
 
 async function getCardsSort(ctx) {
 	const cards = await fs.promises.readFile(`${CONFIG_DIR}/sort/cards.json`)
+		.then(res => JSON.parse(res.toString()))
 		.catch(err => [])
 	ctx.status = 200;
 	ctx.body = cards;

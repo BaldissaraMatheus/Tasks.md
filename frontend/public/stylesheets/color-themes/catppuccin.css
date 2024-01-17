@@ -4,18 +4,31 @@
   --dark-theme-color-4: #51576d;
   --dark-theme-color-3: #626880;
   --dark-theme-color-5: #c6d0f5;
-  --dark-theme-accent-color-1: #e5c890;
-  --dark-theme-accent-color-2: #ca9ee6;
+  --dark-theme-accent-color-1: #8caaee;
+  --dark-theme-accent-color-2: #a6d189;
+  --dark-theme-accent-color-3: #e5c890;
+  --dark-theme-accent-color-4: #ef9f76;
+  --dark-theme-accent-color-5: #e78284;
+  --dark-theme-accent-color-6: #ca9ee6;
+  --dark-theme-accent-color-7: #eebebe;
 
   --light-theme-color-1: #eff1f5;
   --light-theme-color-2: #e6e9ef;
   --light-theme-color-3: #dce0e8;
   --light-theme-color-4: #ccd0da;
   --light-theme-color-5: #4c4f69;
-  --light-theme-accent-color-1: #dc8a78;
-  --light-theme-accent-color-2: #7287fd;
-  --light-theme-danger-color: #d20f39;
-  --dark-theme-danger-color: #e78284;
+  --light-theme-accent-color-1: #7287fd;
+  --light-theme-accent-color-2: #40a02b;
+  --light-theme-accent-color-3: #df8e1d;
+  --light-theme-accent-color-4: #fe640b;
+  --light-theme-accent-color-5: #d20f39;
+  --light-theme-accent-color-6: #8839ef;
+  --light-theme-accent-color-7: #dc8a78;
+
+  --dark-theme-accent-color: var(--dark-theme-accent-color-3);
+  --light-theme-accent-color: var(--light-theme-accent-color-4);
+  --dark-theme-danger-color: var(--dark-theme-accent-color-5);
+  --light-theme-danger-color: var(--light-theme-accent-color-5);
 
   --font-color: var(--dark-theme-color-5);
   --app-background-color: var(--dark-theme-color-1);
@@ -23,13 +36,10 @@
   --app-header-border-color: var(--dark-theme-color-4);
   --input-background-color: var(--dark-theme-color-4);
   --input-border-color: var(--dark-theme-color-4);
-  --button-background-color: var(--dark-theme-accent-color-2);
-  --button-border-color: var(--dark-theme-accent-color-2);
+  --button-background-color: var(--dark-theme-accent-color-1);
+  --button-border-color: var(--dark-theme-accent-color-1);
   --button-font-color: var(--dark-theme-color-1);
   --lane-background-color: var(--dark-theme-color-2);
-  --tag-background-color: var(--dark-theme-accent-color-1);
-  --tag-border-color: var(--dark-theme-accent-color-1);
-  --tag-font-color: var(--dark-theme-color-1);
   --card-background-color: var(--dark-theme-color-4);
   --card-border-color: var(--dark-theme-color-4);
   --card-border-color: var(--dark-theme-color-4);
@@ -41,6 +51,14 @@
   --link-color: var(--dark-theme-accent-color-1);
   --editor-background-color: var(--dark-theme-color-1);
   --editor-code-background-color: var(--dark-theme-color-2);
+  --tag-text-color: var(--dark-theme-color-1);
+  --tag-color-1: var(--dark-theme-accent-color-1);
+  --tag-color-2: var(--dark-theme-accent-color-2);
+  --tag-color-3: var(--dark-theme-accent-color-3);
+  --tag-color-4: var(--dark-theme-accent-color-4);
+  --tag-color-5: var(--dark-theme-accent-color-5);
+  --tag-color-6: var(--dark-theme-accent-color-6);
+  --tag-color-7: var(--dark-theme-accent-color-7);
 }
 
 @media (prefers-color-scheme: light) {
@@ -51,15 +69,10 @@
     --app-header-border-color: var(--light-theme-color-4);
     --input-background-color: var(--light-theme-color-3);
     --input-border-color: var(--light-theme-color-4);
-    --button-background-color: var(--light-theme-accent-color-2);
-    --button-border-color: var(--light-theme-accent-color-2);
+    --button-background-color: var(--light-theme-accent-color-1);
+    --button-border-color: var(--light-theme-accent-color-1);
     --button-font-color: var(--light-theme-color-1);
     --lane-background-color: var(--light-theme-color-4);
-    --tag-background-color: var(--light-theme-color-3);
-    --tag-border-color: var(--light-theme-accent-color-1);
-    --tag-background-color: var(--light-theme-accent-color-1);
-    --tag-border-color: var(--light-theme-accent-color-1);
-    --tag-font-color: var(--light-theme-color-1);
     --card-background-color: var(--light-theme-color-2);
     --card-border-color: var(--light-theme-color-4);
     --modal-background-color: var(--light-theme-color-2);
@@ -70,5 +83,13 @@
     --link-color: var(--light-theme-accent-color-1);
     --editor-background-color: var(--light-theme-color-1);
     --editor-code-background-color: var(--light-theme-color-2);
+    --tag-text-color: var(--light-theme-color-2);
+    --tag-color-1: var(--light-theme-accent-color-1);
+    --tag-color-2: var(--light-theme-accent-color-2);
+    --tag-color-3: var(--light-theme-accent-color-3);
+    --tag-color-4: var(--light-theme-accent-color-4);
+    --tag-color-5: var(--light-theme-accent-color-5);
+    --tag-color-6: var(--light-theme-accent-color-6);
+    --tag-color-7: var(--light-theme-accent-color-7);
   }
 }
