@@ -198,8 +198,7 @@ button.small {
   box-sizing: border-box;
 }
 
-/* TODO uncomment those lines when firefox add :has support by default */
-/* .card:active {
+.card:active {
   opacity: 0.5;
 }
 
@@ -209,7 +208,7 @@ button.small {
 
 .card:active:has(* button:active) {
   opacity: 1 !important;
-} */
+}
 
 .card__toolbar {
   width: 100%;
