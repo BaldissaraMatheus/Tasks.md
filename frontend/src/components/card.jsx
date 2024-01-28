@@ -1,7 +1,6 @@
-import { createEffect } from "solid-js";
+import { handleEnter } from "../utils";
 
 export function Card(props) {
-
   return (
     <div
       class={`card ${props.isBeingDraggedOver ? "dragged-over" : ""}`}
@@ -11,6 +10,8 @@ export function Card(props) {
       onDragOver={props.onDragOver}
       onDragEnd={props.onDragEnd}
       onClick={props.onClick}
+      onKeyUp={e => handleEnter(e, props.onClick)}
+      tabIndex="0"
     >
       <div class="card__toolbar">
         {props.headerSlot}

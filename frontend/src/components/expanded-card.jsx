@@ -10,6 +10,7 @@ import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from './menu';
+import { handleEnter } from "../utils";
 
 /**
  *
@@ -264,8 +265,9 @@ function ExpandedCard(props) {
     if (props.disableImageUpload) {
       editorClasses.push("disable-image-upload");
     }
+    const editorEl = document.getElementById("editor-container");
     const newEditor = new StacksEditor(
-      document.getElementById("editor-container"),
+      editorEl,
       props.content || "",
       {
         classList: ["theme-system"],
@@ -275,6 +277,8 @@ function ExpandedCard(props) {
       }
     );
     setEditor(newEditor);
+    const editorTextArea = editorEl.childNodes[0].childNodes[2];
+    editorTextArea.focus();
   });
 
   return (
@@ -302,7 +306,9 @@ function ExpandedCard(props) {
               <h1
                 class="modal__toolbar-name"
                 onClick={startRenamingCard}
+                onKeyUp={e => handleEnter(e, startRenamingCard)}
                 title="Click to rename card"
+                tabIndex="0"
               >
                 {props.name || "NO NAME"}
               </h1>

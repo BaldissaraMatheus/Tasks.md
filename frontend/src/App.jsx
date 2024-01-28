@@ -567,7 +567,7 @@ function App() {
         onNewLaneBtnClick={createNewLane}
       />
       {title() ? <h1 class="app-title">{title()}</h1> : <></>}
-      <main class={`lanes ${title() ? "lanes--has-title" : ""}`}>
+      <main class={`lanes ${title() ? "lanes--has-title" : ""}`} tabIndex="-1">
         <Show when={!!selectedCard()}>
           <ExpandedCard
             name={selectedCard().name}
