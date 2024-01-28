@@ -3,9 +3,9 @@ import { Menu } from "./menu";
 import { getButtonCoordinates } from "../utils";
 
 /**
- * 
- * @param {Object} props 
- * @param {string} props.name 
+ *
+ * @param {Object} props
+ * @param {string} props.name
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDelete
  * @param {Function} props.onDragStart
@@ -16,7 +16,7 @@ export function CardName(props) {
 
   function startRenamingCard() {
     setShowMenu(false);
-		props.onRenameBtnClick()
+    props.onRenameBtnClick();
   }
 
   function handleMenuClose() {
@@ -30,18 +30,22 @@ export function CardName(props) {
   }
 
   const menuOptions = [
-    { label: 'Rename card', onClick: startRenamingCard },
-    { label: 'Delete card', onClick: props.onDelete, requiresConfirmation: true },
+    { label: "Rename card", onClick: startRenamingCard },
+    {
+      label: "Delete card",
+      onClick: props.onDelete,
+      requiresConfirmation: true,
+    },
   ];
 
   return (
     <>
       <div
-				class="lane__header-name-and-count"
-				draggable={true}
-				onDragEnter={(e) => e.preventDefault()}
-				onDragStart={props.onDragStart}
-			>
+        class="lane__header-name-and-count"
+        draggable={true}
+        onDragEnter={(e) => e.preventDefault()}
+        onDragStart={props.onDragStart}
+      >
         <strong>{props.name}</strong>
       </div>
       <div class="lane__header-buttons">
