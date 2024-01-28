@@ -44,7 +44,7 @@ strong {
 
 .lanes {
   background: var(--app-background-color);
-  height: calc(100vh - 57px);
+  height: calc(100dvh - 57px);
   padding: 20px;
   box-sizing: border-box;
   display: flex;
@@ -53,7 +53,7 @@ strong {
 }
 
 .lanes--has-title {
-  height: calc(100vh - 57px - 49px);
+  height: calc(100dvh - 57px - 49px);
 }
 
 input,
@@ -291,8 +291,8 @@ button.small {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.5);
 }
 
