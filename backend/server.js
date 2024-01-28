@@ -146,9 +146,7 @@ async function updateCard(ctx) {
 	if (newLane !== oldLane || name !== newName) {
 		await fs.promises.rename(`${TASKS_DIR}/${oldLane}/${name}.md`, `${TASKS_DIR}/${newLane}/${newName}.md`);
 	}
-	if (newcontent) {
-		await fs.promises.writeFile(`${TASKS_DIR}/${newLane}/${newName}.md`, newcontent);
-	}
+	await fs.promises.writeFile(`${TASKS_DIR}/${newLane}/${newName}.md`, newcontent || '');
 	await fs.promises.chown(`${TASKS_DIR}/${newLane}/${newName}.md`, PUID, PGID);
 	ctx.status = 204;
 }

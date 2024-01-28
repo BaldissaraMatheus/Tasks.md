@@ -1,187 +1,168 @@
-import { createSignal, For, Show, onMount, onCleanup, createMemo, createEffect, createResource } from 'solid-js';
-import ExpandedCard from './components/expanded-card';
+import {
+  createSignal,
+  For,
+  Show,
+  onMount,
+  createMemo,
+  createEffect,
+  createResource,
+} from "solid-js";
+import ExpandedCard from "./components/expanded-card";
+import { Lane } from "./components/lane";
 import { debounce } from "@solid-primitives/scheduled";
-import { api } from './api'
-import {polyfill} from "mobile-drag-drop";
+import { api } from "./api";
+import { polyfill } from "mobile-drag-drop";
+import { LaneName } from "./components/lane-name";
+import { NameInput } from "./components/name-input";
+import { Header } from "./components/header";
+import { Card } from "./components/card";
+import { CardName } from "./components/card-name";
 
 function App() {
-  const [lanes, setLanes] = createSignal([])
+  const [lanes, setLanes] = createSignal([]);
   const [cards, setCards] = createSignal([]);
-  const [sort, setSort] = createSignal(getDefaultFromLocalStorage('sort'))
-  const [sortDirection, setSortDirection] = createSignal(getDefaultFromLocalStorage('sortDirection'))
-  const [cardBeingDraggedName, setCardBeingDragged] = createSignal(null);
-  const [cardBeingDraggedOriginalLane, setCardBeingDraggedOriginalLane] = createSignal(null);
-  const [cardDraggedOver, setCardDraggedOver] = createSignal(null);
-  const [laneBeingDraggedName, setLaneBeingDraggedName] = createSignal(null);
-  const [laneDraggedOverName, setLaneDraggedOverName] = createSignal(null);
+  const [sort, setSort] = createSignal(getDefaultFromLocalStorage("sort"));
+  const [sortDirection, setSortDirection] = createSignal(
+    getDefaultFromLocalStorage("sortDirection")
+  );
+  const [cardBeingDragged, setCardBeingDragged] = createSignal(null);
+  const [cardBeingDraggedOriginalLane, setCardBeingDraggedOriginalLane] =
+    createSignal(null);
   const [selectedCard, setSelectedCard] = createSignal(null);
-  const [cardOptionsBeingShown, setCardOptionsBeingShown] = createSignal(null);
-  const [laneOptionsBeingShown, setLaneOptionsBeingShown] = createSignal(null);
-  const [popupCoordinates, setPopupCoordinates] = createSignal();
-  const [search, setSearch] = createSignal('');
-  const [laneBeingRenamed, setLaneBeingRenamed] = createSignal(null);
-  const [newLaneName, setNewLaneName] = createSignal('');
-  const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
-  const [newCardName, setNewCardName] = createSignal(null);
+  const [search, setSearch] = createSignal("");
   const [filteredTag, setFilteredTag] = createSignal(null);
-  const [cardError, setCardError] = createSignal(null);
-  const [laneError, setLaneError] = createSignal(null);
-  const [confirmationPromptCb, setConfirmationPromptCb] = createSignal(false);
   const [tagsOptions, setTagsOptions] = createSignal([]);
+  const [laneBeingDragged, setLaneBeingDragged] = createSignal(null);
+  const [laneDraggedOverName, setLaneDraggedOverName] = createSignal(null);
+  const [laneBeingRenamedName, setLaneBeingRenamedName] = createSignal(null);
+  const [newLaneName, setNewLaneName] = createSignal(null);
+  const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
+  const [cardDraggedOver, setCardDraggedOver] = createSignal(null);
+  const [newCardName, setNewCardName] = createSignal(null);
 
   function fetchTitle() {
-    return fetch(`${api}/title`).then(res => res.text());
+    return fetch(`${api}/title`).then((res) => res.text());
   }
 
   const [title] = createResource(fetchTitle);
 
   function getDefaultFromLocalStorage(key) {
     const defaultValue = localStorage.getItem(key);
-    if (defaultValue === 'null') {
+    if (defaultValue === "null") {
       return null;
     }
     return defaultValue;
   }
 
-  function handleClickOutsideOptions(event) {
-    if (
-      cardOptionsBeingShown() !== null
-      && event.target?.parentElement?.id !== `${cardOptionsBeingShown().name}`
-    ) {
-      setCardOptionsBeingShown(null);
-      setConfirmationPromptCb(null);
-    }
-    if (
-      laneOptionsBeingShown() !== null
-      && event.target?.parentElement?.id !== `${laneOptionsBeingShown().name}`
-    ) {
-      setLaneOptionsBeingShown(null);
-      setConfirmationPromptCb(null);
-    }
-  }
-
   function getTagsByTagNames(tags, tagNames) {
-    return tagNames.map(tagName => {
-      const foundTag = tags.find(tag => tag.name.toLowerCase() === tagName.toLowerCase());
-      const backgroundColor = foundTag?.backgroundColor || 'var(--tag-color-1)';
+    return tagNames.map((tagName) => {
+      const foundTag = tags.find(
+        (tag) => tag.name.toLowerCase() === tagName.toLowerCase()
+      );
+      const backgroundColor = foundTag?.backgroundColor || "var(--tag-color-1)";
       return { name: tagName, backgroundColor };
     });
   }
 
   async function fetchCards() {
-    const tagsReq = fetch(`${api}/tags`, { method: 'GET', mode: 'cors' }).then(res => res.json());
-    const cardsReq = fetch(`${api}/cards`, { method: 'GET', mode: 'cors' }).then(res => res.json());
-    const cardsSortReq = fetch(`${api}/sort/cards`, { method: 'GET' }).then(res => res.json());
-    const [tags, cardsFromApi, cardsSort] = await Promise.all([tagsReq, cardsReq, cardsSortReq])
+    const tagsReq = fetch(`${api}/tags`, { method: "GET", mode: "cors" }).then(
+      (res) => res.json()
+    );
+    const cardsReq = fetch(`${api}/cards`, {
+      method: "GET",
+      mode: "cors",
+    }).then((res) => res.json());
+    const cardsSortReq = fetch(`${api}/sort/cards`, { method: "GET" }).then(
+      (res) => res.json()
+    );
+    const [tags, cardsFromApi, cardsSort] = await Promise.all([
+      tagsReq,
+      cardsReq,
+      cardsSortReq,
+    ]);
     setTagsOptions(tags);
     const cardsFromApiAndSorted = cardsSort
-      .map(cardNameFromLocalStorage => cardsFromApi
-        .find(cardFromApi => cardFromApi.name === cardNameFromLocalStorage))
-      .filter(card => !!card)
-    const cardsFromApiNotYetSorted = cardsFromApi
-      .filter(card => !cardsSort.find(cardNameFromLocalStorage => cardNameFromLocalStorage === card.name));
+      .map((cardNameFromLocalStorage) =>
+        cardsFromApi.find(
+          (cardFromApi) => cardFromApi.name === cardNameFromLocalStorage
+        )
+      )
+      .filter((card) => !!card);
+    const cardsFromApiNotYetSorted = cardsFromApi.filter(
+      (card) =>
+        !cardsSort.find(
+          (cardNameFromLocalStorage) => cardNameFromLocalStorage === card.name
+        )
+    );
     const newCards = [...cardsFromApiAndSorted, ...cardsFromApiNotYetSorted];
-    const newCardsWithTags = newCards.map(card => {
+    const newCardsWithTags = newCards.map((card) => {
       const newCard = structuredClone(card);
       const cardTagsNames = getTags(card.content) || [];
       newCard.tags = getTagsByTagNames(tags, cardTagsNames);
       return newCard;
-    })
+    });
     setCards(newCardsWithTags);
   }
 
   async function fetchLanes() {
-    const lanesFromApiReq = fetch(`${api}/lanes`, { method: 'GET', mode: 'cors' })
-      .then(res => res.json())
-      .then(lanes => lanes.map(lane => ({ name: lane })));
-    const lanesSortedReq = fetch(`${api}/sort/lanes`, { method: 'GET', })
-      .then(res => res.json());
-    const [lanesFromApi, lanesSorted] = await Promise.all([lanesFromApiReq, lanesSortedReq]);
+    const lanesFromApiReq = fetch(`${api}/lanes`, {
+      method: "GET",
+      mode: "cors",
+    }).then((res) => res.json());
+    const lanesSortedReq = fetch(`${api}/sort/lanes`, { method: "GET" }).then(
+      (res) => res.json()
+    );
+    const [lanesFromApi, lanesSorted] = await Promise.all([
+      lanesFromApiReq,
+      lanesSortedReq,
+    ]);
     if (lanesFromApi.length <= lanes().length) {
       return;
     }
     const lanesFromApiAndSorted = lanesSorted
-      .filter(sortedLane => lanesFromApi.find(lane => lane.name === sortedLane))
-      .map(lane => lanesFromApi.find(laneFromApi => laneFromApi.name === lane));
-    const lanesFromApiNotYetSorted = lanesFromApi.filter(lane => !lanesSorted.includes(lane.name));
+      .filter((sortedLane) => lanesFromApi.find((lane) => lane === sortedLane))
+      .map((lane) => lanesFromApi.find((laneFromApi) => laneFromApi === lane));
+    const lanesFromApiNotYetSorted = lanesFromApi.filter(
+      (lane) => !lanesSorted.includes(lane)
+    );
     setLanes([...lanesFromApiAndSorted, ...lanesFromApiNotYetSorted]);
-  }
-
-  function moveCardBeingDraggedNextToCardDraggedOver() {
-    const newCards = structuredClone(cards());
-    const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
-    const cardDraggedOverIndex = newCards.findIndex(card => card.name === cardDraggedOver());
-
-    const cardBeingDraggedlane = newCards[cardBeingDraggedIndex].lane;
-    const cardDraggedOverlane = newCards[cardDraggedOverIndex].lane;
-    newCards[cardBeingDraggedIndex].lane = cardDraggedOverlane;
-
-    const areBothCardsInSameLane = cardBeingDraggedlane === cardDraggedOverlane;
-    let upOrDownDisplacement = 0;
-
-    if (areBothCardsInSameLane) {
-      upOrDownDisplacement = cardBeingDraggedIndex < cardDraggedOverIndex
-        ? 1
-        : 0;
-    }
-
-    const cardBeingDragged = newCards[cardBeingDraggedIndex];
-    newCards[cardBeingDraggedIndex] = null;
-
-    const cardsWithChangedPositions = [
-      ...newCards.slice(0, cardDraggedOverIndex + upOrDownDisplacement),
-      cardBeingDragged,
-      ...newCards.slice(cardDraggedOverIndex + upOrDownDisplacement)
-    ]
-    .filter(card => card !== null);
-    setCards(cardsWithChangedPositions);
-    setCardDraggedOver(null);
-    setCardBeingDragged(null);
-    debounceUpdateCardLaneReq({ lane: cardBeingDraggedlane, name: cardBeingDragged.name, newLane: cardDraggedOverlane });
   }
 
   const debounceUpdateCardLaneReq = debounce((card) => {
     fetch(`${api}/cards/${card.name}`, {
-      method: 'PATCH',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lane: card.newLane })
+      method: "PATCH",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lane: card.newLane }),
     });
     setCardBeingDraggedOriginalLane(card.newLane);
   }, 250);
 
-  function moveCardToLane() {
-    const newLane = laneDraggedOverName();
-    setLaneDraggedOverName(null);
-    let newCards = structuredClone(cards());
-    const cardBeingDraggedIndex = newCards.findIndex(card => card.name === cardBeingDraggedName());
-    const newCard = structuredClone(newCards[cardBeingDraggedIndex]);
-    if (newCard.lane === newLane) {
-      return;
-    }
-    debounceUpdateCardLaneReq({ lane: cardBeingDraggedOriginalLane(), name: newCard.name, newLane });
-    newCard.lane = newLane;
-    newCards = newCards.filter((card, i) => i !== cardBeingDraggedIndex);
-    newCards.push(newCard);
-    setCards(newCards);
-    setCardDraggedOver(null);
-  }
-  const debounceChangeCardContent = debounce((newContent) => changeCardContent(newContent), 250);
+  const debounceChangeCardContent = debounce(
+    (newContent) => changeCardContent(newContent),
+    250
+  );
 
   async function changeCardContent(newContent) {
-    const newCards = structuredClone(cards())
-    const newCardIndex = structuredClone(newCards.findIndex(card => card.name === selectedCard().name
-      && card.lane === selectedCard().lane
-    ));
+    const newCards = structuredClone(cards());
+    const newCardIndex = structuredClone(
+      newCards.findIndex(
+        (card) =>
+          card.name === selectedCard().name && card.lane === selectedCard().lane
+      )
+    );
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
     await fetch(`${api}/cards/${newCard.name}`, {
-      method: 'PATCH',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: newContent })
-    })
-    const tags = await fetch(`${api}/tags`, { method: 'GET', mode: 'cors' }).then(res => res.json());
+      method: "PATCH",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newContent }),
+    });
+    const tags = await fetch(`${api}/tags`, {
+      method: "GET",
+      mode: "cors",
+    }).then((res) => res.json());
     setTagsOptions(tags);
     const cardTagsNames = getTags(newContent);
     newCard.tags = getTagsByTagNames(tags, cardTagsNames);
@@ -191,48 +172,36 @@ function App() {
   }
 
   function getTags(text) {
-    const indexOfTagsKeyword = text.toLowerCase().indexOf('tags: ');
+    const indexOfTagsKeyword = text.toLowerCase().indexOf("tags: ");
     if (indexOfTagsKeyword === -1) {
       return [];
     }
-    let startOfTags = text.substring(indexOfTagsKeyword + 'tags: '.length);
-    const lineBreak = text.indexOf('\n');
+    let startOfTags = text.substring(indexOfTagsKeyword + "tags: ".length);
+    const lineBreak = text.indexOf("\n");
     if (lineBreak > 0) {
-      startOfTags = startOfTags.split('\n')[0];
+      startOfTags = startOfTags.split("\n")[0];
     }
     const tags = startOfTags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag !== '');
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== "");
     return tags;
-  }
-
-  function handleOptionBtnOnClick(event) {
-    event.stopPropagation();
-    const btnCoordinates = event.target.getBoundingClientRect();
-    let x = btnCoordinates.x + event.target.offsetWidth - 3;
-    const menuWidth = 82;
-    const offsetX = x + menuWidth >= window.innerWidth ? menuWidth : 0;
-    x -= offsetX;
-    const offsetY = offsetX ? 0 : 3;
-    const y = btnCoordinates.y + event.target.offsetHeight - offsetY;
-    setPopupCoordinates({ x, y });
   }
 
   function handleSortSelectOnChange(e) {
     const value = e.target.value;
-    if (value === 'none') {
+    if (value === "none") {
       setSort(null);
       return setSortDirection(null);
     }
-    const [newSort, newSortDirection] = value.split(':');
+    const [newSort, newSortDirection] = value.split(":");
     setSort(newSort);
     setSortDirection(newSortDirection);
   }
 
   function handleFilterSelectOnChange(e) {
     const value = e.target.value;
-    if (value === 'none') {
+    if (value === "none") {
       return setFilteredTag(null);
     }
     setFilteredTag(value);
@@ -240,165 +209,105 @@ function App() {
 
   async function createNewCard(lane) {
     const newCards = structuredClone(cards());
-    const newCard = { lane }
+    const newCard = { lane };
     const newCardName = await fetch(`${api}/cards`, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lane: newCard.lane })
-    }).then(res => res.text());
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lane: newCard.lane }),
+    }).then((res) => res.text());
     newCard.name = newCardName;
     newCards.unshift(newCard);
     setCards(newCards);
     startRenamingCard(cards()[0]);
   }
 
-  function startRenamingCard(card) {
-    setCardBeingRenamed(card);
-    setNewCardName(card.name)
-    document.getElementById(`${card.name}-rename-input`).focus();
-    document.getElementById(`${card.name}-rename-input`).select();
-    setCardOptionsBeingShown(null);
-  }
-
-  function renameCard(e) {
-    if (e.key && e.key !== 'Enter') {
-      return;
-    }
-    if (cardError()) {
-      setNewCardName(null);
-      setCardBeingRenamed(null);
-      setCardError(null);
-      return;
-    }
+  function deleteCard(card) {
     const newCards = structuredClone(cards());
-    const newCardIndex = newCards.findIndex(card => card.name === cardBeingRenamed()?.name);
-    const newCard = newCards[newCardIndex];
-    const newCardNameWithoutSpaces = newCardName().trim();
-    fetch(`${api}/cards/${newCard.name}`, {
-      method: 'PATCH',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCardNameWithoutSpaces })
+    fetch(`${api}/cards/${card.name}`, {
+      method: "DELETE",
+      mode: "cors",
     });
-    newCard.name = newCardNameWithoutSpaces;
-    newCards[newCardIndex] = newCard;
-    setCards(newCards);
-    setCardBeingRenamed(null);
-  }
-
-  function deleteCard() {
-    const newCards = structuredClone(cards());
-    fetch(`${api}/cards/${cardOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
-    const cardsWithoutDeletedCard = newCards.filter(card => card.name !== cardOptionsBeingShown().name);
+    const cardsWithoutDeletedCard = newCards.filter(
+      (cardToFind) => cardToFind.name !== card.name
+    );
     setCards(cardsWithoutDeletedCard);
-    setCardOptionsBeingShown(null);
-    setConfirmationPromptCb(null);
   }
 
   async function createNewLane() {
     const newLanes = structuredClone(lanes());
-    const newLaneName = await fetch(`${api}/lanes`, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-    }).then(res => res.text());
-    newLanes.push({ name: newLaneName });
+    const newName = await fetch(`${api}/lanes`, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+    }).then((res) => res.text());
+    newLanes.push(newName);
     setLanes(newLanes);
-    startRenamingLane(lanes()[lanes().length - 1]);
+    setNewLaneName(newName);
+    setLaneBeingRenamedName(newName);
   }
 
-  function moveLanePosition(event) {
-    event.stopPropagation();
-    const newLanes = structuredClone(lanes());
-    const laneBeingDraggedIndex = newLanes.findIndex(lane => lane.name === laneBeingDraggedName());
-    const laneToBeReplacedIndex = newLanes.findIndex(lane => lane.name === laneDraggedOverName());
-    const upOrDownDisplacement = laneBeingDraggedIndex < laneToBeReplacedIndex
-      ? 1
-      : 0;
-    const laneBeingDragged = newLanes[laneBeingDraggedIndex];
-    newLanes[laneBeingDraggedIndex] = null;
-    const lanesWithChangedPositions = [
-      ...newLanes.slice(0, laneToBeReplacedIndex + upOrDownDisplacement),
-      laneBeingDragged,
-      ...newLanes.slice(laneToBeReplacedIndex + upOrDownDisplacement)
-    ]
-    .filter(lane => lane !== null);
-    setLanes(lanesWithChangedPositions);
-    setLaneDraggedOverName(null);
-    setLaneBeingDraggedName(null);
-  }
-
-  function startRenamingLane(laneToBeRenamed) {
-    setLaneBeingRenamed(laneToBeRenamed);
-    setNewLaneName(lanes().find(lane => lane.name === laneToBeRenamed.name).name)
-    document.getElementById(`${laneToBeRenamed.name}-rename-input`).focus();
-    document.getElementById(`${laneToBeRenamed.name}-rename-input`).select();
-    setLaneOptionsBeingShown(null);
-  }
-
-  function renameLane(e) {
-    if (e.key && e.key !== 'Enter') {
-      return;
-    }
-    if (laneError()) {
-      setNewLaneName(null);
-      setLaneBeingRenamed(null);
-      setLaneError(null);
-      return;
-    }
-    const newLanes = structuredClone(lanes());
-    const newLaneIndex = newLanes.findIndex(lane => lane.name === laneBeingRenamed().name);
-    const newLane = newLanes[newLaneIndex];
-    fetch(`${api}/lanes/${newLane.name}`, {
-      method: 'PATCH',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newLaneName() })
+  function renameLane() {
+    fetch(`${api}/lanes/${laneBeingRenamedName()}`, {
+      method: "PATCH",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newLaneName() }),
     });
-    const newCards = structuredClone(cards())
-      .map(card => ({
-        ...card,
-        lane: card.lane === newLane.name ? newLaneName() : card.lane
-      }));
+    const newLanes = structuredClone(lanes());
+    const newLaneIndex = newLanes.findIndex(
+      (laneToFind) => laneToFind === laneBeingRenamedName()
+    );
+    const newLane = newLanes[newLaneIndex];
+    const newCards = structuredClone(cards()).map((card) => ({
+      ...card,
+      lane: card.lane === newLane ? newLaneName() : card.lane,
+    }));
     setCards(newCards);
-    newLane.name = newLaneName();
-    newLanes[newLaneIndex] = newLane;
+    newLanes[newLaneIndex] = newLaneName();
     setLanes(newLanes);
-    setLaneBeingRenamed(null);
+    setNewLaneName(null);
+    setLaneBeingRenamedName(null);
   }
 
-  function deleteLane() {
+  function deleteLane(lane) {
+    fetch(`${api}/lanes/${lane}`, {
+      method: "DELETE",
+      mode: "cors",
+    });
     const newLanes = structuredClone(lanes());
-    fetch(`${api}/lanes/${laneOptionsBeingShown().name}`, { method: 'DELETE', mode: 'cors' })
-    const lanesWithoutDeletedCard = newLanes.filter(lane => lane.name !== laneOptionsBeingShown().name);
+    const lanesWithoutDeletedCard = newLanes.filter(
+      (laneToFind) => laneToFind !== lane
+    );
     setLanes(lanesWithoutDeletedCard);
-    setLaneOptionsBeingShown(null);
-    setConfirmationPromptCb(null);
   }
 
   function sortCardsByName() {
     const newCards = structuredClone(cards());
-    return newCards.sort((a, b) => sortDirection() === 'asc'
-      ? a.name?.localeCompare(b.name)
-      : b.name?.localeCompare(a.name)
+    return newCards.sort((a, b) =>
+      sortDirection() === "asc"
+        ? a.name?.localeCompare(b.name)
+        : b.name?.localeCompare(a.name)
     );
   }
 
   function sortCardsByTags() {
     const newCards = structuredClone(cards());
     return newCards.sort((a, b) => {
-      return sortDirection() === 'asc'
-        ? a.tags?.[0]?.localeCompare(b.tags?.[0])
-        : b.tags?.[0]?.localeCompare(a.tags?.[0])
+      return sortDirection() === "asc"
+        ? a.tags[0]?.name.localeCompare(b.tags?.[0])
+        : b.tags[0]?.name.localeCompare(a.tags?.[0]);
     });
   }
 
   function handleOnSelectedCardNameChange(newName) {
-    const newCards = structuredClone(cards())
-    const newCardIndex = structuredClone(newCards.findIndex(card => card.name === selectedCard().name
-      && card.lane === selectedCard().lane
-    ));
+    const newCards = structuredClone(cards());
+    const newCardIndex = structuredClone(
+      newCards.findIndex(
+        (card) =>
+          card.name === selectedCard().name && card.lane === selectedCard().lane
+      )
+    );
     const newCard = newCards[newCardIndex];
     newCard.name = newName;
     newCards[newCardIndex] = newCard;
@@ -406,56 +315,200 @@ function App() {
     setSelectedCard(newCard);
   }
 
-  function deleteCardsFromLane() {
-    const lane = laneOptionsBeingShown();
-    const cardsToDelete = cards().filter(card => card.lane === lane.name);
-    cardsToDelete
-      .forEach(card => fetch(`${api}/cards/${card.name}`, { method: 'DELETE', mode: 'cors' }));
-    const cardsToKeep = cards().filter(card => card.lane !== lane.name);
+  function handleDeleteCardsByLane(lane) {
+    const cardsToDelete = cards().filter((card) => card.lane === lane);
+    cardsToDelete.forEach((card) =>
+      fetch(`${api}/cards/${card.name}`, { method: "DELETE", mode: "cors" })
+    );
+    const cardsToKeep = cards().filter((card) => card.lane !== lane);
     setCards(cardsToKeep);
-    setLaneOptionsBeingShown(null);
+  }
+
+  function renameCard() {
+    const newCards = structuredClone(cards());
+    const newCardIndex = newCards.findIndex(
+      (card) => card.name === cardBeingRenamed()?.name
+    );
+    const newCard = newCards[newCardIndex];
+    const newCardNameWithoutSpaces = newCardName().trim();
+    fetch(`${api}/cards/${newCard.name}`, {
+      method: "PATCH",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newCardNameWithoutSpaces }),
+    });
+    newCard.name = newCardNameWithoutSpaces;
+    newCards[newCardIndex] = newCard;
+    setCards(newCards);
+    setCardBeingRenamed(null);
   }
 
   async function handleTagColorChange() {
     await fetchCards();
-    const newCardIndex = structuredClone(cards().findIndex(card => card.name === selectedCard().name
-      && card.lane === selectedCard().lane
-    ));
-    setSelectedCard(cards()[newCardIndex])
+    const newCardIndex = structuredClone(
+      cards().findIndex(
+        (card) =>
+          card.name === selectedCard().name && card.lane === selectedCard().lane
+      )
+    );
+    setSelectedCard(cards()[newCardIndex]);
+  }
+
+  function moveLanePosition(event) {
+    event.stopPropagation();
+    const newLanes = structuredClone(lanes());
+    const laneBeingDraggedIndex = newLanes.findIndex(
+      (lane) => lane === laneBeingDragged()
+    );
+    const laneToBeReplacedIndex = newLanes.findIndex(
+      (lane) => lane === laneDraggedOverName()
+    );
+    const upOrDownDisplacement =
+      laneBeingDraggedIndex < laneToBeReplacedIndex ? 1 : 0;
+    const newLaneBeingDragged = newLanes[laneBeingDraggedIndex];
+    newLanes[laneBeingDraggedIndex] = null;
+    const lanesWithChangedPositions = [
+      ...newLanes.slice(0, laneToBeReplacedIndex + upOrDownDisplacement),
+      newLaneBeingDragged,
+      ...newLanes.slice(laneToBeReplacedIndex + upOrDownDisplacement),
+    ].filter((lane) => lane !== null);
+    setLanes(lanesWithChangedPositions);
+    setLaneDraggedOverName(null);
+    setLaneBeingDragged(null);
   }
 
   const sortedCards = createMemo(() => {
     if (sortDirection() === null) {
       return cards();
     }
-    if (sort() === 'name') {
+    if (sort() === "name") {
       return sortCardsByName();
     }
-    if (sort() === 'tags') {
+    if (sort() === "tags") {
       return sortCardsByTags();
     }
     return cards();
   });
 
-  function validateNewCardName(newName) {
+  function validateName(newName, namesList, item) {
     if (newName === null) {
-      return;
+      return null;
     }
-    if (newName === '') {
-      return 'The card must have a name';
+    if (newName === "") {
+      return `The ${item} must have a name`;
     }
-    if (cards().filter(card => card.name === newName).length > 0) {
-      return 'There\'s already a card with that name';
+    if (namesList.filter((name) => name === newName).length) {
+      return `There's already a ${item} with that name`;
     }
     return null;
+  }
+
+  function startRenamingLane(lane) {
+    setNewLaneName(lane);
+    setLaneBeingRenamedName(lane);
+  }
+
+  const filteredCards = createMemo(() =>
+    sortedCards()
+      .filter(
+        (card) =>
+          card.name.toLowerCase().includes(search().toLowerCase()) ||
+          card.content.toLowerCase().includes(search().toLowerCase())
+      )
+      .filter(
+        (card) =>
+          filteredTag() === null ||
+          card.tags
+            ?.map((tag) => tag.name?.toLowerCase())
+            .includes(filteredTag().toLowerCase())
+      )
+  );
+
+  function getCardsFromLane(lane) {
+    return filteredCards().filter((card) => card.lane === lane);
+  }
+
+  function startRenamingCard(card) {
+    setNewCardName(card.name);
+    setCardBeingRenamed(card);
+  }
+
+  function moveCardToLane(newLane) {
+    let newCards = structuredClone(cards());
+    const cardBeingDraggedIndex = newCards.findIndex(
+      (card) => card.name === cardBeingDragged().name
+    );
+    const newCard = structuredClone(newCards[cardBeingDraggedIndex]);
+    debounceUpdateCardLaneReq({
+      lane: cardBeingDraggedOriginalLane(),
+      name: newCard.name,
+      newLane,
+    });
+    newCard.lane = newLane;
+    newCards = newCards.filter((card, i) => i !== cardBeingDraggedIndex);
+    newCards.push(newCard);
+    setCards(newCards);
+  }
+
+  function moveCardBeingDraggedNextToCardDraggedOver() {
+    const newCards = structuredClone(cards());
+    const cardBeingDraggedIndex = newCards.findIndex(
+      (card) => card.name === cardBeingDragged().name
+    );
+    const cardDraggedOverIndex = newCards.findIndex(
+      (card) => card.name === cardDraggedOver().name
+    );
+
+    const cardBeingDraggedlane = newCards[cardBeingDraggedIndex].lane;
+    const cardDraggedOverlane = newCards[cardDraggedOverIndex].lane;
+    newCards[cardBeingDraggedIndex].lane = cardDraggedOverlane;
+
+    const areBothCardsInSameLane = cardBeingDraggedlane === cardDraggedOverlane;
+    let upOrDownDisplacement = 0;
+
+    if (areBothCardsInSameLane) {
+      upOrDownDisplacement =
+        cardBeingDraggedIndex < cardDraggedOverIndex ? 1 : 0;
+    }
+
+    const newCard = newCards[cardBeingDraggedIndex];
+    newCards[cardBeingDraggedIndex] = null;
+
+    const cardsWithChangedPositions = [
+      ...newCards.slice(0, cardDraggedOverIndex + upOrDownDisplacement),
+      newCard,
+      ...newCards.slice(cardDraggedOverIndex + upOrDownDisplacement),
+    ].filter((card) => card !== null);
+    setCards(cardsWithChangedPositions);
+    setCardDraggedOver(null);
+    setCardBeingDragged(null);
+    debounceUpdateCardLaneReq({
+      lane: cardBeingDraggedlane,
+      name: newCard.name,
+      newLane: cardDraggedOverlane,
+    });
+  }
+
+  function handleCardDragEnd() {
+    if (!cardBeingDragged) {
+      return;
+    }
+    const lane = laneDraggedOverName() || cardDraggedOver().lane;
+    if (lane !== cardBeingDragged().lane) {
+      moveCardToLane(lane);
+    } else {
+      moveCardBeingDraggedNextToCardDraggedOver();
+    }
+    setLaneDraggedOverName(null);
+    setCardBeingDragged(null);
+    setCardDraggedOver(null);
   }
 
   onMount(async () => {
     const url = window.location.href;
     if (!url.match(/\/$/)) {
-      window.location.replace(`${url}/`)
+      window.location.replace(`${url}/`);
     }
-    window.addEventListener('mousedown', handleClickOutsideOptions);
     fetchCards();
     fetchLanes();
     polyfill({});
@@ -465,11 +518,11 @@ function App() {
     if (title()) {
       document.title = title();
     }
-  })
+  });
 
   createEffect(() => {
-    localStorage.setItem('sort', sort());
-    localStorage.setItem('sortDirection', sortDirection());
+    localStorage.setItem("sort", sort());
+    localStorage.setItem("sortDirection", sortDirection());
   });
 
   createEffect(() => {
@@ -477,9 +530,12 @@ function App() {
       return;
     }
     fetch(`${api}/sort/lanes`, {
-      method: 'POST',
-      body: JSON.stringify(lanes().map(lane => lane.name)),
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      method: "POST",
+      body: JSON.stringify(lanes()),
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
     });
   });
 
@@ -487,298 +543,137 @@ function App() {
     if (!!sort() || !cards().length) {
       return;
     }
-    const cardsNames = cards().map(card => card.name);
+    const cardsNames = cards().map((card) => card.name);
     fetch(`${api}/sort/cards`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(cardsNames),
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
     });
-  });
-
-  createEffect(() => {
-    if (cardBeingRenamed()?.name === newCardName()) {
-      return setCardError(null);
-    }
-    setCardError(validateNewCardName(newCardName()));
-  });
-
-  createEffect(() => {
-    if (newLaneName() === null) {
-      return;
-    }
-    if (newLaneName() === '') {
-      return setLaneError('The lane must have a name');
-    }
-    if (lanes()
-      .filter(lane => lane.name === newLaneName()
-      && lane.name !== laneBeingRenamed()?.name)
-      .length
-    ) {
-      return setLaneError('There\'s already a lane with that name');
-    }
-    setLaneError(null);
-  });
-
-  onCleanup(() => {
-    window.removeEventListener('mousedown', handleClickOutsideOptions)
   });
 
   return (
     <>
-      <header class="app-header">
-        <input
-          placeholder="Search"
-          type="text"
-          onInput={(e) => setSearch(e.target.value)}
-        />
-        <div class="app-header__group-item">
-          <div class="app-header__group-item-label">Sort by:</div>
-          <select
-            onChange={handleSortSelectOnChange}
-            value={sort() === null ? 'none' : `${sort()}:${sortDirection()}`}
-          >
-            <option value="none">Manually</option>
-            <option value="name:asc">Name asc</option>
-            <option value="name:desc">Name desc</option>
-            <option value="tags:asc">Tags asc</option>
-            <option value="tags:desc">Tags desc</option>
-          </select>
-        </div>
-        <div class="app-header__group-item">
-          <div class="app-header__group-item-label">Filter by tag:</div>
-          <select
-            onChange={handleFilterSelectOnChange}
-            value={filteredTag() === null ? 'none' : filteredTag()}
-          >
-            <option value="none">None</option>
-            <For each={tagsOptions()}>
-              {tag => <option>{tag.name}</option>}
-            </For>
-          </select>
-        </div>
-        <button onClick={createNewLane}>New lane</button>
-      </header>
-      { title() ? <h1 class="app-title">{ title() }</h1> : <></> }
-      <main class={`lanes ${title() ? 'lanes--has-title' : ''}`}>
+      <Header
+        search={search()}
+        onSearchChange={setSearch}
+        sort={sort() === null ? "none" : `${sort()}:${sortDirection()}`}
+        onSortChange={handleSortSelectOnChange}
+        tagOptions={tagsOptions().map((option) => option.name)}
+        filteredTag={filteredTag()}
+        onTagChange={handleFilterSelectOnChange}
+        onNewLaneBtnClick={createNewLane}
+      />
+      {title() ? <h1 class="app-title">{title()}</h1> : <></>}
+      <main class={`lanes ${title() ? "lanes--has-title" : ""}`} tabIndex="-1">
         <Show when={!!selectedCard()}>
           <ExpandedCard
             name={selectedCard().name}
             content={selectedCard().content}
             tags={selectedCard().tags}
             tagsOptions={tagsOptions()}
-            onExit={() => setSelectedCard(null)}
-            onContentChange={(value) => debounceChangeCardContent(value, selectedCard().id)}
+            onClose={() => setSelectedCard(null)}
+            onContentChange={(value) =>
+              debounceChangeCardContent(value, selectedCard().id)
+            }
             onTagColorChange={handleTagColorChange}
             onNameChange={handleOnSelectedCardNameChange}
-            onTagClick={(tagId) => removeTagFromCard(tagId)}
-            validateFn={validateNewCardName}
+            getErrorMsg={(newName) =>
+              validateName(
+                newName,
+                cards()
+                  .filter((card) => card.name !== selectedCard().name)
+                  .map((card) => card.name),
+                "card"
+              )
+            }
             disableImageUpload={false}
           />
         </Show>
         <For each={lanes()}>
-          {lane => (
-            <div
-              class={`lane ${laneDraggedOverName() === lane.name ? 'dragged-over' : ''}`}
-              onDragEnter={e => e.preventDefault()}
-              onDragEnd={e => laneBeingDraggedName() ? moveLanePosition(e) : null}
-              onDragOver={() => setLaneDraggedOverName(lane?.name)}
+          {(lane) => (
+            <Lane
+              cards={getCardsFromLane(lane)}
+              isBeingDraggedOver={laneDraggedOverName() === lane}
+              onDragOver={() => setLaneDraggedOverName(lane)}
+              onDragEnd={(e) =>
+                laneBeingDragged() ? moveLanePosition(e) : null
+              }
+              headerSlot={
+                laneBeingRenamedName() === lane ? (
+                  <NameInput
+                    value={newLaneName()}
+                    errorMsg={validateName(
+                      newLaneName(),
+                      lanes().filter((lane) => lane !== laneBeingRenamedName()),
+                      "lane"
+                    )}
+                    onChange={(newValue) => setNewLaneName(newValue)}
+                    onConfirm={renameLane}
+                    onCancel={() => {
+                      setNewLaneName(null);
+                      setLaneBeingRenamedName(null);
+                    }}
+                  />
+                ) : (
+                  <LaneName
+                    name={lane}
+                    count={getCardsFromLane(lane).length}
+                    onDragStart={() => setLaneBeingDragged(lane)}
+                    onRenameBtnClick={() => startRenamingLane(lane)}
+                    onDelete={() => deleteLane(lane)}
+                    onDeleteCards={() => handleDeleteCardsByLane(lane)}
+                    onCreateNewCardBtnClick={() => createNewCard(lane)}
+                  />
+                )
+              }
             >
-              <header
-                class="lane__header"
-                draggable={!laneBeingRenamed()}
-                onDragEnter={e => e.preventDefault()}
-                onDragStart={() => setLaneBeingDraggedName(lane.name)}
-              >
-                <div class="lane__header-name-and-count">
-                  { laneBeingRenamed()?.name === lane.name
-                    ? <div class="input-and-error-msg">
-                      <input
-                        type="text"
-                        id={`${lane.name}-rename-input`}
-                        value={newLaneName()}
-                        onInput={e => setNewLaneName(e.target.value)}
-                        onFocusOut={renameLane}
-                        onKeyUp={renameLane}
-                        class={laneError() ? 'error' : ''}
-                      ></input>
-                      { laneError()
-                        ? <span class="error-msg">{ laneError() }</span>
-                        : <></>
-                      }
-                    </div>
-                    : <strong>
-                      {lane?.name}
-                    </strong>
-                  }
-                  { laneBeingRenamed()?.name === lane.name
-                    ? <></>
-                    : <div class="tag">
-                        <h5 class="counter">
-                          {sortedCards().filter(card => card.lane === lane.name).length}
-                        </h5>
-                    </div>
-                  }
-                </div>
-                { laneBeingRenamed()?.name === lane.name
-                  ? <></>
-                  : <div class="lane__header-buttons">
-                    <button
-                      title="Create new card"
-                      class="small"
-                      onClick={() => createNewCard(lane.name)}
-                    >
-                      +
-                    </button>
-                    <button
-                      title="Show lane options"
-                      class="small"
-                      onClick={event => {
-                        handleOptionBtnOnClick(event);
-                        setLaneOptionsBeingShown(lane);
-                      }}
-                    >
-                      ⋮
-                    </button>
-                  </div>
-                }
-              </header>
-              <div class="lane__content">
-                <For
-                  each={
-                    sortedCards()
-                      .filter(card => card.lane === lane.name)
-                      .filter(card => card.name.toLowerCase().includes(search().toLowerCase())
-                        || card.content.toLowerCase().includes(search().toLowerCase())
-                      )
-                      .filter(card => filteredTag() === null || (card.tags?.includes(filteredTag())))
-                  }
-                >
-                  {card => (
-                    <div
-                      class={`card ${cardDraggedOver() === card.name ? 'dragged-over' : ''}`}
-                      draggable={!cardBeingRenamed()}
-                      onDragEnter={e => e.preventDefault()}
-                      onDragStart={() => {
-                        setCardBeingDragged(card.name);
-                        setCardBeingDraggedOriginalLane(card.lane)
-                      }}
-                      onDragOver={(e) => {
-                        e.stopPropagation();
-                        if (cardBeingDraggedName()) {
-                          setCardDraggedOver(card.name);
-                          setLaneDraggedOverName(null);
-                        }
-                      }}
-                      onDragEnd={(e) => laneDraggedOverName() ? moveCardToLane() : moveCardBeingDraggedNextToCardDraggedOver()}
-                      onClick={() => !cardBeingRenamed() ? setSelectedCard(card) : null}
-                    >
-                      <div class="card__toolbar">
-                        { cardBeingRenamed()?.name === card.name
-                          ? <div class="input-and-error-msg">
-                            <input
-                              type="text"
-                              id={`${card.name}-rename-input`}
-                              value={newCardName()}
-                              onClick={e => e.stopPropagation()}
-                              onInput={e => setNewCardName(e.target.value)}
-                              onFocusOut={renameCard}
-                              onKeyUp={renameCard}
-                              class={cardError() ? 'error' : ''}
-                            ></input>
-                            { cardError()
-                              ? <span class="error-msg">{ cardError() }</span>
-                              : <></>
-                            }
-                            </div>
-                          : <div class='card__name'>{card.content ? '📝 ' : ''}{card.name}</div>
-                        }
-                        { cardBeingRenamed()?.name === card.name
-                          ? <></>
-                          : <button
-                            title="Show card options"
-                            class="small"
-                            onClick={event => {
-                              handleOptionBtnOnClick(event)
-                              setCardOptionsBeingShown(card);
-                            }}
-                          >
-                            ⋮
-                          </button>
-                        }
-                      </div>
-                      <div class="tags">
-                        <For each={card.tags}>
-                          {tag => (
-                            <div
-                              class="tag"
-                              style={{
-                                "background-color": tag.backgroundColor,
-                                "border-color": tag.backgroundColor
-                              }}
-                            >
-                              <h5>{tag.name}</h5>
-                            </div>
+              <For each={getCardsFromLane(lane)}>
+                {(card) => (
+                  <Card
+                    tags={card.tags}
+                    onClick={() => setSelectedCard(card)}
+                    onDragStart={() => setCardBeingDragged(card)}
+                    onDragOver={() => setCardDraggedOver(card)}
+                    onDragEnd={(e) => handleCardDragEnd()}
+                    headerSlot={
+                      cardBeingRenamed()?.name === card.name ? (
+                        <NameInput
+                          value={newCardName()}
+                          errorMsg={validateName(
+                            newCardName(),
+                            cards()
+                              .filter(
+                                (card) => card.name !== cardBeingRenamed().name
+                              )
+                              .map((card) => card.name),
+                            "card"
                           )}
-                        </For>
-                      </div>
-                    </div>
-                  )}
-                </For>
-              </div>
-            </div>
+                          onChange={(newValue) => setNewCardName(newValue)}
+                          onConfirm={renameCard}
+                          onCancel={() => {
+                            setNewCardName(null);
+                            setCardBeingRenamed(null);
+                          }}
+                        />
+                      ) : (
+                        <CardName
+                          name={card.name}
+                          onDragStart={() => setCardBeingDragged(card)}
+                          onRenameBtnClick={() => startRenamingCard(card)}
+                          onDelete={() => deleteCard(card)}
+                          onClick={() => setSelectedCard(card)}
+                        />
+                      )
+                    }
+                  />
+                )}
+              </For>
+            </Lane>
           )}
         </For>
-        <Show when={cardOptionsBeingShown() && !confirmationPromptCb()}>
-          <div
-            id={cardOptionsBeingShown()?.name}
-            class="popup"
-            style={{
-              top:`${popupCoordinates().y}px`,
-              left: `${popupCoordinates().x}px`
-            }}
-          >
-            <button onClick={() => startRenamingCard(cardOptionsBeingShown())}>Rename</button>
-            <button onClick={() => setConfirmationPromptCb(deleteCard)}>Delete</button>
-          </div>
-        </Show>
-        <Show when={laneOptionsBeingShown() && !confirmationPromptCb()}>
-          <div
-            id={laneOptionsBeingShown().name}
-            class="popup"
-            style={{
-              top:`${popupCoordinates().y}px`,
-              left: `${popupCoordinates().x}px`
-            }}
-          >
-            <button onClick={() => startRenamingLane(laneOptionsBeingShown())}>Rename</button>
-            <button onClick={() => setConfirmationPromptCb(() => deleteCardsFromLane)}>Delete cards</button>
-            <button onClick={() => setConfirmationPromptCb(() => deleteLane)}>Delete lane</button>
-          </div>
-        </Show>
-        <Show when={laneOptionsBeingShown() && confirmationPromptCb()}>
-          <div
-            id={laneOptionsBeingShown().name}
-            class="popup"
-            style={{
-              top:`${popupCoordinates().y}px`,
-              left: `${popupCoordinates().x}px`
-            }}
-          >
-            <button onClick={() => {
-              confirmationPromptCb()();
-              setConfirmationPromptCb(null);
-            }}>
-              Are you sure?
-            </button>
-            <button onClick={() => {
-              setConfirmationPromptCb(null);
-              setLaneOptionsBeingShown(null);
-              setCardOptionsBeingShown(null);
-            }}>
-              Cancel
-            </button>
-          </div>
-        </Show>
       </main>
     </>
   );
