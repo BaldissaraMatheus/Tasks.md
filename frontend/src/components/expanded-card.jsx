@@ -352,7 +352,7 @@ function ExpandedCard(props) {
               id="editor-container"
               onKeyUp={handleEditorOnChange}
               onClick={handleEditorOnChange}
-            ></div>
+            />
           </div>
         </div>
       </div>

@@ -1,13 +1,18 @@
 @import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
 @import url(./color-themes/adwaita.css);
 
-html, body, input, button, select {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+html,
+body,
+input,
+button,
+select {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif !important;
 }
 
-html, body {
+html,
+body {
   font-size: 16px !important;
   line-height: 1.15 !important;
 }
@@ -21,20 +26,21 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 h4 {
   font-weight: normal;
   font-size: 0.8rem;
-  line-height: 1.0rem;
+  line-height: 1rem;
   margin: 0;
 }
 
 h5 {
   font-weight: normal;
   font-size: 0.8rem;
-  line-height: 1.0rem;
+  line-height: 1rem;
   margin: 0;
 }
 
@@ -58,13 +64,12 @@ strong {
 
 input,
 button,
-select
-{
+select {
   height: 32px;
   padding: 4px 15px;
   border-radius: 6px;
   font-size: 0.9rem !important;
-  box-shadow: 0 2px 0 rgba(0,0,0,.02);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
   color: var(--font-color);
   white-space: nowrap;
@@ -77,8 +82,7 @@ select {
 }
 
 button,
-select
-{
+select {
   cursor: pointer;
 }
 
@@ -193,7 +197,7 @@ button.small {
   justify-content: space-between;
   cursor: grab;
   font-size: 0.9rem;
-  box-shadow: 0 2px 0 rgba(0,0,0,.02);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   border-radius: 6px;
   box-sizing: border-box;
 }
@@ -232,11 +236,9 @@ button.small {
   border-radius: 6px;
   border: 1px solid var(--popup-border-color);
   box-sizing: border-box;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.05),
-    0 2px 2px rgba(0,0,0,0.05),
-    0 4px 4px rgba(0,0,0,0.05),
-    0 6px 8px rgba(0,0,0,0.05),
-    0 8px 16px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05), 0 2px 2px rgba(0, 0, 0, 0.05),
+    0 4px 4px rgba(0, 0, 0, 0.05), 0 6px 8px rgba(0, 0, 0, 0.05),
+    0 8px 16px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   z-index: 99999;
@@ -308,7 +310,7 @@ button.small {
   background: var(--modal-background-color);
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   box-sizing: border-box;
   border-radius: 5px;
   padding: 12px;
@@ -383,8 +385,15 @@ button.small {
   font-size: 0.8rem;
 }
 
-a, a > * {
+a,
+a > * {
   color: var(--link-color) !important;
+}
+
+.color-preview-option {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }
 
 #editor-container {
@@ -444,10 +453,4 @@ a, a > * {
 
 .editor .s-btn__outlined {
   border-color: var(--button-border-color);
-}
-
-.color-preview-option {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
 }
