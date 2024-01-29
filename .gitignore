@@ -5,3 +5,4 @@ backend/config
 frontend/node_modules
 frontend/dist
 frontend/.env
+frontend/dev-dist
