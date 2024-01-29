@@ -1,10 +1,10 @@
 # ✒️ Tasks.md
 A self-hosted file based task management board that supports Markdown syntax.
 
-![Demonstration](./public/demonstration.gif)
+![Demo](./public/demo.gif)
 
 ## ⭐ Features
-- Create cards, lists and tags in a modern and responsive interface;
+- Create cards, lanes and tags in a modern and responsive interface;
 - Write cards as Markdown files;
 - Easy to install with a single Docker image;
 - Light and dark themes synced with operating system settings;
@@ -19,23 +19,55 @@ docker run -d \
   --name tasks.md \
   -e PUID=1000 \
   -e PGID=1000 \
-  -e TITLE="" `#optional` \
-  -e BASE_PATH="" `#optional` \
-  -e ENABLE_LOCAL_IMAGES=false `#optional` \
+  -e TITLE="" \
+  -e BASE_PATH="" \
+  -e LOCAL_IMAGES_CLEANUP_INTERVAL=1440 \
   -p 8080:8080 \
-  -v /path/to/cards/:/api/files/ \
-  -v /path/to/styles/:/api/static/stylesheets/ `#optional \
-  -v /path/to/images/:/api/images/ `#optional \
+  -v /path/to/tasks/:/tasks/ \
+  -v /path/to/config/:/config/ \
   --restart unless-stopped \
   baldissaramatheus/tasks.md
 ```
-Remove the optional variables and paths you don't want to keep, remove `#optional` flags for the ones you want to keep, replace `/path/to/something` with directories that exist in your filesystem, then run it. If you decide to set the optional env variable `ENABLE_LOCAL_IMAGES` as `true`, you should also map a volume for `:/api/images/` since Tasks.md does not delete local images when a card is deleted.
+Remove the environment variables you don't want to keep (all of them are optional), replace `/path/to/something` with directories that exist in your filesystem e then execute it. The environment variables are the following:
+- PUID and PGID: User ID and group ID that owns the files and directories. On linux distros you can find your user's UID and GID running `id` in the terminal, but it's usually `1000` for both variables. If no value is assigned for those variables, docker will create all the files and directories as root. You can read more about it [here](https://docs.linuxserver.io/general/understanding-puid-and-pgid/).
+- TITLE: A given name that shows below the header and in the browser tab;
+- BASE_PATH: Base path in the url. Use this variable if you are going to run the app under a subpath based reverse-proxy;
+- LOCAL_IMAGES_CLEANUP_INTERVAL: After a given interval the app will remove all local images that aren't present in any task. This variable control the duration in minutes of this interval. The default value is 1440 (exactly 24h). Set it as 0 to disable it.
+
 
 ### docker-compose
-For docker-compose, you can see an example [here](https://github.com/BaldissaraMatheus/Tasks.md/blob/main/examples/docker-compose.yaml). Use the Docker section above as reference for optional variables and volumes.
+```
+version: "3"
+services:
+  tasks.md:
+    image: baldissaramatheus/tasks.md
+    container_name: tasks.md
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /path/to/tasks:/tasks
+      - /path/to/config:/config
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+```
+Use the Docker section above as reference for setting up variables and volumes.
 
 ## 🎨 Customize
-All CSS files are available in the public stylesheets directory, which can be mounted as a docker volume. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, open the file `/stylesheets/index.css` and change the second line to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
+All CSS files are available in the stylesheets directory under the config volume. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, open the file `/stylesheets/index.css` and change the second line to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
+
+## 📁 Files organization
+The way directories and files are organized in Tasks.md is quite simple. Basically every lane you add within the app is a directory in your filesystem and every task is file.
+
+So if your tasks look like this:
+![Screenshot of the app. There are 3 lanes, Backlog, Sprint and Done. Within Done there is one file named "Something something"](/public/directories-organization-1.png)
+
+Your files should look like this:
+![Screenshot of a file explorer showing 3 folders: Backlog, Sprint and Done](/public/directories-organization-2.png)
+![Screenshot of file explorer within a folder called "Done", containing one file named "Something something"](/public/directories-organization-3.png)
+
+More details (and it how it looks like within Obsidian) can be found [here](https://github.com/BaldissaraMatheus/Tasks.md/issues/49).
 
 ## 💻 Technology stack
 With the goal of having a good mix of performance and maintainability, the application was built with [SolidJS](https://github.com/solidjs/solid) and [Koa](https://github.com/koajs/koa). It also uses [Stacks-Editor](https://github.com/StackExchange/Stacks-Editor) for text editing and [serve-static](https://github.com/expressjs/serve-static) to serve the css files as-is.
