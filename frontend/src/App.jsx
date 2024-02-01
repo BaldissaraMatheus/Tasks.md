@@ -274,12 +274,14 @@ function App() {
     fetch(`${api}/lanes/${lane}`, {
       method: "DELETE",
       mode: "cors",
-    });
+    })
     const newLanes = structuredClone(lanes());
     const lanesWithoutDeletedCard = newLanes.filter(
       (laneToFind) => laneToFind !== lane
     );
     setLanes(lanesWithoutDeletedCard);
+    const newCards = cards().filter(card => card.lane !== lane);
+    setCards(newCards);
   }
 
   function sortCardsByName() {
