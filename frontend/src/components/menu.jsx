@@ -1,4 +1,5 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { handleKeyDown } from "../utils";
 
 /**
  *
@@ -23,6 +24,9 @@ export function Menu(props) {
   function handleOptionClick(option) {
     if (option.requiresConfirmation) {
       setConfirmationPromptCb(() => option.onClick);
+      setTimeout(() => {
+        document.getElementById("confirm-btn").focus();
+      }, 0);
       return;
     }
     option.onClick();
@@ -48,6 +52,12 @@ export function Menu(props) {
     window.removeEventListener("mousedown", handleClickOutsideOptions);
   });
 
+  createEffect(() => {
+    if (props.open && props.id) {
+      document.getElementById(props.id).firstChild.focus();
+    }
+  }, [props.open]);
+
   return (
     <div
       id={props.id}
@@ -59,14 +69,34 @@ export function Menu(props) {
     >
       <Show when={props.open && !confirmationPromptCb()}>
         {props.options.map((option) => (
-          <button onClick={() => handleOptionClick(option)}>
+          <button
+            onClick={() => handleOptionClick(option)}
+            onKeyDown={(e) =>
+              handleKeyDown(e, () => handleOptionClick(option), props.onClose)
+            }
+          >
             {option.label}
           </button>
         ))}
       </Show>
       <Show when={confirmationPromptCb()}>
-        <button onClick={handleOptionConfirmation}>Are you sure?</button>
-        <button onClick={handleCancel}>Cancel</button>
+        <button
+          onClick={handleOptionConfirmation}
+          id="confirm-btn"
+          onKeyDown={(e) =>
+            handleKeyDown(e, () => handleOptionConfirmation(), handleCancel)
+          }
+        >
+          Are you sure?
+        </button>
+        <button
+          onClick={handleCancel}
+          onKeyDown={(e) =>
+            handleKeyDown(e, handleCancel, handleCancel)
+          }
+        >
+          Cancel
+        </button>
       </Show>
     </div>
   );

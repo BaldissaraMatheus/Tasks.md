@@ -1,4 +1,4 @@
-import { handleEnter } from "../utils";
+import { handleKeyDown } from "../utils";
 
 export function Card(props) {
   return (
@@ -10,7 +10,7 @@ export function Card(props) {
       onDragOver={props.onDragOver}
       onDragEnd={props.onDragEnd}
       onClick={props.onClick}
-      onKeyUp={e => handleEnter(e, props.onClick)}
+      onKeyDown={e => handleKeyDown(e, props.onClick)}
       tabIndex="0"
     >
       <div class="card__toolbar">

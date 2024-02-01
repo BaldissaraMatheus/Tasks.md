@@ -1,6 +1,17 @@
-export function handleEnter(e, cb) {
+export function handleKeyDown(e, enterCb, cancelCb) {
+  e.stopPropagation();
+  e.stopImmediatePropagation();
   if (e.key === "Enter") {
-    cb();
+    enterCb(e);
+  }
+  if (e.key === "Escape" && cancelCb) {
+    cancelCb(e);
+  }
+  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+    e.target.nextElementSibling?.focus();
+  }
+  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+    e.target.previousElementSibling?.focus();
   }
 }
 

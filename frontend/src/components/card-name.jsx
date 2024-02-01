@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
-import { getButtonCoordinates } from "../utils";
+import { getButtonCoordinates, handleKeyDown as handleKeyDown } from "../utils";
 
 /**
  *
@@ -39,6 +39,18 @@ export function CardName(props) {
     },
   ];
 
+  function handleClick(event) {
+    handleOptionBtnOnClick(event);
+    setShowMenu(true);
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  function handleCancel() {
+    setShowMenu(false);
+  }
+
   return (
     <>
       <div
@@ -53,10 +65,8 @@ export function CardName(props) {
         <button
           title="Show card options"
           class="small"
-          onClick={(event) => {
-            handleOptionBtnOnClick(event);
-            setShowMenu(true);
-          }}
+          onClick={handleClick}
+          onKeyDown={e => handleKeyDown(e, handleClick, handleCancel)}
         >
           ⋮
         </button>
