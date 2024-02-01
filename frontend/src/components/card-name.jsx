@@ -6,6 +6,7 @@ import { getButtonCoordinates } from "../utils";
  *
  * @param {Object} props
  * @param {string} props.name
+ * @param {boolean} props.hasContent
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDelete
  * @param {Function} props.onDragStart
@@ -46,7 +47,7 @@ export function CardName(props) {
         onDragEnter={(e) => e.preventDefault()}
         onDragStart={props.onDragStart}
       >
-        <strong>{props.name}</strong>
+        <strong>{props.hasContent ? '\uD83D\uDCDD ' : ''}{props.name}</strong>
       </div>
       <div class="lane__header-buttons">
         <button

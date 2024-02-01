@@ -661,6 +661,7 @@ function App() {
                       ) : (
                         <CardName
                           name={card.name}
+                          hasContent={!!card.content}
                           onDragStart={() => setCardBeingDragged(card)}
                           onRenameBtnClick={() => startRenamingCard(card)}
                           onDelete={() => deleteCard(card)}
