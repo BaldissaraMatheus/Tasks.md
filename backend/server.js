@@ -9,8 +9,8 @@ const multer = require('@koa/multer');
 const send = require('koa-send')
 const mount = require('koa-mount');
 const serve = require('koa-static');
-const PUID = Number(process.env.PUID || '1000');
-const PGID = Number(process.env.PGID || '1000');
+const PUID = Number(process.env.PUID || '0');
+const PGID = Number(process.env.PGID || '0');
 const BASE_PATH = process.env.BASE_PATH ? `${process.env.BASE_PATH}/` : '/';
 const TASKS_DIR = process.env.NODE_ENV === 'prod' ? '/tasks' : 'tasks';
 const CONFIG_DIR = process.env.NODE_ENV === 'prod' ? '/config' : 'config';
