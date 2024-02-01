@@ -1,11 +1,12 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
-import { getButtonCoordinates } from "../utils";
+import { getButtonCoordinates, handleKeyDown as handleKeyDown } from "../utils";
 
 /**
  *
  * @param {Object} props
  * @param {string} props.name
+ * @param {boolean} props.hasContent
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDelete
  * @param {Function} props.onDragStart
@@ -38,6 +39,18 @@ export function CardName(props) {
     },
   ];
 
+  function handleClick(event) {
+    handleOptionBtnOnClick(event);
+    setShowMenu(true);
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  function handleCancel() {
+    setShowMenu(false);
+  }
+
   return (
     <>
       <div
@@ -46,16 +59,14 @@ export function CardName(props) {
         onDragEnter={(e) => e.preventDefault()}
         onDragStart={props.onDragStart}
       >
-        <strong>{props.name}</strong>
+        <strong>{props.hasContent ? '\uD83D\uDCDD ' : ''}{props.name}</strong>
       </div>
       <div class="lane__header-buttons">
         <button
           title="Show card options"
           class="small"
-          onClick={(event) => {
-            handleOptionBtnOnClick(event);
-            setShowMenu(true);
-          }}
+          onClick={handleClick}
+          onKeyDown={e => handleKeyDown(e, handleClick, handleCancel)}
         >
           ⋮
         </button>

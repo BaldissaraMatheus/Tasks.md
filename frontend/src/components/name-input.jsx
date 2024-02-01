@@ -1,4 +1,5 @@
 import { onMount } from "solid-js";
+import { handleKeyDown } from "../utils";
 
 /**
  * 
@@ -17,17 +18,6 @@ export function NameInput(props) {
     input.setSelectionRange(0, props.value.length);
   });
 
-  function handleOnKeyUp(e) {
-    if (e.key && e.key !== "Enter") {
-      return;
-    }
-    if (props.errorMsg) {
-      props.onCancel();
-      return;
-    }
-    props.onConfirm();
-  }
-
   return (
     <div class="input-and-error-msg">
       <input
@@ -36,7 +26,7 @@ export function NameInput(props) {
         value={props.value}
         onInput={(e) => props.onChange(e.target.value)}
         onFocusOut={() => props.onConfirm()}
-        onKeyUp={handleOnKeyUp}
+        onKeyDown={e => handleKeyDown(e, props.onConfirm, props.onCancel)}
         class={props.errorMsg ? "error" : ""}
       />
       {props.errorMsg ? <span class="error-msg">{props.errorMsg}</span> : <></>}

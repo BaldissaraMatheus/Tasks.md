@@ -10,7 +10,7 @@ import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from './menu';
-import { handleEnter } from "../utils";
+import { handleKeyDown } from "../utils";
 
 /**
  *
@@ -294,7 +294,7 @@ function ExpandedCard(props) {
                   class="modal__toolbar-name-input"
                   value={nameInputValue()}
                   onFocusOut={handleOnNameInputChange}
-                  onKeyUp={handleOnNameInputChange}
+                  onKeyDown={handleOnNameInputChange}
                 />
                 {nameInputError() ? (
                   <span class="error-msg">{nameInputError()}</span>
@@ -306,7 +306,7 @@ function ExpandedCard(props) {
               <h1
                 class="modal__toolbar-name"
                 onClick={startRenamingCard}
-                onKeyUp={e => handleEnter(e, startRenamingCard)}
+                onKeyDown={e => handleKeyDown(e, startRenamingCard)}
                 title="Click to rename card"
                 tabIndex="0"
               >
@@ -326,7 +326,7 @@ function ExpandedCard(props) {
                   value={tagInputValue()}
                   onInput={(e) => setTagInputValue(e.target.value)}
                   onFocusOut={handleTagInputFocusOut}
-                  onKeyUp={focusOutOnEnter}
+                  onKeyDown={focusOutOnEnter}
                   list="tags"
                 />
                 <datalist id="tags">
@@ -356,7 +356,7 @@ function ExpandedCard(props) {
           <div class="modal__content">
             <div
               id="editor-container"
-              onKeyUp={handleEditorOnChange}
+              onKeyDown={handleEditorOnChange}
               onClick={handleEditorOnChange}
             />
           </div>
