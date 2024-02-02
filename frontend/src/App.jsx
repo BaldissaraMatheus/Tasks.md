@@ -415,7 +415,7 @@ function App() {
       .filter(
         (card) =>
           card.name.toLowerCase().includes(search().toLowerCase()) ||
-          card.content.toLowerCase().includes(search().toLowerCase())
+          (card.content || '').toLowerCase().includes(search().toLowerCase())
       )
       .filter(
         (card) =>

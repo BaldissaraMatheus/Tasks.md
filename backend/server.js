@@ -142,11 +142,13 @@ async function updateCard(ctx) {
 	const name = ctx.params.card;
 	const newLane = ctx.request.body.lane || oldLane;
 	const newName = ctx.request.body.name || name;
-	const newcontent = ctx.request.body.content;
+	const newContent = ctx.request.body.content;
 	if (newLane !== oldLane || name !== newName) {
 		await fs.promises.rename(`${TASKS_DIR}/${oldLane}/${name}.md`, `${TASKS_DIR}/${newLane}/${newName}.md`);
 	}
-	await fs.promises.writeFile(`${TASKS_DIR}/${newLane}/${newName}.md`, newcontent || '');
+	if (newContent) {
+		await fs.promises.writeFile(`${TASKS_DIR}/${newLane}/${newName}.md`, newContent);
+	}
 	await fs.promises.chown(`${TASKS_DIR}/${newLane}/${newName}.md`, PUID, PGID);
 	ctx.status = 204;
 }
