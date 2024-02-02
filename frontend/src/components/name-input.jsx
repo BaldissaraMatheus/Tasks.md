@@ -18,6 +18,14 @@ export function NameInput(props) {
     input.setSelectionRange(0, props.value.length);
   });
 
+  function handleConfirm() {
+    if (props.errorMsg) {
+      props.onCancel();
+      return;
+    }
+    props.onConfirm();
+  }
+
   return (
     <div class="input-and-error-msg">
       <input
@@ -25,8 +33,8 @@ export function NameInput(props) {
         id="rename-input"
         value={props.value}
         onInput={(e) => props.onChange(e.target.value)}
-        onFocusOut={() => props.onConfirm()}
-        onKeyDown={e => handleKeyDown(e, props.onConfirm, props.onCancel)}
+        onFocusOut={handleConfirm}
+        onKeyDown={e => handleKeyDown(e, handleConfirm, props.onCancel)}
         class={props.errorMsg ? "error" : ""}
       />
       {props.errorMsg ? <span class="error-msg">{props.errorMsg}</span> : <></>}

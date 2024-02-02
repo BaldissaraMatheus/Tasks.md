@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup } from "solid-js";
 import { handleKeyDown } from "../utils";
 
 /**
@@ -21,12 +21,14 @@ export function Menu(props) {
     }
   }
 
-  function handleOptionClick(option) {
+  function handleOptionClick(option, focus) {
     if (option.requiresConfirmation) {
       setConfirmationPromptCb(() => option.onClick);
-      setTimeout(() => {
-        document.getElementById("confirm-btn").focus();
-      }, 0);
+      if (focus) {
+        setTimeout(() => {
+          document.getElementById("confirm-btn").focus();
+        }, 0);
+      }
       return;
     }
     option.onClick();
@@ -52,12 +54,6 @@ export function Menu(props) {
     window.removeEventListener("mousedown", handleClickOutsideOptions);
   });
 
-  createEffect(() => {
-    if (props.open && props.id) {
-      document.getElementById(props.id).firstChild.focus();
-    }
-  }, [props.open]);
-
   return (
     <div
       id={props.id}
@@ -72,7 +68,7 @@ export function Menu(props) {
           <button
             onClick={() => handleOptionClick(option)}
             onKeyDown={(e) =>
-              handleKeyDown(e, () => handleOptionClick(option), props.onClose)
+              handleKeyDown(e, () => handleOptionClick(option, true), props.onClose)
             }
           >
             {option.label}
