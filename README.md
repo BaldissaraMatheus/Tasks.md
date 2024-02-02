@@ -31,10 +31,10 @@ docker run -d \
   baldissaramatheus/tasks.md
 ```
 Remove the environment variables you don't want to keep (all of them are optional, PUID and PGID are recommended), replace `/path/to/something` with directories that exist in your filesystem and then execute it. The environment variables are the following:
-- PUID and PGID: User ID and group ID that owns the files and directories. On linux distros you can find your user's UID and GID running `id` in the terminal, but it's usually `1000` for both variables. If no value is assigned for those variables, docker will create all the files and directories as root. You can read more about it [here](https://docs.linuxserver.io/general/understanding-puid-and-pgid/).
-- TITLE: A given name that shows below the header and in the browser tab;
-- BASE_PATH: Base path in the url. Use this variable if you are going to run the app under a subpath based reverse-proxy;
-- LOCAL_IMAGES_CLEANUP_INTERVAL: After a given interval the app will remove all local images that aren't present in any task. This variable control the duration in minutes of this interval. The default value is 1440 (exactly 24h). Set it as 0 to disable it.
+- `PUID` and `PGID`: User ID and group ID that owns the files and directories. On linux distros you can find your user's UID and GID running `id` in the terminal, but it's usually `1000` for both variables. If no value is assigned for those variables, docker will create all the files and directories as root. You can read more about it [here](https://docs.linuxserver.io/general/understanding-puid-and-pgid/).
+- `TITLE`: A given name that shows below the header and in the browser tab;
+- `BASE_PATH`: Base path in the url. Use this variable if you are going to run the app under a subpath based reverse-proxy;
+- `LOCAL_IMAGES_CLEANUP_INTERVAL`: After a given interval the app will remove all local images that aren't present in any task. This variable control the duration in minutes of this interval. The default value is 1440 (exactly 24h). Set it as 0 to disable it.
 
 
 ### docker-compose
