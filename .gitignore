@@ -1,8 +1,8 @@
-backend/files
 backend/node_modules
 backend/static
-backend/sort
-backend/images
+backend/tasks
+backend/config
 frontend/node_modules
 frontend/dist
 frontend/.env
+frontend/dev-dist

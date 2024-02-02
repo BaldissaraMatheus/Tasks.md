@@ -1,13 +1,18 @@
 @import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
 @import url(./color-themes/adwaita.css);
 
-html, body, input, button, select {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+html,
+body,
+input,
+button,
+select {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif !important;
 }
 
-html, body {
+html,
+body {
   font-size: 16px !important;
   line-height: 1.15 !important;
 }
@@ -18,23 +23,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--app-background-color);
   color: var(--font-color);
+  overflow: hidden;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 h4 {
   font-weight: normal;
   font-size: 0.8rem;
-  line-height: 1.0rem;
+  line-height: 1rem;
   margin: 0;
 }
 
 h5 {
   font-weight: normal;
   font-size: 0.8rem;
-  line-height: 1.0rem;
+  line-height: 1rem;
   margin: 0;
 }
 
@@ -44,7 +51,7 @@ strong {
 
 .lanes {
   background: var(--app-background-color);
-  height: calc(100vh - 57px);
+  height: calc(100dvh - 57px);
   padding: 20px;
   box-sizing: border-box;
   display: flex;
@@ -53,18 +60,17 @@ strong {
 }
 
 .lanes--has-title {
-  height: calc(100vh - 57px - 49px);
+  height: calc(100dvh - 57px - 49px);
 }
 
 input,
 button,
-select
-{
+select {
   height: 32px;
   padding: 4px 15px;
   border-radius: 6px;
   font-size: 0.9rem !important;
-  box-shadow: 0 2px 0 rgba(0,0,0,.02);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
   color: var(--font-color);
   white-space: nowrap;
@@ -77,8 +83,7 @@ select {
 }
 
 button,
-select
-{
+select {
   cursor: pointer;
 }
 
@@ -87,6 +92,11 @@ button {
   background: var(--button-background-color);
   border: 1px solid var(--button-border-color);
   color: var(--button-font-color);
+}
+
+button:focus-within {
+  outline-style: auto;
+  z-index: 2;
 }
 
 button:hover {
@@ -193,13 +203,12 @@ button.small {
   justify-content: space-between;
   cursor: grab;
   font-size: 0.9rem;
-  box-shadow: 0 2px 0 rgba(0,0,0,.02);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   border-radius: 6px;
   box-sizing: border-box;
 }
 
-/* TODO uncomment those lines when firefox add :has support by default */
-/* .card:active {
+.card:active {
   opacity: 0.5;
 }
 
@@ -209,7 +218,7 @@ button.small {
 
 .card:active:has(* button:active) {
   opacity: 1 !important;
-} */
+}
 
 .card__toolbar {
   width: 100%;
@@ -224,21 +233,27 @@ button.small {
   flex-grow: 1;
 }
 
+.card__name {
+  overflow-x: hidden;
+}
+
 .popup {
   position: absolute;
   border-radius: 6px;
   border: 1px solid var(--popup-border-color);
   box-sizing: border-box;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.05),
-    0 2px 2px rgba(0,0,0,0.05),
-    0 4px 4px rgba(0,0,0,0.05),
-    0 6px 8px rgba(0,0,0,0.05),
-    0 8px 16px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05), 0 2px 2px rgba(0, 0, 0, 0.05),
+    0 4px 4px rgba(0, 0, 0, 0.05), 0 6px 8px rgba(0, 0, 0, 0.05),
+    0 8px 16px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  z-index: 99999;
 }
 
 .popup > button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: 0;
   text-align: left;
   background: var(--popup-background-color);
@@ -259,19 +274,21 @@ button.small {
   flex-wrap: wrap;
   gap: 8px;
   padding: 12px;
-  color: var(--tag-font-color);
 }
 
 .tag {
   padding: 4px;
   border-radius: 5px;
-  background:	var(--tag-background-color);
-  border: 1px solid var(--tag-border-color);
-  color: var(--tag-font-color);
+  border: 1px solid var(--tag-color-1);
+  background-color: var(--tag-color-1);
 }
 
 .tag--clicable {
   cursor: pointer;
+}
+
+.tag h5 {
+  color: var(--tag-text-color);
 }
 
 .counter {
@@ -282,8 +299,8 @@ button.small {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.5);
 }
 
@@ -299,7 +316,7 @@ button.small {
   background: var(--modal-background-color);
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   box-sizing: border-box;
   border-radius: 5px;
   padding: 12px;
@@ -374,8 +391,15 @@ button.small {
   font-size: 0.8rem;
 }
 
-a, a > * {
+a,
+a > * {
   color: var(--link-color) !important;
+}
+
+.color-preview-option {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }
 
 #editor-container {
@@ -410,8 +434,8 @@ a, a > * {
 }
 
 .editor .is-selected {
-  background: var(--tag-background-color) !important;
-  color: var(--tag-font-color);
+  background: var(--tag-color-1) !important;
+  color: var(--tag-color-1);
 }
 
 .editor .s-popover {
@@ -435,12 +459,4 @@ a, a > * {
 
 .editor .s-btn__outlined {
   border-color: var(--button-border-color);
-}
-
-.editor input:checked + .s-btn.s-btn__outlined {
-  background-color: var(--tag-background-color) !important;
-}
-
-.editor input:checked + .s-btn.s-btn__outlined * {
-  color: var(--tag-font-color);
 }

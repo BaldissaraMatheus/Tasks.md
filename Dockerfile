@@ -3,7 +3,7 @@ FROM node:18-alpine3.17 as build-stage
 RUN set -eux \
 	&& mkdir -p /app \
 	&& mkdir -p /api \
-	&& mkdir -p /api/files
+	&& mkdir -p /tasks
 
 COPY frontend/ /app
 
@@ -19,14 +19,15 @@ RUN set -eux \
 	&& npm ci
 
 FROM alpine:3.17.2 as final
-ARG PUID=1000
-ARG PGID=1000
+ARG PUID=0
+ARG PGID=0
 ARG TITLE=""
 ARG BASE_PATH=""
-ARG ENABLE_LOCAL_IMAGES=false
+ARG LOCAL_IMAGES_CLEANUP_INTERVAL=1440
 ENV VITE_TITLE $TITLE
 ENV BASE_PATH $BASE_PATH
-ENV ENABLE_LOCAL_IMAGES $ENABLE_LOCAL_IMAGES
+ENV LOCAL_IMAGES_CLEANUP_INTERVAL=$LOCAL_IMAGES_CLEANUP_INTERVAL
+ENV NODE_ENV prod
 USER root
 
 RUN set -eux \
@@ -34,17 +35,20 @@ RUN set -eux \
 
 RUN mkdir /stylesheets
 
-COPY --from=build-stage --chown=$PUID:$PGID /app/dist/. /api/static/
+COPY --from=build-stage --chown=$PUID:$PGID /app/dist/. /static/
 COPY --from=build-stage --chown=$PUID:$PGID /app/dist/stylesheets/. /stylesheets/
 COPY --from=build-stage --chown=$PUID:$PGID /api/ /api/
+RUN rm -r /static/stylesheets
 
-VOLUME /api/files
-VOLUME /api/static/stylesheets
+VOLUME /tasks
+VOLUME /config
 WORKDIR /api
 EXPOSE 8080
-ENTRYPOINT [ -z "$(ls -A /api/static/stylesheets)" ] && { \
-	cp -R /stylesheets/. /api/static/stylesheets/ & \
-	chown -R $PUID:$PGID /api/static & \
-	chown -R $PUID:$PGID /api/files & \
-	} || { echo ""; } \
-	& node /api/server.js
+ENTRYPOINT mkdir -p /config/stylesheets/ && \
+	mkdir -p /config/images/ && \
+	mkdir -p /config/sort/ && \
+	cp -r /config/stylesheets/. /stylesheets/ && \
+	cp -r /stylesheets/. /config/stylesheets/ && \
+	chown -R $PUID:$PGID /config && \
+	chown -R $PUID:$PGID /tasks && \
+	node /api/server.js
