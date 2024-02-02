@@ -10,7 +10,7 @@ import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from './menu';
-import { handleKeyDown } from "../utils";
+import { getButtonCoordinates, handleKeyDown } from "../utils";
 
 /**
  *
@@ -185,18 +185,17 @@ function ExpandedCard(props) {
     setTimeout(() => props.onContentChange(editor()?.content), 0);
   }
 
-  function handleTagClick(event, tag) {
+  function handleTagClick(event, tag, focus) {
     event.stopPropagation();
-    const btnCoordinates = event.target.getBoundingClientRect();
-    let x = btnCoordinates.x + event.target.offsetWidth - 3;
-    const menuWidth = 82;
-    const offsetX = x + menuWidth >= window.innerWidth ? menuWidth : 0;
-    x -= offsetX;
-    const offsetY = offsetX ? 0 : 3;
-    const y = btnCoordinates.y + event.target.offsetHeight - offsetY;
+    const newCoordinates = getButtonCoordinates(event);
+    setMenuCoordinates(newCoordinates);
     setClickedTag(tag);
-    setMenuCoordinates({ x, y });
     setShowTagPopup(true);
+    if (focus) {
+      setTimeout(() => {
+        document.getElementById(clickedTag().name).firstChild.focus();
+      }, 0);
+    }
   }
 
   function handleChangeColorOptionClick() {
@@ -347,6 +346,8 @@ function ExpandedCard(props) {
                     "border-color": tag.backgroundColor,
                   }}
                   onClick={(e) => handleTagClick(e, tag)}
+                  onKeyDown={e => handleKeyDown(e, () => handleTagClick(e, tag, true))}
+                  tabIndex={0}
                 >
                   <h5>{tag.name}</h5>
                 </div>

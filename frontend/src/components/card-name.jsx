@@ -25,11 +25,6 @@ export function CardName(props) {
     setMenuCoordinates(null);
   }
 
-  function handleOptionBtnOnClick(event) {
-    const coordinates = getButtonCoordinates(event);
-    setMenuCoordinates(coordinates);
-  }
-
   const menuOptions = [
     { label: "Rename card", onClick: startRenamingCard },
     {
@@ -39,9 +34,13 @@ export function CardName(props) {
     },
   ];
 
-  function handleClick(event) {
-    handleOptionBtnOnClick(event);
+  function handleClick(event, focus) {
+    const coordinates = getButtonCoordinates(event);
+    setMenuCoordinates(coordinates);
     setShowMenu(true);
+    if (focus) {
+      document.getElementById(props.name).firstChild.focus();
+    }
     event.stopImmediatePropagation();
     event.stopPropagation();
     event.preventDefault();
@@ -59,14 +58,19 @@ export function CardName(props) {
         onDragEnter={(e) => e.preventDefault()}
         onDragStart={props.onDragStart}
       >
-        <strong>{props.hasContent ? '\uD83D\uDCDD ' : ''}{props.name}</strong>
+        <strong>
+          {props.hasContent ? "\uD83D\uDCDD " : ""}
+          {props.name}
+        </strong>
       </div>
       <div class="lane__header-buttons">
         <button
           title="Show card options"
           class="small"
           onClick={handleClick}
-          onKeyDown={e => handleKeyDown(e, handleClick, handleCancel)}
+          onKeyDown={(e) =>
+            handleKeyDown(e, () => handleClick(e, true), handleCancel)
+          }
         >
           ⋮
         </button>

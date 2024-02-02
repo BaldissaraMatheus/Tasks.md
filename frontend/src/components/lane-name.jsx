@@ -1,12 +1,12 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
-import { getButtonCoordinates } from "../utils";
+import { getButtonCoordinates, handleKeyDown } from "../utils";
 
 /**
- * 
- * @param {Object} props 
- * @param {string} props.name 
- * @param {number} props.count 
+ *
+ * @param {Object} props
+ * @param {string} props.name
+ * @param {number} props.count
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDeleteCards
  * @param {Function} props.onDelete
@@ -22,14 +22,20 @@ export function LaneName(props) {
     props.onRenameBtnClick();
   }
 
-  function handleOptionBtnOnClick(event) {
-    const coordinates = getButtonCoordinates(event);
-    setMenuCoordinates(coordinates);
-  }
-
-  function handleMenuClose() {
+  function handleCancel() {
     setShowMenu(false);
     setMenuCoordinates(null);
+  }
+
+  function handleOptionsBtnClick(event, focus) {
+    const coordinates = getButtonCoordinates(event);
+    setMenuCoordinates(coordinates);
+    setShowMenu(true);
+    if (focus) {
+      setTimeout(() => {
+        document.getElementById(props.name).firstChild.focus();
+      }, 0);
+    }
   }
 
   const menuOptions = [
@@ -70,10 +76,10 @@ export function LaneName(props) {
         <button
           title="Show lane options"
           class="small"
-          onClick={(event) => {
-            handleOptionBtnOnClick(event);
-            setShowMenu(true);
-          }}
+          onClick={handleOptionsBtnClick}
+          onKeyDown={(e) =>
+            handleKeyDown(e, () => handleOptionsBtnClick(e, true), handleCancel)
+          }
         >
           ⋮
         </button>
@@ -82,7 +88,7 @@ export function LaneName(props) {
         id={props.name}
         open={showMenu()}
         options={menuOptions}
-        onClose={handleMenuClose}
+        onClose={handleCancel}
         x={menuCoordinates()?.x}
         y={menuCoordinates()?.y}
       />

@@ -96,6 +96,7 @@ button {
 
 button:focus-within {
   outline-style: auto;
+  z-index: 2;
 }
 
 button:hover {
