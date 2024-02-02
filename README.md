@@ -61,10 +61,10 @@ All CSS files are available in the stylesheets directory under the config volume
 ## 📁 Files organization
 The way directories and files are organized in Tasks.md is quite simple. Every lane you add within the app is a directory in your filesystem and every task is file.
 
-So if your tasks look like this:
+#### So if your tasks look like this:
 ![Screenshot of the app. There are 3 lanes, Backlog, Sprint and Done. Within Done there is one file named "Something something"](/public/directories-organization-1.png)
-##
-Your files should look like this:
+
+#### Your files should look like this:
 ![Screenshot of a file explorer showing 3 folders: Backlog, Sprint and Done](/public/directories-organization-2.png)
 ![Screenshot of file explorer within a folder called "Done", containing one file named "Something something"](/public/directories-organization-3.png)
 
