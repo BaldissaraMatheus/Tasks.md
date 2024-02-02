@@ -10,6 +10,7 @@ A self-hosted file based task management board that supports Markdown syntax.
 - Light and dark themes synced with operating system settings;
 - Heavy customizable with 3 default color themes ([Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin));
 - Support for subpath based reverse-proxy with an environment variable for base path;
+- Can be installed as PWA.
 
 ## 🐋 Installation
 ### Docker
@@ -58,7 +59,7 @@ Use the Docker section above as reference for setting up variables and volumes.
 All CSS files are available in the stylesheets directory under the config volume. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, open the file `/stylesheets/index.css` and change the second line to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
 
 ## 📁 Files organization
-The way directories and files are organized in Tasks.md is quite simple. Basically every lane you add within the app is a directory in your filesystem and every task is file.
+The way directories and files are organized in Tasks.md is quite simple. Every lane you add within the app is a directory in your filesystem and every task is file.
 
 So if your tasks look like this:
 ![Screenshot of the app. There are 3 lanes, Backlog, Sprint and Done. Within Done there is one file named "Something something"](/public/directories-organization-1.png)
