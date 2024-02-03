@@ -1,5 +1,5 @@
 # ![logo](public/logo.png) Tasks.md
-A self-hosted file based task management board that supports Markdown syntax.
+A self-hosted, Markdown file based task management board.
 
 
 ![Demo](./public/demo.gif)
