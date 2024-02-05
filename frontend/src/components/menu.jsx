@@ -35,7 +35,8 @@ export function Menu(props) {
     props.onClose();
   }
 
-  function handleOptionConfirmation() {
+  function handleOptionConfirmation(e) {
+    e.stopImmediatePropagation();
     confirmationPromptCb()();
     setConfirmationPromptCb(null);
     props.onClose();
@@ -80,7 +81,7 @@ export function Menu(props) {
           onClick={handleOptionConfirmation}
           id="confirm-btn"
           onKeyDown={(e) =>
-            handleKeyDown(e, () => handleOptionConfirmation(), handleCancel)
+            handleKeyDown(e, () => handleOptionConfirmation(e), handleCancel)
           }
         >
           Are you sure?
