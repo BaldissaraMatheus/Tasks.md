@@ -11,6 +11,6 @@
     "uuid": "^9.0.0"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "PORT='8080' CONFIG_DIR='config' TASKS_DIR='tasks' BASE_PATH='/' PUID='1000' PGID='1000' LOCAL_IMAGES_CLEANUP_INTERVAL='1440' node server.js"
   }
 }
