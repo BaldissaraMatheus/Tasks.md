@@ -57,6 +57,7 @@ strong {
   display: flex;
   gap: 40px;
   overflow-x: auto;
+  scroll-snap-type: x mandatory;
 }
 
 .lanes--has-title {
@@ -126,7 +127,8 @@ button.small {
   background: var(--app-header-background-color);
   border-bottom: 1px solid var(--app-header-border-color);
   box-sizing: border-box;
-  max-height: 57px;
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .search-input {
@@ -154,6 +156,7 @@ button.small {
 .lane {
   display: flex;
   flex-direction: column;
+  scroll-snap-align: center;
 }
 
 .dragged-over {
@@ -309,8 +312,8 @@ button.small {
   display: flex;
   flex-direction: column;
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 90%;
   max-width: 960px;
   max-height: 819px;
   background: var(--modal-background-color);
