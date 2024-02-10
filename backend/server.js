@@ -144,8 +144,9 @@ async function getCards(ctx) {
     )
   );
   const files = lanesFiles.flat();
+  const mdFiles = files.filter(file => file.name.endsWith('.md'));
   const filesContents = await Promise.all(
-    files.map(async (file) => {
+    mdFiles.map(async (file) => {
       const content = await getContent(
         `${process.env.TASKS_DIR}/${file.lane}/${file.name}`
       );
