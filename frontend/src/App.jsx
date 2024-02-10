@@ -21,6 +21,7 @@ import { CardName } from "./components/card-name";
 function App() {
   const [lanes, setLanes] = createSignal([]);
   const [cards, setCards] = createSignal([]);
+  // TODO Use makePersisted for sort and sortDirection 
   const [sort, setSort] = createSignal(getDefaultFromLocalStorage("sort"));
   const [sortDirection, setSortDirection] = createSignal(
     getDefaultFromLocalStorage("sortDirection")

@@ -305,6 +305,14 @@ button.small {
   width: 100dvw;
   height: 100dvh;
   background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-bg--maximized {
+  padding: 0;
 }
 
 .modal {
@@ -312,18 +320,18 @@ button.small {
   display: flex;
   flex-direction: column;
   position: relative;
-  width: 90%;
-  height: 90%;
-  max-width: 960px;
-  max-height: 819px;
+  width: 100%;
+  height: 100%;
   background: var(--modal-background-color);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   box-sizing: border-box;
   border-radius: 5px;
   padding: 12px;
   text-align: left;
+}
+
+.modal:not(.modal--maximized) {
+  max-width: 960px;
+  max-height: 819px;
 }
 
 .modal__toolbar {
@@ -332,6 +340,7 @@ button.small {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+  /* flex-direction: column; */
 }
 
 .modal__toolbar-name-input {
@@ -341,18 +350,29 @@ button.small {
 }
 
 .modal__toolbar-name {
-  flex-grow: 1;
+  /* https://stackoverflow.com/a/36247448 */
+  min-width: 0;
+  text-wrap: balance;
   display: inline-block;
-  width: calc(100% - 50px);
+  word-wrap: break-word;
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.modal__toolbar-close-btn {
+.modal__toolbar-btns {
+  flex-grow: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.modal__toolbar-btn {
   width: 35px;
   height: 35px;
   padding: 0;
   font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .editor-toolbar a::before {
