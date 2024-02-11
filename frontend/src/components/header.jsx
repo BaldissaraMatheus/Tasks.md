@@ -16,6 +16,7 @@ export function Header(props) {
         placeholder="Search"
         type="text"
         onInput={(e) => props.onSearchChange(e.target.value)}
+        class="search-input"
       />
       <div class="app-header__group-item">
         <div class="app-header__group-item-label">Sort by:</div>

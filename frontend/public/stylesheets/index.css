@@ -49,15 +49,21 @@ strong {
   margin: 0;
 }
 
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
 .lanes {
   background: var(--app-background-color);
-  height: calc(100dvh - 57px);
   padding: 20px;
   box-sizing: border-box;
   display: flex;
   gap: 40px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  flex-grow: 1;
 }
 
 .lanes--has-title {
@@ -132,8 +138,8 @@ button.small {
 }
 
 .search-input {
-  display: flex;
-  flex-direction: column;
+  max-width: 232px;
+  width: 100%;
 }
 
 .app-header__group-item {
@@ -177,6 +183,7 @@ button.small {
   display: flex;
   align-items: center;
   gap: 6px;
+  overflow: hidden;
 }
 
 .lane__header-name {
