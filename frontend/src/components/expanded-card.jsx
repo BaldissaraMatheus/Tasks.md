@@ -1,4 +1,10 @@
-import { createEffect, createSignal, onMount, createMemo } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  onMount,
+  createMemo,
+  onCleanup,
+} from "solid-js";
 import { api } from "../api";
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 import "@stackoverflow/stacks-editor/dist/styles.css";
@@ -7,8 +13,8 @@ import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
-import { AiOutlineExpand } from 'solid-icons/ai';
-import { IoClose } from 'solid-icons/io'
+import { AiOutlineExpand } from "solid-icons/ai";
+import { IoClose } from "solid-icons/io";
 
 /**
  *
@@ -35,9 +41,18 @@ function ExpandedCard(props) {
   const [clickedTag, setClickedTag] = createSignal(null);
   const [showTagPopup, setShowTagPopup] = createSignal(false);
   const [showColorPopup, setShowColorPopup] = createSignal(false);
-  const [isMaximized, setIsMaximized] = makePersisted(createSignal('false'), {
+  const [isMaximized, setIsMaximized] = makePersisted(createSignal("false"), {
     storage: localStorage,
+    name: "isExpandedCardMaximized",
   });
+  const [modeBtns, setModeBtns] = createSignal([]);
+  const [lastEditorModeUsed, setLastEditorModeUsed] = makePersisted(
+    createSignal("Markdown mode"),
+    {
+      storage: localStorage,
+      name: "lastEditorModeUsed",
+    }
+  );
 
   function focusOutOnEnter(e) {
     if (e.key === "Enter") {
@@ -273,18 +288,52 @@ function ExpandedCard(props) {
       imageUpload: { handler: uploadImage },
     });
     setEditor(newEditor);
-    const editorTextArea = editorEl.childNodes[0].childNodes[2];
+    const toolbarEndGroupNodes = [
+      ...editorEl.childNodes[0].childNodes[1].childNodes[0].childNodes[1]
+        .childNodes[0].childNodes,
+    ];
+    const modeBtns = toolbarEndGroupNodes.filter((node) => node.title);
+    setModeBtns(modeBtns);
+  });
+
+  function handleClickEditorMode(e) {
+    setLastEditorModeUsed(e.currentTarget.title);
+  }
+
+  createEffect(() => {
+    if (!editor) {
+      return;
+    }
+    modeBtns().forEach((btn) =>
+      btn.addEventListener("click", handleClickEditorMode)
+    );
+    const modeBtn = modeBtns().find(
+      (node) => node.title === lastEditorModeUsed()
+    );
+    modeBtn.click();
+    const editorTextArea =
+      document.getElementById("editor-container").childNodes[0].childNodes[2];
     editorTextArea.focus();
+  });
+
+  onCleanup(() => {
+    modeBtns().forEach((btn) =>
+      btn.removeEventListener("click", handleClickEditorMode)
+    );
   });
 
   return (
     <>
       <div
-        className={`modal-bg ${isMaximized() === 'true' ? "modal-bg--maximized" : ""}`}
+        className={`modal-bg ${
+          isMaximized() === "true" ? "modal-bg--maximized" : ""
+        }`}
         onClick={props.onClose}
       >
         <div
-          className={`modal ${isMaximized() === 'true' ? "modal--maximized" : ""}`}
+          className={`modal ${
+            isMaximized() === "true" ? "modal--maximized" : ""
+          }`}
           onClick={(event) => event.stopPropagation()}
         >
           <div className="modal__toolbar">
@@ -318,7 +367,9 @@ function ExpandedCard(props) {
             <div className="modal__toolbar-btns">
               <button
                 class="modal__toolbar-btn"
-                onClick={() => setIsMaximized(isMaximized() === 'true' ? 'false' : 'true')}
+                onClick={() =>
+                  setIsMaximized(isMaximized() === "true" ? "false" : "true")
+                }
               >
                 <AiOutlineExpand size="25px" />
               </button>
