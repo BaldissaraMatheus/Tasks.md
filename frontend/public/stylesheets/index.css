@@ -179,6 +179,12 @@ button.small {
   gap: 6px;
 }
 
+.lane__header-name {
+  min-width: 0;
+  word-wrap: break-word;
+  text-wrap: balance;
+}
+
 .lane__header-buttons {
   display: flex;
   gap: 6px;
@@ -352,9 +358,9 @@ button.small {
 .modal__toolbar-name {
   /* https://stackoverflow.com/a/36247448 */
   min-width: 0;
+  word-wrap: break-word;
   text-wrap: balance;
   display: inline-block;
-  word-wrap: break-word;
   margin-top: 0;
   margin-bottom: 0;
 }
