@@ -325,18 +325,18 @@ function ExpandedCard(props) {
   return (
     <>
       <div
-        className={`modal-bg ${
+        class={`modal-bg ${
           isMaximized() === "true" ? "modal-bg--maximized" : ""
         }`}
         onClick={props.onClose}
       >
         <div
-          className={`modal ${
+          class={`modal ${
             isMaximized() === "true" ? "modal--maximized" : ""
           }`}
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="modal__toolbar">
+          <div class="modal__toolbar">
             {nameInputValue() !== null ? (
               <div class="input-and-error-msg">
                 <input
@@ -364,7 +364,7 @@ function ExpandedCard(props) {
                 {props.name || "NO NAME"}
               </h1>
             )}
-            <div className="modal__toolbar-btns">
+            <div class="modal__toolbar-btns">
               <button
                 class="modal__toolbar-btn"
                 onClick={() =>
@@ -378,7 +378,7 @@ function ExpandedCard(props) {
               </button>
             </div>
           </div>
-          <div className="modal__tags">
+          <div class="modal__tags">
             {isCreatingNewTag() ? (
               <>
                 <input
@@ -402,7 +402,7 @@ function ExpandedCard(props) {
             <For each={props.tags || []}>
               {(tag) => (
                 <div
-                  className="tag tag--clicable"
+                  class="tag tag--clicable"
                   style={{
                     "background-color": tag.backgroundColor,
                     "border-color": tag.backgroundColor,
