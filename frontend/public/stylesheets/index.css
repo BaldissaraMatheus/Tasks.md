@@ -62,8 +62,13 @@ strong {
   display: flex;
   gap: 40px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
   flex-grow: 1;
+}
+
+@media (pointer: coarse) {
+  .lanes {
+    scroll-snap-type: x mandatory;
+  }
 }
 
 .lanes--has-title {
