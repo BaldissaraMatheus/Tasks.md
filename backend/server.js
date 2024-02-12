@@ -19,16 +19,12 @@ const BASE_PATH =
 
 const multerInstance = multer();
 
-function getContent(path) {
-  return fs.promises.readFile(path).then((res) => res.toString());
-}
-
 async function getLanesNames() {
   await fs.promises.mkdir(process.env.TASKS_DIR, { recursive: true });
   return fs.promises.readdir(process.env.TASKS_DIR);
 }
 
-async function getTags(ctx) {
+async function getMdFiles() {
   const lanes = await getLanesNames();
   const lanesFiles = await Promise.all(
     lanes.map((lane) =>
@@ -37,7 +33,18 @@ async function getTags(ctx) {
         .then((files) => files.map((file) => ({ lane, name: file })))
     )
   );
-  const files = lanesFiles.flat();
+  const files = lanesFiles
+    .flat()
+    .filter(file => file.name.endsWith('.md'));
+  return files;
+}
+
+function getContent(path) {
+  return fs.promises.readFile(path).then((res) => res.toString());
+}
+
+async function getTags(ctx) {
+  const files = await getMdFiles();
   const filesContents = await Promise.all(
     files.map((file) =>
       getContent(`${process.env.TASKS_DIR}/${file.lane}/${file.name}`)
@@ -115,15 +122,7 @@ function getTagsTextsFromCardContent(cardContent) {
 }
 
 async function getLaneByCardName(cardName) {
-  const lanes = await getLanesNames();
-  const lanesFiles = await Promise.all(
-    lanes.map((lane) =>
-      fs.promises
-        .readdir(`${process.env.TASKS_DIR}/${lane}`)
-        .then((files) => files.map((file) => ({ lane, name: file })))
-    )
-  );
-  const files = lanesFiles.flat();
+  const files = await getMdFiles();
   return files.find((file) => file.name === `${cardName}.md`).lane;
 }
 
@@ -135,18 +134,9 @@ async function getLanes(ctx) {
 router.get("/lanes", getLanes);
 
 async function getCards(ctx) {
-  const lanes = await getLanesNames();
-  const lanesFiles = await Promise.all(
-    lanes.map((lane) =>
-      fs.promises
-        .readdir(`${process.env.TASKS_DIR}/${lane}`)
-        .then((files) => files.map((file) => ({ lane, name: file })))
-    )
-  );
-  const files = lanesFiles.flat();
-  const mdFiles = files.filter(file => file.name.endsWith('.md'));
+  const files = await getMdFiles();
   const filesContents = await Promise.all(
-    mdFiles.map(async (file) => {
+    files.map(async (file) => {
       const content = await getContent(
         `${process.env.TASKS_DIR}/${file.lane}/${file.name}`
       );
@@ -392,15 +382,7 @@ app.use(
 );
 
 async function removeUnusedImages() {
-  const lanes = await getLanesNames();
-  const lanesFiles = await Promise.all(
-    lanes.map((lane) =>
-      fs.promises
-        .readdir(`${process.env.TASKS_DIR}/${lane}`)
-        .then((files) => files.map((file) => ({ lane, name: file })))
-    )
-  );
-  const files = lanesFiles.flat();
+  const files = await getMdFiles();
   const filesContents = await Promise.all(
     files.map(async (file) =>
       getContent(`${process.env.TASKS_DIR}/${file.lane}/${file.name}`)
