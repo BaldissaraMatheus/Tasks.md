@@ -1,4 +1,5 @@
-@import url(https://necolas.github.io/normalize.css/8.0.1/normalize.css);
+/* Reset preset taken from https://keithjgrant.com/posts/2024/01/my-css-resets/ */
+@import url('./reset.css');
 @import url(./color-themes/adwaita.css);
 
 html,
