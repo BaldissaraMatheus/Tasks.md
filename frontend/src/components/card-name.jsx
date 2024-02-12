@@ -1,6 +1,7 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown as handleKeyDown } from "../utils";
+import { BiRegularDotsVerticalRounded } from "solid-icons/bi";
 
 /**
  *
@@ -63,7 +64,7 @@ export function CardName(props) {
           {props.name}
         </strong>
       </div>
-      <div class="lane__header-buttons">
+      <div class="header-buttons">
         <button
           title="Show card options"
           class="small"
@@ -72,7 +73,7 @@ export function CardName(props) {
             handleKeyDown(e, () => handleClick(e, true), handleCancel)
           }
         >
-          ⋮
+          <BiRegularDotsVerticalRounded />
         </button>
       </div>
       <Menu

@@ -105,6 +105,9 @@ button {
   background: var(--button-background-color);
   border: 1px solid var(--button-border-color);
   color: var(--button-font-color);
+  text-align: center;
+  text-align: -moz-center;
+  text-align: -webkit-center;
 }
 
 button:focus-within {
@@ -141,6 +144,11 @@ button.small {
   box-sizing: border-box;
   max-width: 100%;
   flex-wrap: wrap;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 6px;
 }
 
 .search-input {
@@ -196,11 +204,6 @@ button.small {
   min-width: 0;
   word-wrap: break-word;
   text-wrap: balance;
-}
-
-.lane__header-buttons {
-  display: flex;
-  gap: 6px;
 }
 
 .lane__content {
