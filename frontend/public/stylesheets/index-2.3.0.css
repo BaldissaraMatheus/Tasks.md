@@ -1,6 +1,6 @@
 /* Reset preset taken from https://keithjgrant.com/posts/2024/01/my-css-resets/ */
 @import url('./reset.css');
-@import url(./color-themes/adwaita.css);
+@import url('./custom.css');
 
 html,
 body,
