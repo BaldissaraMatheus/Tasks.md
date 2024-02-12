@@ -6,7 +6,6 @@
     "koa": "^2.14.1",
     "koa-bodyparser": "^4.3.0",
     "koa-mount": "^4.0.0",
-    "koa-send": "^5.0.1",
     "koa-static": "^5.0.0",
     "uuid": "^9.0.0"
   },

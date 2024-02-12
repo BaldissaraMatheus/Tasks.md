@@ -6,7 +6,6 @@ const router = require("@koa/router")();
 const bodyParser = require("koa-bodyparser");
 const cors = require("@koa/cors");
 const multer = require("@koa/multer");
-const send = require("koa-send");
 const mount = require("koa-mount");
 const serve = require("koa-static");
 
@@ -320,14 +319,6 @@ async function saveCardsSort(ctx) {
 
 router.post("/sort/cards", saveCardsSort);
 
-async function getImage(ctx) {
-  await send(ctx, `${process.env.CONFIG_DIR}/images/${ctx.params.image}`, {
-    root: process.env.NODE_ENV === "prod" ? "/" : __dirname,
-  });
-}
-
-router.get("/images/:image", getImage);
-
 async function saveImage(ctx) {
   const imageName = ctx.request.file.originalname;
   await fs.promises.mkdir(`${process.env.CONFIG_DIR}/images`, {
@@ -374,6 +365,7 @@ app.use(async (ctx, next) => {
 });
 app.use(mount(`${BASE_PATH}api`, router.routes()));
 app.use(mount(BASE_PATH, serve("/static")));
+app.use(mount(`${BASE_PATH}api/images`, serve(`${process.env.CONFIG_DIR}/images`)));
 app.use(
   mount(
     `${BASE_PATH}stylesheets/`,
