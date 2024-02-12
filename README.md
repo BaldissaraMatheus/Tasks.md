@@ -57,7 +57,7 @@ services:
 Use the Docker section above as reference for setting up variables and volumes.
 
 ## 🎨 Customize
-All CSS files are available in the stylesheets directory under the config volume. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, open the file `/stylesheets/index.css` and change the second line to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
+All CSS files are available in the stylesheets directory under the config volume, any custom style is recommended to be added to `custom.css` file. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, change the first line of `/stylesheets/custom.css` to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
 
 ## 📁 Files structure
 The way directories and files are organized in Tasks.md is quite simple. Every lane you add within the app is a directory in your filesystem and every task is file.
