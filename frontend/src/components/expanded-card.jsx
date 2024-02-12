@@ -3,14 +3,18 @@ import {
   createSignal,
   onMount,
   createMemo,
+  onCleanup,
 } from "solid-js";
 import { api } from "../api";
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
-import { Menu } from './menu';
+import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
+import { makePersisted } from "@solid-primitives/storage";
+import { AiOutlineExpand } from "solid-icons/ai";
+import { IoClose } from "solid-icons/io";
 
 /**
  *
@@ -37,6 +41,18 @@ function ExpandedCard(props) {
   const [clickedTag, setClickedTag] = createSignal(null);
   const [showTagPopup, setShowTagPopup] = createSignal(false);
   const [showColorPopup, setShowColorPopup] = createSignal(false);
+  const [isMaximized, setIsMaximized] = makePersisted(createSignal("false"), {
+    storage: localStorage,
+    name: "isExpandedCardMaximized",
+  });
+  const [modeBtns, setModeBtns] = createSignal([]);
+  const [lastEditorModeUsed, setLastEditorModeUsed] = makePersisted(
+    createSignal("Markdown mode"),
+    {
+      storage: localStorage,
+      name: "lastEditorModeUsed",
+    }
+  );
 
   function focusOutOnEnter(e) {
     if (e.key === "Enter") {
@@ -265,26 +281,62 @@ function ExpandedCard(props) {
       editorClasses.push("disable-image-upload");
     }
     const editorEl = document.getElementById("editor-container");
-    const newEditor = new StacksEditor(
-      editorEl,
-      props.content || "",
-      {
-        classList: ["theme-system"],
-        targetClassList: editorClasses,
-        editorHelpLink: "https://github.com/BaldissaraMatheus/Tasks.md/issues",
-        imageUpload: { handler: uploadImage },
-      }
-    );
+    const newEditor = new StacksEditor(editorEl, props.content || "", {
+      classList: ["theme-system"],
+      targetClassList: editorClasses,
+      editorHelpLink: "https://github.com/BaldissaraMatheus/Tasks.md/issues",
+      imageUpload: { handler: uploadImage },
+    });
     setEditor(newEditor);
-    const editorTextArea = editorEl.childNodes[0].childNodes[2];
+    const toolbarEndGroupNodes = [
+      ...editorEl.childNodes[0].childNodes[1].childNodes[0].childNodes[1]
+        .childNodes[0].childNodes,
+    ];
+    const modeBtns = toolbarEndGroupNodes.filter((node) => node.title);
+    setModeBtns(modeBtns);
+  });
+
+  function handleClickEditorMode(e) {
+    setLastEditorModeUsed(e.currentTarget.title);
+  }
+
+  createEffect(() => {
+    if (!editor) {
+      return;
+    }
+    modeBtns().forEach((btn) =>
+      btn.addEventListener("click", handleClickEditorMode)
+    );
+    const modeBtn = modeBtns().find(
+      (node) => node.title === lastEditorModeUsed()
+    );
+    modeBtn.click();
+    const editorTextArea =
+      document.getElementById("editor-container").childNodes[0].childNodes[2];
     editorTextArea.focus();
+  });
+
+  onCleanup(() => {
+    modeBtns().forEach((btn) =>
+      btn.removeEventListener("click", handleClickEditorMode)
+    );
   });
 
   return (
     <>
-      <div className="modal-bg" onClick={props.onClose}>
-        <div className="modal" onClick={(event) => event.stopPropagation()}>
-          <div className="modal__toolbar">
+      <div
+        class={`modal-bg ${
+          isMaximized() === "true" ? "modal-bg--maximized" : ""
+        }`}
+        onClick={props.onClose}
+      >
+        <div
+          class={`modal ${
+            isMaximized() === "true" ? "modal--maximized" : ""
+          }`}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div class="modal__toolbar">
             {nameInputValue() !== null ? (
               <div class="input-and-error-msg">
                 <input
@@ -305,18 +357,28 @@ function ExpandedCard(props) {
               <h1
                 class="modal__toolbar-name"
                 onClick={startRenamingCard}
-                onKeyDown={e => handleKeyDown(e, startRenamingCard)}
+                onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
                 title="Click to rename card"
                 tabIndex="0"
               >
                 {props.name || "NO NAME"}
               </h1>
             )}
-            <button class="modal__toolbar-close-btn" onClick={props.onClose}>
-              X
-            </button>
+            <div class="modal__toolbar-btns">
+              <button
+                class="modal__toolbar-btn"
+                onClick={() =>
+                  setIsMaximized(isMaximized() === "true" ? "false" : "true")
+                }
+              >
+                <AiOutlineExpand size="25px" />
+              </button>
+              <button class="modal__toolbar-btn" onClick={props.onClose}>
+                <IoClose size="25px" />
+              </button>
+            </div>
           </div>
-          <div className="modal__tags">
+          <div class="modal__tags">
             {isCreatingNewTag() ? (
               <>
                 <input
@@ -340,13 +402,15 @@ function ExpandedCard(props) {
             <For each={props.tags || []}>
               {(tag) => (
                 <div
-                  className="tag tag--clicable"
+                  class="tag tag--clicable"
                   style={{
                     "background-color": tag.backgroundColor,
                     "border-color": tag.backgroundColor,
                   }}
                   onClick={(e) => handleTagClick(e, tag)}
-                  onKeyDown={e => handleKeyDown(e, () => handleTagClick(e, tag, true))}
+                  onKeyDown={(e) =>
+                    handleKeyDown(e, () => handleTagClick(e, tag, true))
+                  }
                   tabIndex={0}
                 >
                   <h5>{tag.name}</h5>

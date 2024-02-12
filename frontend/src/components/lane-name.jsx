@@ -60,7 +60,7 @@ export function LaneName(props) {
         onDragEnter={(e) => e.preventDefault()}
         onDragStart={props.onDragStart}
       >
-        <strong>{props.name}</strong>
+        <strong class="lane__header-name">{props.name}</strong>
         <div class="tag">
           <h5 class="counter">{props.count}</h5>
         </div>
