@@ -83,5 +83,5 @@ With the goal of having a good mix of performance and maintainability, the appli
 Feel free to create issues for encountered bugs or to request new features, just make sure to include a proper label. Also give a thumbs up to the issues you feel that are relevant to be implemented for the next releases.
 
 ### Development
-If you want to contribute with its development, select one of the existing issues, develop your solution and submit a pull request, it will eventually be reviewed and may be merged with the existing code. If you're not confident about your solution, discuss your ideas in a related issue or publish a draft pull request.
+If you want to contribute to its development, select one of the [existing issues](https://github.com/BaldissaraMatheus/Tasks.md/issues), develop your solution and submit a pull request, it will eventually be reviewed and may be merged with the existing code. If you're not confident about your solution, discuss your ideas in a related issue or publish a draft pull request.
 
