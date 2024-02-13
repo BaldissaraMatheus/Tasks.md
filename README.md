@@ -56,6 +56,10 @@ services:
 ```
 Use the Docker section above as reference for setting up variables and volumes.
 
+
+### Source code
+Open a terminal instance in the frontend directory and another one in the backend directory, then in both of them run `npm install` and `npm start`.
+
 ## 🎨 Customize
 All CSS files are available in the stylesheets directory under the config volume, any custom style is recommended to be added to `custom.css` file. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, change the first line of `/stylesheets/custom.css` to the path of the color theme you want, you can find them under `/stylesheets/color-themes`.
 
@@ -79,5 +83,5 @@ With the goal of having a good mix of performance and maintainability, the appli
 Feel free to create issues for encountered bugs or to request new features, just make sure to include a proper label. Also give a thumbs up to the issues you feel that are relevant to be implemented for the next releases.
 
 ### Development
-If you want to contribute with its development, select one of the existing issues, develop your solution and submit a pull request, it eventually will be reviewed and may be merged with the existing code. To run the source code, open a terminal instance in the frontend directory and another instance in the backend directory, then in both of them run `npm install` and `npm start`.
+If you want to contribute with its development, select one of the existing issues, develop your solution and submit a pull request, it will eventually be reviewed and may be merged with the existing code. If you're not confident about your solution, discuss your ideas in a related issue or publish a draft pull request.
 
