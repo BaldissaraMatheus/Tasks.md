@@ -73,7 +73,7 @@ The way directories and files are organized in Tasks.md is quite simple. Every l
 ![Screenshot of a file explorer showing 3 folders: Backlog, Sprint and Done](/public/directories-organization-2.png)
 ![Screenshot of file explorer within a folder called "Done", containing one file named "Something something"](/public/directories-organization-3.png)
 
-More details (and it how it looks like within Obsidian) can be found [here](https://github.com/BaldissaraMatheus/Tasks.md/issues/49).
+More details (and it how it looks within Obsidian) can be found [here](https://github.com/BaldissaraMatheus/Tasks.md/issues/49).
 
 ## 💻 Technology stack
 With the goal of having a good mix of performance and maintainability, the application was built with [SolidJS](https://github.com/solidjs/solid) and [Koa](https://github.com/koajs/koa). It also uses [Stacks-Editor](https://github.com/StackExchange/Stacks-Editor) for text editing and [serve-static](https://github.com/expressjs/serve-static) to serve the css files as-is.
