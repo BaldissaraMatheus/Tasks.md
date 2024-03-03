@@ -4,7 +4,7 @@ import { render } from 'solid-js/web';
 import App from './App';
 
 if (import.meta.env.DEV) {
-  await import('../public/stylesheets/index-2.3.0.css');
+  await import('../public/stylesheets/index-2.4.0.css');
 }
 
 const root = document.getElementById('root');

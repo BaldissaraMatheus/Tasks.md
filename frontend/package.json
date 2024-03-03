@@ -21,6 +21,7 @@
     "mobile-drag-drop": "^3.0.0-rc.0",
     "serve-static": "^1.15.0",
     "solid-icons": "^1.1.0",
-    "solid-js": "^1.6.10"
+    "solid-js": "^1.6.10",
+    "sortablejs": "^1.15.2"
   }
 }
