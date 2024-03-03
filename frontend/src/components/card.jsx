@@ -3,13 +3,8 @@ import { handleKeyDown } from "../utils";
 export function Card(props) {
   return (
     <div
+      id={`card-${props.name}`}
       class={`card ${props.isBeingDraggedOver ? "dragged-over" : ""}`}
-      draggable={true}
-      onDragEnter={(e) => e.preventDefault()}
-      onDragStart={props.onDragStart}
-      onDragOver={props.onDragOver}
-      onDragEnd={props.onDragEnd}
-      onClick={props.onClick}
       onKeyDown={e => handleKeyDown(e, props.onClick)}
       tabIndex="0"
     >
