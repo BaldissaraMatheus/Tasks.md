@@ -6,6 +6,7 @@ export function Card(props) {
       id={`card-${props.name}`}
       class={`card ${props.isBeingDraggedOver ? "dragged-over" : ""}`}
       onKeyDown={e => handleKeyDown(e, props.onClick)}
+      onClick={props.onClick}
       tabIndex="0"
     >
       <div class="card__toolbar">

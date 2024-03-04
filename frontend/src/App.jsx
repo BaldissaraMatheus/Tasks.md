@@ -13,7 +13,6 @@ import ExpandedCard from "./components/expanded-card";
 import { Lane } from "./components/lane";
 import { debounce } from "@solid-primitives/scheduled";
 import { api } from "./api";
-import { polyfill } from "mobile-drag-drop";
 import { LaneName } from "./components/lane-name";
 import { NameInput } from "./components/name-input";
 import { Header } from "./components/header";
@@ -405,7 +404,7 @@ function App() {
     setSortableLanes(
       Sortable.create(el, {
         animation: 150,
-        onSort: (e) => handleSortableSort(e, lanes(), setLanes),
+        onSort: (e) => handleLanesSortChange(e, lanes(), setLanes),
       })
     );
     const url = window.location.href;
@@ -414,7 +413,6 @@ function App() {
     }
     fetchCards();
     fetchLanes();
-    polyfill({});
   });
 
   onCleanup(() => {
@@ -450,7 +448,6 @@ function App() {
       .map((lane) => cards().filter((card) => card.lane === lane))
       .flat();
     const cardNames = newCards.map((card) => card.name);
-    console.log(cardNames)
     fetch(`${api}/sort/cards`, {
       method: "POST",
       body: JSON.stringify(cardNames),
@@ -461,7 +458,7 @@ function App() {
     });
   });
 
-  function handleSortableSort(event, originalList, setList) {
+  function handleLanesSortChange(event) {
     // https://github.com/SortableJS/Sortable/issues/546#issuecomment-1892931258
     event.item.remove();
     if (event.oldIndex !== undefined) {
@@ -469,13 +466,13 @@ function App() {
     }
     const { oldIndex, newIndex } = event;
     const addend = newIndex - oldIndex > 0 ? 1 : -1;
-    const newList = structuredClone(originalList);
+    const newList = structuredClone(lanes());
     for (let i = oldIndex; i !== newIndex; i += addend) {
       const oldValue = newList[i];
       newList[i] = newList[i + addend];
       newList[i + addend] = oldValue;
     }
-    setList(newList);
+    setLanes(newList);
   }
 
   function handleCardsSortChange(event) {
@@ -487,7 +484,7 @@ function App() {
     const oldIndex = cards().findIndex((card) => card.name === cardName);
     const newCard = structuredClone(cards()[oldIndex]);
     const targetLane = event.to.parentNode.id.substring(5);
-    const laneIndex = lanes().findIndex((lane) => lane.name === targetLane);
+    const laneIndex = lanes().findIndex((lane) => lane === targetLane);
     const prevLanes = lanes().filter((lane, i) => i < laneIndex);
     const prevIndexes = cards().filter((card) =>
       prevLanes.includes(card.lane)
@@ -495,12 +492,6 @@ function App() {
     const newIndex = prevIndexes + event.newIndex;
     newCard.lane = targetLane;
     let newCards = cards().filter((card, index) => index !== oldIndex);
-    console.log(
-      newIndex,
-      newCards.slice(0, newIndex),
-      newCards.slice(newIndex),
-      [...newCards.slice(0, newIndex), newCard, ...newCards.slice(newIndex)]
-    );
     newCards = [
       ...newCards.slice(0, newIndex),
       newCard,
@@ -510,7 +501,6 @@ function App() {
       .map((lane) => newCards.filter((card) => card.lane === lane))
       .flat();
     setCards(newCards);
-    console.log(newCards);
     fetch(`${api}/cards/${newCard.name}`, {
       method: "PATCH",
       mode: "cors",
