@@ -38,6 +38,8 @@ export function Lane(props) {
         ghostClass: 'card__drop',
         onChoose: setCursorDragging,
         onUnchoose: removeCursorDragging,
+        delay: 250,
+        delayOnTouchOnly: true,
       })
     );
   });
