@@ -236,24 +236,8 @@ button.small {
   box-sizing: border-box;
 }
 
-.card__drop {
-  opacity: 0.5;
-}
-
 .card.card__drag-disabled {
   cursor: pointer !important;
-}
-
-.card:active {
-  opacity: 0.5;
-}
-
-.card:active:has(* input:active) {
-  opacity: 1 !important;
-}
-
-.card:active:has(* button:active) {
-  opacity: 1 !important;
 }
 
 .card__toolbar {
@@ -519,4 +503,8 @@ a > * {
 
 .grabbing * {
   cursor: grabbing !important;
+}
+
+.grabbed {
+  opacity: 0.5;
 }
