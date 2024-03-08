@@ -4,7 +4,7 @@ export function Card(props) {
   return (
     <div
       id={`card-${props.name}`}
-      class={`card ${props.isBeingDraggedOver ? "dragged-over" : ""}`}
+      class={`card ${props.disableDrag ? 'card__drag-disabled' : ''}`}
       onKeyDown={e => handleKeyDown(e, props.onClick)}
       onClick={props.onClick}
       tabIndex="0"
