@@ -405,12 +405,12 @@ function App() {
     setSortableLanes(
       Sortable.create(el, {
         animation: 150,
-        forceFallback: true,
         onSort: (e) => handleLanesSortChange(e, lanes(), setLanes),
         onChoose: setCursorDragging,
         onUnchoose: removeCursorDragging,
         delay: 250,
         delayOnTouchOnly: true,
+        chosenClass: 'grabbed',
       })
     );
     const url = window.location.href;

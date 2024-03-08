@@ -34,12 +34,11 @@ export function Lane(props) {
         fallbackOnBody: true,
         swapThreshold: 0.65,
         onEnd: props.onCardsSortChange,
-        forceFallback: true,
-        ghostClass: 'card__drop',
         onChoose: setCursorDragging,
         onUnchoose: removeCursorDragging,
         delay: 250,
         delayOnTouchOnly: true,
+        chosenClass: 'grabbed',
       })
     );
   });
