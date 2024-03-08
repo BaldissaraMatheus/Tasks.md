@@ -409,6 +409,8 @@ function App() {
         onSort: (e) => handleLanesSortChange(e, lanes(), setLanes),
         onChoose: setCursorDragging,
         onUnchoose: removeCursorDragging,
+        delay: 250,
+        delayOnTouchOnly: true,
       })
     );
     const url = window.location.href;
