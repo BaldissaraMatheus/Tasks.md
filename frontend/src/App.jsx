@@ -509,6 +509,8 @@ function App() {
     });
   }
 
+  const disableCardsDrag = createMemo(() => !!sort());
+
   return (
     <>
       <Header
@@ -532,6 +534,7 @@ function App() {
             <Lane
               name={lane}
               onCardsSortChange={handleCardsSortChange}
+              disableCardsDrag={disableCardsDrag()}
               headerSlot={
                 laneBeingRenamedName() === lane ? (
                   <NameInput
@@ -563,6 +566,7 @@ function App() {
               <For each={getCardsFromLane(lane)}>
                 {(card) => (
                   <Card
+                    disableDrag={disableCardsDrag()}
                     name={card.name}
                     tags={card.tags}
                     onClick={() => setSelectedCard(card)}
