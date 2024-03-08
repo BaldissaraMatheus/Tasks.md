@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 
 import Sortable from "sortablejs";
+import { removeCursorDragging, setCursorDragging } from "../utils";
 
 /**
  *
@@ -33,6 +34,10 @@ export function Lane(props) {
         fallbackOnBody: true,
         swapThreshold: 0.65,
         onEnd: props.onCardsSortChange,
+        forceFallback: true,
+        ghostClass: 'card__drop',
+        onChoose: setCursorDragging,
+        onUnchoose: removeCursorDragging,
       })
     );
   });
@@ -42,6 +47,13 @@ export function Lane(props) {
       sortable().destroy();
     }
   });
+
+  createEffect(() => {
+    if (!sortable()) {
+      return;
+    }
+    sortable().options.disabled = props.disableCardsDrag;
+  })
 
   return (
     <>

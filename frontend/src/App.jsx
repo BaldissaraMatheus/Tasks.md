@@ -18,6 +18,7 @@ import { NameInput } from "./components/name-input";
 import { Header } from "./components/header";
 import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
+import { removeCursorDragging, setCursorDragging } from "./utils";
 
 function App() {
   const [lanes, setLanes] = createSignal([]);
@@ -404,7 +405,10 @@ function App() {
     setSortableLanes(
       Sortable.create(el, {
         animation: 150,
+        forceFallback: true,
         onSort: (e) => handleLanesSortChange(e, lanes(), setLanes),
+        onChoose: setCursorDragging,
+        onUnchoose: removeCursorDragging,
       })
     );
     const url = window.location.href;
