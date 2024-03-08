@@ -26,3 +26,11 @@ export function getButtonCoordinates(event) {
   const y = btnCoordinates.y + event.currentTarget.offsetHeight - offsetY;
   return { x, y };
 }
+
+export function setCursorDragging() {
+  document.body.classList.add("grabbing");
+}
+
+export function removeCursorDragging() {
+  document.body.classList.remove("grabbing");
+}

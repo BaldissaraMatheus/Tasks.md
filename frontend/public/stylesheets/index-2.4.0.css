@@ -186,10 +186,6 @@ button.small {
   scroll-snap-align: center;
 }
 
-.dragged-over {
-  opacity: 0.5;
-}
-
 .lane__header {
   display: flex;
   gap: 6px;
@@ -238,6 +234,14 @@ button.small {
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   border-radius: 6px;
   box-sizing: border-box;
+}
+
+.card__drop {
+  opacity: 0.5;
+}
+
+.card.card__drag-disabled {
+  cursor: pointer !important;
 }
 
 .card:active {
@@ -511,4 +515,8 @@ a > * {
 
 .editor .s-btn__outlined {
   border-color: var(--button-border-color);
+}
+
+.grabbing * {
+  cursor: grabbing !important;
 }
