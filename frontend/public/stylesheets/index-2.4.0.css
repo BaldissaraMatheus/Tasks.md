@@ -72,7 +72,6 @@ strong {
   background: var(--app-header-background-color);
   border-bottom: 1px solid var(--app-header-border-color);
   max-width: 100%;
-  flex-grow: 1;
   flex-wrap: wrap;
 }
 
@@ -83,6 +82,7 @@ strong {
   display: flex;
   gap: 40px;
   overflow-x: auto;
+  flex-grow: 1;
 }
 
 @media (pointer: coarse) {
