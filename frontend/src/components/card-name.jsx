@@ -54,8 +54,6 @@ export function CardName(props) {
   return (
     <>
       <div
-        class="lane__header-name-and-count"
-        draggable={true}
         onDragEnter={(e) => e.preventDefault()}
         onDragStart={props.onDragStart}
       >
