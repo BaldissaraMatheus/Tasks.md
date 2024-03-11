@@ -407,6 +407,7 @@ function App() {
         delay: 250,
         delayOnTouchOnly: true,
         chosenClass: 'grabbed',
+        filter: 'button'
       })
     );
     const url = window.location.href;
