@@ -40,7 +40,7 @@ function App() {
   const [newLaneName, setNewLaneName] = createSignal(null);
   const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
   const [newCardName, setNewCardName] = createSignal(null);
-  const [sortableLanes, setSortableLanes] = createSignal(null);
+  const [lanesSortableInstance, setLanesSortableInstance] = createSignal(null);
 
   function fetchTitle() {
     return fetch(`${api}/title`).then((res) => res.text());
@@ -398,7 +398,7 @@ function App() {
 
   onMount(() => {
     const el = document.getElementById("lanes");
-    setSortableLanes(
+    setLanesSortableInstance(
       Sortable.create(el, {
         animation: 150,
         onSort: (e) => handleLanesSortChange(e, lanes(), setLanes),
@@ -418,8 +418,8 @@ function App() {
   });
 
   onCleanup(() => {
-    if (sortableLanes()) {
-      sortableLanes().destroy();
+    if (lanesSortableInstance()) {
+      lanesSortableInstance().destroy();
     }
   });
 

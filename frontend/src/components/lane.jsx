@@ -18,14 +18,14 @@ import { removeCursorDragging, setCursorDragging } from "../utils";
  * @param {boolean} props.onDelete
  */
 export function Lane(props) {
-  const [sortable, setSortable] = createSignal(null);
+  const [cardsSortableInstance, setCardsSortableInstance] = createSignal(null);
 
   onMount(() => {
     const el = document.getElementById(`lane-${props.name}-sortable-container`);
     if (!el) {
       return;
     }
-    setSortable(
+    setCardsSortableInstance(
       Sortable.create(el, {
         animation: 150,
         group: "tasks",
@@ -42,27 +42,29 @@ export function Lane(props) {
   });
 
   onCleanup(() => {
-    if (sortable()) {
-      sortable().destroy();
+    if (cardsSortableInstance()) {
+      cardsSortableInstance().destroy();
     }
   });
 
   createEffect(() => {
-    if (!sortable()) {
+    if (!cardsSortableInstance()) {
       return;
     }
-    sortable().options.disabled = props.disableCardsDrag;
+    cardsSortableInstance().options.disabled = props.disableCardsDrag;
   })
 
   return (
     <>
       <div
-        // class={`lane ${props.isBeingDraggedOver ? "dragged-over" : ""}`}
         id={`lane-${props.name}`}
         class="lane"
       >
         <header class="lane__header">{props.headerSlot}</header>
-        <div class="lane__content" id={`lane-${props.name}-sortable-container`}>
+        <div
+          id={`lane-${props.name}-sortable-container`}
+          class="lane__content"
+        >
           {props.children}
         </div>
       </div>
