@@ -3,8 +3,6 @@ import {
   createEffect,
   onMount,
   onCleanup,
-  For,
-  createMemo,
 } from "solid-js";
 
 import Sortable from "sortablejs";
