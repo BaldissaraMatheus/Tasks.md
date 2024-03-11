@@ -12,10 +12,9 @@ import { removeCursorDragging, setCursorDragging } from "../utils";
  *
  * @param {Object} props
  * @param {string} props.name
- * @param {Function} props.validateNewName Function that checks if the new typed name is valid; It should return true if it's valid and false if it's not
- * @param {boolean} props.isBeingDraggedOver
- * @param {boolean} props.onRename
- * @param {boolean} props.onDelete
+ * @param {boolean} props.disableCardsDrag
+ * @param {Function} props.onCardsSortChange
+ * @param {JSX.Element} props.headerSlot
  */
 export function Lane(props) {
   const [cardsSortableInstance, setCardsSortableInstance] = createSignal(null);
