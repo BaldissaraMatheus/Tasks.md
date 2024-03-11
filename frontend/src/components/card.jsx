@@ -1,16 +1,21 @@
 import { handleKeyDown } from "../utils";
 
+/**
+ *
+ * @param {Object} props
+ * @param {string} props.name
+ * @param {boolean} props.disableDrag
+ * @param {Object[]} props.tags
+ * @param {Function} props.onClick
+ * @param {JSX.Element} props.headerSlot
+ */
 export function Card(props) {
   return (
     <div
-      class={`card ${props.isBeingDraggedOver ? "dragged-over" : ""}`}
-      draggable={true}
-      onDragEnter={(e) => e.preventDefault()}
-      onDragStart={props.onDragStart}
-      onDragOver={props.onDragOver}
-      onDragEnd={props.onDragEnd}
-      onClick={props.onClick}
+      id={`card-${props.name}`}
+      class={`card ${props.disableDrag ? 'card__drag-disabled' : ''}`}
       onKeyDown={e => handleKeyDown(e, props.onClick)}
+      onClick={props.onClick}
       tabIndex="0"
     >
       <div class="card__toolbar">

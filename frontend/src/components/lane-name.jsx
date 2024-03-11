@@ -35,7 +35,7 @@ export function LaneName(props) {
     setShowMenu(true);
     if (focus) {
       setTimeout(() => {
-        document.getElementById(props.name).firstChild.focus();
+        document.getElementById(`menu-${props.name}`).firstChild.focus();
       }, 0);
     }
   }
@@ -87,7 +87,7 @@ export function LaneName(props) {
         </button>
       </div>
       <Menu
-        id={props.name}
+        id={`menu-${props.name}`}
         open={showMenu()}
         options={menuOptions}
         onClose={handleCancel}

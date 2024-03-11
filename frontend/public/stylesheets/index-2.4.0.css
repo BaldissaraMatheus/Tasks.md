@@ -2,6 +2,13 @@
 @import url('./reset.css');
 @import url('./custom.css');
 
+/* https://github.com/SortableJS/Sortable/issues/1267 */
+@-moz-document url-prefix() {
+  .fa[role=sort_handle]::before {
+     pointer-events: none;
+  }
+}
+
 html,
 body,
 input,
@@ -22,7 +29,6 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--app-background-color);
   color: var(--font-color);
   overflow: hidden;
 }
@@ -54,6 +60,19 @@ strong {
   display: flex;
   flex-direction: column;
   height: 100dvh;
+  background: var(--app-background-color);
+}
+
+.app-header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: var(--app-header-background-color);
+  border-bottom: 1px solid var(--app-header-border-color);
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .lanes {
@@ -133,19 +152,6 @@ button.small {
   font-size: 1rem;
 }
 
-.app-header {
-  display: flex;
-  overflow: auto;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  background: var(--app-header-background-color);
-  border-bottom: 1px solid var(--app-header-border-color);
-  box-sizing: border-box;
-  max-width: 100%;
-  flex-wrap: wrap;
-}
-
 .header-buttons {
   display: flex;
   gap: 6px;
@@ -177,10 +183,7 @@ button.small {
   display: flex;
   flex-direction: column;
   scroll-snap-align: center;
-}
-
-.dragged-over {
-  opacity: 0.5;
+  max-width: 100%;
 }
 
 .lane__header {
@@ -214,6 +217,7 @@ button.small {
   padding: 12px;
   box-sizing: border-box;
   overflow-y: auto;
+  max-width: 100%;
 }
 
 .card {
@@ -231,35 +235,23 @@ button.small {
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   border-radius: 6px;
   box-sizing: border-box;
+  padding: 12px;
 }
 
-.card:active {
-  opacity: 0.5;
-}
-
-.card:active:has(* input:active) {
-  opacity: 1 !important;
-}
-
-.card:active:has(* button:active) {
-  opacity: 1 !important;
+.card.card__drag-disabled {
+  cursor: pointer !important;
 }
 
 .card__toolbar {
   width: 100%;
-  padding: 12px;
   box-sizing: border-box;
-  min-height: 38px;
   display: flex;
   align-items: start;
+  min-height: 33px;
 }
 
 .card__toolbar > :first-child {
   flex-grow: 1;
-}
-
-.card__name {
-  overflow-x: hidden;
 }
 
 .popup {
@@ -298,7 +290,6 @@ button.small {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 12px;
 }
 
 .tag {
@@ -504,4 +495,12 @@ a > * {
 
 .editor .s-btn__outlined {
   border-color: var(--button-border-color);
+}
+
+.grabbing * {
+  cursor: grabbing !important;
+}
+
+.grabbed {
+  opacity: 0.5;
 }
