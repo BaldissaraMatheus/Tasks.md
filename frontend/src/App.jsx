@@ -19,15 +19,19 @@ import { Header } from "./components/header";
 import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
 import { removeCursorDragging, setCursorDragging } from "./utils";
+import { makePersisted } from "@solid-primitives/storage";
 
 function App() {
   const [lanes, setLanes] = createSignal([]);
   const [cards, setCards] = createSignal([]);
-  // TODO Use makePersisted for sort and sortDirection
-  const [sort, setSort] = createSignal(getDefaultFromLocalStorage("sort"));
-  const [sortDirection, setSortDirection] = createSignal(
-    getDefaultFromLocalStorage("sortDirection")
-  );
+  const [sort, setSort] = makePersisted(createSignal('none'), {
+    storage: localStorage,
+    name: "sort",
+  });
+  const [sortDirection, setSortDirection] = makePersisted(createSignal('asc'), {
+    storage: localStorage,
+    name: "sortDirection",
+  });
   const [selectedCard, setSelectedCard] = createSignal(null);
   const [search, setSearch] = createSignal("");
   const [filteredTag, setFilteredTag] = createSignal(null);
@@ -43,14 +47,6 @@ function App() {
   }
 
   const [title] = createResource(fetchTitle);
-
-  function getDefaultFromLocalStorage(key) {
-    const defaultValue = localStorage.getItem(key);
-    if (defaultValue === "null") {
-      return null;
-    }
-    return defaultValue;
-  }
 
   function getTagsByTagNames(tags, tagNames) {
     return tagNames.map((tagName) => {
@@ -179,8 +175,8 @@ function App() {
   function handleSortSelectOnChange(e) {
     const value = e.target.value;
     if (value === "none") {
-      setSort(null);
-      return setSortDirection(null);
+      setSort('none');
+      return setSortDirection('asc');
     }
     const [newSort, newSortDirection] = value.split(":");
     setSort(newSort);
@@ -345,7 +341,7 @@ function App() {
   }
 
   const sortedCards = createMemo(() => {
-    if (sortDirection() === null) {
+    if (sort() === 'none') {
       return cards();
     }
     if (sort() === "name") {
@@ -434,11 +430,6 @@ function App() {
   });
 
   createEffect(() => {
-    localStorage.setItem("sort", sort());
-    localStorage.setItem("sortDirection", sortDirection());
-  });
-
-  createEffect(() => {
     if (!lanes().length) {
       return;
     }
@@ -522,7 +513,7 @@ function App() {
       <Header
         search={search()}
         onSearchChange={setSearch}
-        sort={sort() === null ? "none" : `${sort()}:${sortDirection()}`}
+        sort={sort() === 'none' ? 'none' : `${sort()}:${sortDirection()}`}
         onSortChange={handleSortSelectOnChange}
         tagOptions={tagsOptions().map((option) => option.name)}
         filteredTag={filteredTag()}
