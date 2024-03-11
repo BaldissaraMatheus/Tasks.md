@@ -1,5 +1,14 @@
 import { handleKeyDown } from "../utils";
 
+/**
+ *
+ * @param {Object} props
+ * @param {string} props.name
+ * @param {boolean} props.disableDrag
+ * @param {Object[]} props.tags
+ * @param {Function} props.onClick
+ * @param {JSX.Element} props.headerSlot
+ */
 export function Card(props) {
   return (
     <div
