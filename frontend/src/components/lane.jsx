@@ -36,6 +36,7 @@ export function Lane(props) {
         delay: 250,
         delayOnTouchOnly: true,
         chosenClass: 'grabbed',
+        filter: 'button'
       })
     );
   });
