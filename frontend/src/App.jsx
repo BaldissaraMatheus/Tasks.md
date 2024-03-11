@@ -506,7 +506,7 @@ function App() {
     });
   }
 
-  const disableCardsDrag = createMemo(() => !!sort());
+  const disableCardsDrag = createMemo(() => sort() !== 'none');
 
   return (
     <>
