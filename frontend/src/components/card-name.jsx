@@ -10,7 +10,6 @@ import { BiRegularDotsVerticalRounded } from "solid-icons/bi";
  * @param {boolean} props.hasContent
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDelete
- * @param {Function} props.onDragStart
  */
 export function CardName(props) {
   const [showMenu, setShowMenu] = createSignal(false);
@@ -53,10 +52,7 @@ export function CardName(props) {
 
   return (
     <>
-      <div
-        onDragEnter={(e) => e.preventDefault()}
-        onDragStart={props.onDragStart}
-      >
+      <div>
         <strong>
           {props.hasContent ? "\uD83D\uDCDD " : ""}
           {props.name}
