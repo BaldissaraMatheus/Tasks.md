@@ -17,7 +17,7 @@ import { Header } from "./components/header";
 import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
 import { makePersisted } from "@solid-primitives/storage";
-import { DragAndDropContainer, DragAndDropTarget, createDragAndDropTarget } from "./hook/drag-and-drop";
+import { DragAndDropContainer, DragAndDropTarget, createDragAndDropTarget } from "./components/drag-and-drop";
 
 function App() {
   const [lanes, setLanes] = createSignal([]);
