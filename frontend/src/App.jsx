@@ -541,7 +541,6 @@ function App() {
                 onDragAndDropTargetChange={setDragAndDropTarget}
                 disabled={disableCardsDrag()}
               >
-                {/* <div>{lane}</div> */}
                 <For each={getCardsFromLane(lane)}>
                   {card => <Card
                     name={card.name}
