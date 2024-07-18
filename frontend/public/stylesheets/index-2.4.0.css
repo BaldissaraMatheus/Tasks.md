@@ -256,7 +256,7 @@ button.small {
   flex-grow: 1;
 }
 
-.popup {
+popover {
   position: absolute;
   border-radius: 6px;
   border: 1px solid var(--popup-border-color);
@@ -269,7 +269,7 @@ button.small {
   z-index: 99999;
 }
 
-.popup > button {
+popover > button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -280,11 +280,11 @@ button.small {
   color: var(--popup-font-color);
 }
 
-.popup > :first-child {
+popover > :first-child {
   border-radius: 6px 6px 0 0;
 }
 
-.popup > :last-child {
+popover > :last-child {
   border-radius: 0 0 6px 6px;
 }
 
