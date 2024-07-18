@@ -4,8 +4,6 @@ import { handleKeyDown } from "../utils";
  *
  * @param {Object} props
  * @param {string} props.name
- * @param {string} props.lane
- * @param {boolean} props.disableDrag
  * @param {Object[]} props.tags
  * @param {Function} props.onClick
  * @param {JSX.Element} props.headerSlot
