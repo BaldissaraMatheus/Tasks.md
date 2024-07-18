@@ -1,3 +1,12 @@
+import { onCleanup } from "solid-js";
+
+export function clickOutside(el, accessor) {
+  const onClick = (e) => !el.contains(e.target) && accessor()?.();
+  document.body.addEventListener("click", onClick);
+  onCleanup(() => document.body.removeEventListener("click", onClick));
+}
+
+
 export function handleKeyDown(e, enterCb, cancelCb) {
   e.stopPropagation();
   e.stopImmediatePropagation();
@@ -18,19 +27,37 @@ export function handleKeyDown(e, enterCb, cancelCb) {
 export function getButtonCoordinates(event) {
   event.stopPropagation();
   const btnCoordinates = event.currentTarget.getBoundingClientRect();
-  let x = btnCoordinates.x + event.currentTarget.offsetWidth - 3;
-  const menuWidth = 82;
-  const offsetX = x + menuWidth >= window.innerWidth ? menuWidth : 0;
-  x -= offsetX;
-  const offsetY = offsetX ? 0 : 3;
-  const y = btnCoordinates.y + event.currentTarget.offsetHeight - offsetY;
+  let x = btnCoordinates.x;
+  const menuWidth = 90;
+  const offsetX = x + btnCoordinates.width + menuWidth > window.innerWidth
+    ? -btnCoordinates.width - menuWidth
+    : btnCoordinates.width;
+  x += offsetX;
+  const y = btnCoordinates.y;
   return { x, y };
 }
 
-export function setCursorDragging() {
-  document.body.classList.add("grabbing");
-}
+export function useLongPress(callback, pressDuration) {
+  let timeout = 0;
 
-export function removeCursorDragging() {
-  document.body.classList.remove("grabbing");
+  function onLongPressStart(event, currentTarget) {
+		clearTimeout(timeout);
+		event.stopPropagation();
+		event.preventDefault();
+    timeout = window.setTimeout(() => {
+			if (navigator.vibrate) {
+				navigator.vibrate(300);
+			}
+      callback(event, currentTarget);
+			clearTimeout(timeout);
+    }, pressDuration);
+  };
+
+  function onLongPressEnd() {
+    if (timeout) {
+			clearTimeout(timeout);
+    }
+  };
+
+  return [onLongPressStart, onLongPressEnd];
 }

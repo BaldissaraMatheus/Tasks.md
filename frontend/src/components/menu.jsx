@@ -1,10 +1,12 @@
-import { createSignal, onMount, onCleanup } from "solid-js";
-import { handleKeyDown } from "../utils";
+import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { clickOutside, handleKeyDown } from "../utils";
+import { Portal } from "solid-js/web";
 
 /**
  *
  * @param {Object} props
  * @param {string} props.id
+ * @param {boolean} props.open
  * @param {number} props.x
  * @param {number} props.y
  * @param {Function} props.onClick
@@ -13,12 +15,11 @@ import { handleKeyDown } from "../utils";
  */
 export function Menu(props) {
   const [confirmationPromptCb, setConfirmationPromptCb] = createSignal(null);
+  let menuRef;
 
-  function handleClickOutsideOptions(event) {
-    if (props.open && event.target?.parentElement?.id !== props.id) {
-      setConfirmationPromptCb(null);
-      props.onClose();
-    }
+  function close() {
+    setConfirmationPromptCb(null);
+    props.onClose();
   }
 
   function handleOptionClick(option, focus) {
@@ -42,23 +43,25 @@ export function Menu(props) {
     props.onClose();
   }
 
-  function handleCancel() {
-    setConfirmationPromptCb(null);
-    props.onClose();
+  createEffect(() => {
+    if (props.open) {
+      menuRef.children[0].focus();
+    }
+  });
+
+  function handleFocusOut(e) {
+    if (!menuRef.contains(e.relatedTarget)) {
+      close();
+    }
   }
 
-  onMount(async () => {
-    window.addEventListener("mousedown", handleClickOutsideOptions);
-  });
-
-  onCleanup(() => {
-    window.removeEventListener("mousedown", handleClickOutsideOptions);
-  });
-
-  return (
+  return (<Portal>
     <div
       id={props.id}
+      ref={el => {menuRef = el}}
       class="popup"
+      onFocusOut={handleFocusOut}
+      use:clickOutside={close}
       style={{
         top: `${props.y}px`,
         left: `${props.x}px`,
@@ -81,20 +84,21 @@ export function Menu(props) {
           onClick={handleOptionConfirmation}
           id="confirm-btn"
           onKeyDown={(e) =>
-            handleKeyDown(e, () => handleOptionConfirmation(e), handleCancel)
+            handleKeyDown(e, () => handleOptionConfirmation(e), close)
           }
         >
           Are you sure?
         </button>
         <button
-          onClick={handleCancel}
+          onClick={close}
           onKeyDown={(e) =>
-            handleKeyDown(e, handleCancel, handleCancel)
+            handleKeyDown(e, close, close)
           }
         >
           Cancel
         </button>
       </Show>
     </div>
+  </Portal>
   );
 }

@@ -8,9 +8,7 @@ import {
   createResource,
   onCleanup,
 } from "solid-js";
-import Sortable from "sortablejs";
 import ExpandedCard from "./components/expanded-card";
-import { Lane } from "./components/lane";
 import { debounce } from "@solid-primitives/scheduled";
 import { api } from "./api";
 import { LaneName } from "./components/lane-name";
@@ -18,8 +16,8 @@ import { NameInput } from "./components/name-input";
 import { Header } from "./components/header";
 import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
-import { removeCursorDragging, setCursorDragging } from "./utils";
 import { makePersisted } from "@solid-primitives/storage";
+import { DragAndDropContainer, DragAndDropTarget, createDragAndDropTarget } from "./hook/drag-and-drop";
 
 function App() {
   const [lanes, setLanes] = createSignal([]);
@@ -41,6 +39,7 @@ function App() {
   const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
   const [newCardName, setNewCardName] = createSignal(null);
   const [lanesSortableInstance, setLanesSortableInstance] = createSignal(null);
+  const [dragAndDropTarget, setDragAndDropTarget] = createDragAndDropTarget();
 
   function fetchTitle() {
     return fetch(`${api}/title`).then((res) => res.text());
@@ -374,12 +373,12 @@ function App() {
   const filteredCards = createMemo(() =>
     sortedCards()
       .filter(
-        (card) =>
+        card =>
           card.name.toLowerCase().includes(search().toLowerCase()) ||
           (card.content || "").toLowerCase().includes(search().toLowerCase())
       )
       .filter(
-        (card) =>
+        card =>
           filteredTag() === null ||
           card.tags
             ?.map((tag) => tag.name?.toLowerCase())
@@ -398,18 +397,6 @@ function App() {
 
   onMount(() => {
     const el = document.getElementById("lanes");
-    setLanesSortableInstance(
-      Sortable.create(el, {
-        animation: 150,
-        onSort: (e) => handleLanesSortChange(e, lanes(), setLanes),
-        onChoose: setCursorDragging,
-        onUnchoose: removeCursorDragging,
-        delay: 250,
-        delayOnTouchOnly: true,
-        chosenClass: 'grabbed',
-        filter: 'button'
-      })
-    );
     const url = window.location.href;
     if (!url.match(/\/$/)) {
       window.location.replace(`${url}/`);
@@ -456,55 +443,40 @@ function App() {
     });
   });
 
-  function handleLanesSortChange(event) {
-    // https://github.com/SortableJS/Sortable/issues/546#issuecomment-1892931258
-    event.item.remove();
-    if (event.oldIndex !== undefined) {
-      event.from.insertBefore(event.item, event.from.children[event.oldIndex]);
-    }
-    const { oldIndex, newIndex } = event;
-    const addend = newIndex - oldIndex > 0 ? 1 : -1;
-    const newList = structuredClone(lanes());
-    for (let i = oldIndex; i !== newIndex; i += addend) {
-      const oldValue = newList[i];
-      newList[i] = newList[i + addend];
-      newList[i + addend] = oldValue;
-    }
-    setLanes(newList);
+  function handleLanesSortChange(changedLane) {
+    const lane = lanes().find(lane => lane === changedLane.id.slice('lane-'.length))
+    const newLanes = JSON.parse(JSON.stringify(lanes())).filter(newLane => newLane !== lane)
+    setLanes([
+      ...newLanes.slice(0, changedLane.index),
+      lane,
+      ...newLanes.slice(changedLane.index),
+    ])
   }
 
-  function handleCardsSortChange(event) {
-    event.item.remove();
-    if (event.oldIndex !== undefined) {
-      event.from.insertBefore(event.item, event.from.children[event.oldIndex]);
-    }
-    const cardName = event.item.id.substring(5);
-    const oldIndex = cards().findIndex((card) => card.name === cardName);
-    const newCard = structuredClone(cards()[oldIndex]);
-    const targetLane = event.to.parentNode.id.substring(5);
-    const laneIndex = lanes().findIndex((lane) => lane === targetLane);
-    const prevLanes = lanes().filter((lane, i) => i < laneIndex);
-    const prevIndexes = cards().filter((card) =>
-      prevLanes.includes(card.lane)
-    ).length;
-    const newIndex = prevIndexes + event.newIndex;
-    newCard.lane = targetLane;
-    let newCards = cards().filter((card, index) => index !== oldIndex);
-    newCards = [
-      ...newCards.slice(0, newIndex),
-      newCard,
-      ...newCards.slice(newIndex),
-    ];
-    newCards = lanes()
-      .map((lane) => newCards.filter((card) => card.lane === lane))
-      .flat();
-    setCards(newCards);
-    fetch(`${api}/cards/${newCard.name}`, {
+  function handleCardsSortChange(changedCard) {
+    const cardLane = changedCard.to.slice('lane-content-'.length);
+    const cardName = changedCard.id.slice('card-'.length)
+    fetch(`${api}/cards/${cardName}`, {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lane: newCard.lane }),
+      body: JSON.stringify({ lane: cardLane }),
     });
+    const oldIndex = cards().findIndex(card => card.name === cardName);
+    const newCard = cards()[oldIndex];
+    newCard.lane = cardLane;
+    const newCards = lanes().map(lane => {
+      let laneCards = cards().filter(card => card.lane === lane && card.name !== cardName);
+      if (lane === cardLane) {
+        laneCards = [
+          ...laneCards.slice(0, changedCard.index),
+          newCard,
+          ...laneCards.slice(changedCard.index),
+        ]
+      }
+      return laneCards;
+    }).flat();
+    setCards(newCards);
   }
 
   const disableCardsDrag = createMemo(() => sort() !== 'none');
@@ -522,49 +494,56 @@ function App() {
         onNewLaneBtnClick={createNewLane}
       />
       {title() ? <h1 class="app-title">{title()}</h1> : <></>}
-      <main
-        id="lanes"
-        class={`lanes ${title() ? "lanes--has-title" : ""}`}
-        tabIndex="-1"
+      <DragAndDropContainer
+        class="lanes"
+        onChange={handleLanesSortChange}
+        dragAndDropTarget={dragAndDropTarget()}
+        onDragAndDropTargetChange={setDragAndDropTarget}
       >
         <For each={lanes()}>
-          {(lane) => (
-            <Lane
-              name={lane}
-              onCardsSortChange={handleCardsSortChange}
-              disableCardsDrag={disableCardsDrag()}
-              headerSlot={
-                laneBeingRenamedName() === lane ? (
-                  <NameInput
-                    value={newLaneName()}
-                    errorMsg={validateName(
-                      newLaneName(),
-                      lanes().filter((lane) => lane !== laneBeingRenamedName()),
-                      "lane"
-                    )}
-                    onChange={(newValue) => setNewLaneName(newValue)}
-                    onConfirm={renameLane}
-                    onCancel={() => {
-                      setNewLaneName(null);
-                      setLaneBeingRenamedName(null);
-                    }}
-                  />
-                ) : (
-                  <LaneName
-                    name={lane}
-                    count={getCardsFromLane(lane).length}
-                    onRenameBtnClick={() => startRenamingLane(lane)}
-                    onCreateNewCardBtnClick={() => createNewCard(lane)}
-                    onDelete={() => deleteLane(lane)}
-                    onDeleteCards={() => handleDeleteCardsByLane(lane)}
-                  />
-                )
-              }
-            >
-              <For each={getCardsFromLane(lane)}>
-                {(card) => (
-                  <Card
-                    disableDrag={disableCardsDrag()}
+          {lane => (
+            <div class="lane" id={`lane-${lane}`}>
+              <header class="lane__header">
+                {
+                  laneBeingRenamedName() === lane ? (
+                    <NameInput
+                      value={newLaneName()}
+                      errorMsg={validateName(
+                        newLaneName(),
+                        lanes().filter(lane => lane !== laneBeingRenamedName()),
+                        "lane"
+                      )}
+                      onChange={newValue => setNewLaneName(newValue)}
+                      onConfirm={renameLane}
+                      onCancel={() => {
+                        setNewLaneName(null);
+                        setLaneBeingRenamedName(null);
+                      }}
+                    />
+                  ) : (
+                    <LaneName
+                      name={lane}
+                      count={getCardsFromLane(lane).length}
+                      onRenameBtnClick={() => startRenamingLane(lane)}
+                      onCreateNewCardBtnClick={() => createNewCard(lane)}
+                      onDelete={() => deleteLane(lane)}
+                      onDeleteCards={() => handleDeleteCardsByLane(lane)}
+                    />
+                  )
+                }
+              </header>
+              <DragAndDropContainer
+                class="lane__content"
+                group="cards"
+                id={`lane-content-${lane}`}
+                onChange={handleCardsSortChange}
+                dragAndDropTarget={dragAndDropTarget()}
+                onDragAndDropTargetChange={setDragAndDropTarget}
+                disabled={disableCardsDrag()}
+              >
+                {/* <div>{lane}</div> */}
+                <For each={getCardsFromLane(lane)}>
+                  {card => <Card
                     name={card.name}
                     tags={card.tags}
                     onClick={() => setSelectedCard(card)}
@@ -599,12 +578,13 @@ function App() {
                       )
                     }
                   />
-                )}
-              </For>
-            </Lane>
+                  }
+                </For>
+              </DragAndDropContainer>
+            </div>
           )}
         </For>
-      </main>
+      </DragAndDropContainer>
       <Show when={!!selectedCard()}>
         <ExpandedCard
           name={selectedCard().name}
@@ -629,6 +609,10 @@ function App() {
           disableImageUpload={false}
         />
       </Show>
+      <DragAndDropTarget
+        dragAndDropTarget={dragAndDropTarget()}
+        onDragAndDropTargetChange={setDragAndDropTarget}
+      />
     </>
   );
 }

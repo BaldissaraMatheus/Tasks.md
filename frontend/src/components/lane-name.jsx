@@ -29,8 +29,10 @@ export function LaneName(props) {
     setMenuCoordinates(null);
   }
 
-  function handleOptionsBtnClick(event, focus) {
-    const coordinates = getButtonCoordinates(event);
+  function handleOptionsBtnClick(e, focus) {
+		e.preventDefault();
+		e.stopPropagation();
+    const coordinates = getButtonCoordinates(e);
     setMenuCoordinates(coordinates);
     setShowMenu(true);
     if (focus) {
@@ -86,6 +88,7 @@ export function LaneName(props) {
           <BiRegularDotsVerticalRounded />
         </button>
       </div>
+      {/* TODO pass target as paramter and calculate x and y within Menu component */}
       <Menu
         id={`menu-${props.name}`}
         open={showMenu()}

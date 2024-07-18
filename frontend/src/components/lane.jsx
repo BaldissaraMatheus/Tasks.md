@@ -1,13 +1,8 @@
 import {
-  createSignal,
-  createEffect,
-  onMount,
-  onCleanup,
-} from "solid-js";
-
-import Sortable from "sortablejs";
-import { removeCursorDragging, setCursorDragging } from "../utils";
-
+  createSortable,
+  SortableProvider,
+  useDragDropContext,
+} from '@thisbeyond/solid-dnd';
 /**
  *
  * @param {Object} props
@@ -17,55 +12,26 @@ import { removeCursorDragging, setCursorDragging } from "../utils";
  * @param {JSX.Element} props.headerSlot
  */
 export function Lane(props) {
-  const [cardsSortableInstance, setCardsSortableInstance] = createSignal(null);
-
-  onMount(() => {
-    const el = document.getElementById(`lane-${props.name}-sortable-container`);
-    if (!el) {
-      return;
-    }
-    setCardsSortableInstance(
-      Sortable.create(el, {
-        animation: 150,
-        group: "tasks",
-        fallbackOnBody: true,
-        swapThreshold: 0.65,
-        onEnd: props.onCardsSortChange,
-        onChoose: setCursorDragging,
-        onUnchoose: removeCursorDragging,
-        delay: 250,
-        delayOnTouchOnly: true,
-        chosenClass: 'grabbed',
-        filter: 'button'
-      })
-    );
-  });
-
-  onCleanup(() => {
-    if (cardsSortableInstance()) {
-      cardsSortableInstance().destroy();
-    }
-  });
-
-  createEffect(() => {
-    if (!cardsSortableInstance()) {
-      return;
-    }
-    cardsSortableInstance().options.disabled = props.disableCardsDrag;
-  })
+  const sortable = createSortable(props.name, { type: "group" });
+  const sortedItemIds = () => props.items.map((item) => item.id);
 
   return (
     <>
       <div
         id={`lane-${props.name}`}
         class="lane"
+        ref={sortable.ref}
+        style={maybeTransformStyle(sortable.transform)}
+        classList={{ "opacity-25": sortable.isActiveDraggable }}
       >
-        <header class="lane__header">{props.headerSlot}</header>
+        <header class="lane__header" {...sortable.dragActivators}>{props.headerSlot}</header>
         <div
           id={`lane-${props.name}-sortable-container`}
           class="lane__content"
         >
-          {props.children}
+          <SortableProvider ids={sortedItemIds()}>
+            {props.children}
+          </SortableProvider>
         </div>
       </div>
     </>
