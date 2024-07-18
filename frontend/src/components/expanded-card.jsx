@@ -330,7 +330,7 @@ function ExpandedCard(props) {
         }`}
         onClick={props.onClose}
       >
-        <div
+        <dialog
           class={`modal ${
             isMaximized() === "true" ? "modal--maximized" : ""
           }`}
@@ -349,9 +349,7 @@ function ExpandedCard(props) {
                 />
                 {nameInputError() ? (
                   <span class="error-msg">{nameInputError()}</span>
-                ) : (
-                  <></>
-                )}
+                ) : null}
               </div>
             ) : (
               <h1
@@ -425,7 +423,7 @@ function ExpandedCard(props) {
               onClick={handleEditorOnChange}
             />
           </div>
-        </div>
+        </dialog>
       </div>
       <Menu
         id={clickedTag()?.name}

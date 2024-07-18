@@ -56,7 +56,7 @@ export function Menu(props) {
   }
 
   return (<Portal>
-    <div
+    <popover
       id={props.id}
       ref={el => {menuRef = el}}
       class="popup"
@@ -98,7 +98,7 @@ export function Menu(props) {
           Cancel
         </button>
       </Show>
-    </div>
+    </popover>
   </Portal>
   );
 }
