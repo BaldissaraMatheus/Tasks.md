@@ -2,13 +2,6 @@
 @import url('./reset.css');
 @import url('./custom.css');
 
-/* https://github.com/SortableJS/Sortable/issues/1267 */
-@-moz-document url-prefix() {
-  .fa[role=sort_handle]::before {
-     pointer-events: none;
-  }
-}
-
 html,
 body,
 input,
