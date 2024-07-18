@@ -20,10 +20,10 @@ export function Card(props) {
       <div class="card__toolbar">
         {props.headerSlot}
       </div>
-      <div class="tags">
+      <ul class="tags">
         <For each={props.tags}>
           {(tag) => (
-            <div
+            <li
               class="tag"
               style={{
                 "background-color": tag.backgroundColor,
@@ -31,10 +31,10 @@ export function Card(props) {
               }}
             >
               <h5>{tag.name}</h5>
-            </div>
+            </li>
           )}
         </For>
-      </div>
+      </ul>
     </div>
   );
 }

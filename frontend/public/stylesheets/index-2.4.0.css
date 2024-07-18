@@ -49,6 +49,10 @@ strong {
   margin: 0;
 }
 
+ul {
+  list-style-type: none;
+}
+
 #root {
   display: flex;
   flex-direction: column;
@@ -76,7 +80,6 @@ strong {
   gap: 40px;
   overflow-x: auto;
   flex-grow: 1;
-  list-style-type: none;
   margin-left: 0;
 }
 
@@ -236,7 +239,6 @@ button.small {
   border-radius: 6px;
   box-sizing: border-box;
   padding: 12px;
-  list-style-type: none;
   transition: translate 0.25s;
 }
 
