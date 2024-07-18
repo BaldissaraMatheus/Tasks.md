@@ -336,7 +336,7 @@ function ExpandedCard(props) {
           }`}
           onClick={(event) => event.stopPropagation()}
         >
-          <div class="modal__toolbar">
+          <header class="modal__toolbar">
             {nameInputValue() !== null ? (
               <div class="input-and-error-msg">
                 <input
@@ -375,7 +375,7 @@ function ExpandedCard(props) {
                 <IoClose size="25px" />
               </button>
             </div>
-          </div>
+          </header>
           <div class="modal__tags">
             {isCreatingNewTag() ? (
               <>
@@ -406,6 +406,7 @@ function ExpandedCard(props) {
                     "border-color": tag.backgroundColor,
                   }}
                   onClick={(e) => handleTagClick(e, tag)}
+                  role="button"
                   onKeyDown={(e) =>
                     handleKeyDown(e, () => handleTagClick(e, tag, true))
                   }
