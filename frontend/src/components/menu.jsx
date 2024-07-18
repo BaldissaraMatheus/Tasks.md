@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, createEffect } from "solid-js";
+import { createSignal, createEffect } from "solid-js";
 import { clickOutside, handleKeyDown } from "../utils";
 import { Portal } from "solid-js/web";
 
