@@ -83,6 +83,8 @@ strong {
   gap: 40px;
   overflow-x: auto;
   flex-grow: 1;
+  list-style-type: none;
+  margin-left: 0;
 }
 
 @media (pointer: coarse) {
@@ -184,6 +186,7 @@ button.small {
   flex-direction: column;
   scroll-snap-align: center;
   max-width: 100%;
+  transition: translate 0.25s;
 }
 
 .lane__header {
@@ -218,6 +221,11 @@ button.small {
   box-sizing: border-box;
   overflow-y: auto;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  cursor: grab;
 }
 
 .card {
@@ -225,17 +233,18 @@ button.small {
   width: 100%;
   background: var(--card-background-color);
   border: 1px solid var(--card-border-color);
-  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  cursor: grab;
+  cursor: pointer;
   font-size: 0.9rem;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   border-radius: 6px;
   box-sizing: border-box;
   padding: 12px;
+  list-style-type: none;
+  transition: translate 0.25s;
 }
 
 .card.card__drag-disabled {
@@ -497,10 +506,13 @@ a > * {
   border-color: var(--button-border-color);
 }
 
-.grabbing * {
-  cursor: grabbing !important;
+.being-dragged.card,
+.being-dragged > .lane__header,
+.being-dragged > .lane__content {
+  cursor: grabbing;
 }
 
-.grabbed {
-  opacity: 0.5;
+.being-dragged.card,
+.being-dragged > .lane__content {
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px 0px;
 }
