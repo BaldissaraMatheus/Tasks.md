@@ -52,12 +52,10 @@ export function CardName(props) {
 
   return (
     <>
-      <div>
-        <strong>
-          {props.hasContent ? "\uD83D\uDCDD " : ""}
-          {props.name}
-        </strong>
-      </div>
+      <strong class="card__name">
+        {props.hasContent ? "\uD83D\uDCDD " : ""}
+        {props.name}
+      </strong>
       <div class="header-buttons">
         <button
           title="Show card options"
