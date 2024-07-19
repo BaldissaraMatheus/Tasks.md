@@ -244,6 +244,10 @@ button.small {
   cursor: pointer !important;
 }
 
+.card__name {
+  overflow: hidden;
+}
+
 .card__toolbar {
   width: 100%;
   box-sizing: border-box;
