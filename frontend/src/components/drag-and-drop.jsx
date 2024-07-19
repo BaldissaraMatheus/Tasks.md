@@ -99,6 +99,7 @@ export function DragAndDropContainer(props) {
 	const [scrollProperty, setScrollProperty] = createSignal(null);
 	const [clientLengthProperty, setClientLengthProperty] = createSignal(null);
 	const [containerStartPos, setContainerStartPos] = createSignal(null);
+	const [startPageCoordinates, setStartPageCoordinates] = createSignal(null);
 
 	let containerRef;
 
@@ -129,6 +130,7 @@ export function DragAndDropContainer(props) {
 			to: props.id,
 			group: props.group,
 		});
+		setStartPageCoordinates({ x: e.pageX, y: e.pageY });
 	}
 
 	function handleTouchStart(e, currentTarget) {
@@ -137,13 +139,13 @@ export function DragAndDropContainer(props) {
 	}
 
 	function handlePointerMove(e) {
-		if (!targetBeforeMoving()) {
+		if (!startPageCoordinates()) {
 			return;
 		}
 		const minimalMovement = 6;
-		const diffLeft = Math.abs(e.pageX - targetBeforeMoving().left);
-		const diffTop = Math.abs(e.pageY - targetBeforeMoving().top);
-		if (diffLeft <= minimalMovement || diffTop <= minimalMovement) {
+		const diffLeft = Math.abs(e.pageX - startPageCoordinates().x);
+		const diffTop = Math.abs(e.pageY - startPageCoordinates().y);
+		if (diffLeft <= minimalMovement && diffTop <= minimalMovement) {
 			return;
 		}
 		props.onDragAndDropTargetChange(prev => ({
@@ -152,10 +154,12 @@ export function DragAndDropContainer(props) {
 		}));
 		props.dragAndDropTarget.originalElement.style.opacity = '0';
 		setTargetBeforeMoving(null);
+		setStartPageCoordinates(null);
 	}
 
 	function handlePointerUp(e) {
 		setTargetBeforeMoving(null);
+		setStartPageCoordinates(null);
 		if (!props.dragAndDropTarget.originalElement
 			|| !sortedItemsIds
 			|| props.dragAndDropTarget.to !== props.id
