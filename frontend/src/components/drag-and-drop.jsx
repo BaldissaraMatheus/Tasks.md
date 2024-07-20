@@ -248,7 +248,10 @@ export function DragAndDropContainer(props) {
 			return;
 		}
 		const scrollLengthProperty = flexDirection === 'row' ? 'scrollWidth' : 'scrollHeight';
-		const maxScroll = containerRef[scrollLengthProperty] - containerRef[clientLengthProperty()];
+		// TODO get proper maxScroll value
+		// const maxScroll = containerRef[scrollLengthProperty] - containerRef[clientLengthProperty()];
+		const maxScroll = Number.MAX_SAFE_INTEGER;1
+		console.log(containerRef[scrollLengthProperty], containerRef[clientLengthProperty()])
 		if (autoScrollAmount() > 0 && containerRef[scrollProperty()] >= maxScroll) {
 			setAutoScrollAmount(0);
 			return;
@@ -438,7 +441,10 @@ export function DragAndDropContainer(props) {
 			return;
 		}
 		const itemLength = props.dragAndDropTarget.originalElement.clientHeight;
-		const maxScroll =  containerRef[clientLengthProperty()] - containerRef[scrollProperty()];
+		const scrollLengthProperty = flexDirection === 'row' ? 'scrollWidth' : 'scrollHeight';
+		// TODO get proper maxScroll value
+		// const maxScroll = containerRef[scrollLengthProperty] - containerRef[scrollProperty()];
+		const maxScroll = Number.MAX_SAFE_INTEGER;1
 		let newAutoScrollAmount = 0;
 		const containerEndPos = containerStartPos() + containerRef[clientLengthProperty()];
 		if (props.dragAndDropTarget[positionProperty()]
