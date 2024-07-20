@@ -362,6 +362,9 @@ function App() {
     if (namesList.filter((name) => name === newName).length) {
       return `There's already a ${item} with that name`;
     }
+    if ((/[<>:"/\\|?*]/g.test(newName))) {
+      return `The new name cannot have any of the following chracters: <>:"/\\|?*`;
+    }
     return null;
   }
 

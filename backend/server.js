@@ -170,7 +170,8 @@ async function updateCard(ctx) {
   const oldLane = await getLaneByCardName(ctx.params.card);
   const name = ctx.params.card;
   const newLane = ctx.request.body.lane || oldLane;
-  const newName = ctx.request.body.name || name;
+  const newName = (ctx.request.body.name || name)
+    .replaceAll(/<>:"\/\\\|\?\*/g, ' ');
   const newContent = ctx.request.body.content;
   if (newLane !== oldLane || name !== newName) {
     await fs.promises.rename(
@@ -231,7 +232,8 @@ router.post("/lanes", createLane);
 
 async function updateLane(ctx) {
   const name = ctx.params.lane;
-  const newName = ctx.request.body.name;
+  const newName = ctx.request.body.name
+    .replaceAll(/[<>:"/\\|?*]/g, ' ');
   await fs.promises.rename(
     `${process.env.TASKS_DIR}/${name}`,
     `${process.env.TASKS_DIR}/${newName}`
