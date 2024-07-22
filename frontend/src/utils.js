@@ -43,7 +43,6 @@ export function useLongPress(callback, pressDuration) {
   function onLongPressStart(event, currentTarget) {
 		clearTimeout(timeout);
 		event.stopPropagation();
-		event.preventDefault();
     timeout = window.setTimeout(() => {
 			if (navigator.vibrate) {
 				navigator.vibrate(300);
