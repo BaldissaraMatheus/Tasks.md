@@ -49,18 +49,11 @@ export function Menu(props) {
     }
   });
 
-  function handleFocusOut(e) {
-    if (!menuRef.contains(e.relatedTarget)) {
-      close();
-    }
-  }
-
   return (<Portal>
     <popover
       id={props.id}
       ref={el => {menuRef = el}}
       class="popup"
-      onFocusOut={handleFocusOut}
       use:clickOutside={close}
       style={{
         top: `${props.y}px`,

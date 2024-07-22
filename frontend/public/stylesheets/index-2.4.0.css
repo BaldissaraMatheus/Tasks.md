@@ -78,7 +78,7 @@ ul {
   gap: 40px;
   overflow-x: auto;
   flex-grow: 1;
-  margin-left: 0;
+  margin: 0;
 }
 
 @media (pointer: coarse) {
@@ -238,6 +238,10 @@ button.small {
   box-sizing: border-box;
   padding: 12px;
   transition: translate 0.25s;
+}
+
+.card[foo] {
+  touch-action: none;
 }
 
 .card.card__drag-disabled {
