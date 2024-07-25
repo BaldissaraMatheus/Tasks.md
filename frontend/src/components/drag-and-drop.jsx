@@ -156,7 +156,7 @@ export function DragAndDropContainer(props) {
 		const diffLeft = Math.abs(pageX - startPageCoordinates().x);
 		const diffTop = Math.abs(pageY - startPageCoordinates().y);
 		const minMovement = 6;
-		if (diffLeft <= minMovement && diffTop <= minMovement) {
+		if (!touch && diffLeft <= minMovement && diffTop <= minMovement) {
 			return;
 		}
 		if (touch) {
