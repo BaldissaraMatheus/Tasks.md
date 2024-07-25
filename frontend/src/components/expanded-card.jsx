@@ -201,17 +201,12 @@ function ExpandedCard(props) {
     setTimeout(() => props.onContentChange(editor()?.content), 0);
   }
 
-  function handleTagClick(event, tag, focus) {
+  function handleTagClick(event, tag) {
     event.stopPropagation();
     const newCoordinates = getButtonCoordinates(event);
     setMenuCoordinates(newCoordinates);
     setClickedTag(tag);
     setShowTagPopup(true);
-    if (focus) {
-      setTimeout(() => {
-        document.getElementById(clickedTag().name).firstChild.focus();
-      }, 0);
-    }
   }
 
   function handleChangeColorOptionClick() {
@@ -220,6 +215,7 @@ function ExpandedCard(props) {
   }
 
   function handleColorOptionClick(option) {
+    console.log(clickedTag())
     setShowColorPopup(null);
     setMenuCoordinates(null);
     const tagName = clickedTag().name;
@@ -408,7 +404,7 @@ function ExpandedCard(props) {
                   onClick={(e) => handleTagClick(e, tag)}
                   role="button"
                   onKeyDown={(e) =>
-                    handleKeyDown(e, () => handleTagClick(e, tag, true))
+                    handleKeyDown(e, () => handleTagClick(e, tag))
                   }
                   tabIndex={0}
                 >
@@ -444,7 +440,6 @@ function ExpandedCard(props) {
         onClose={() => {
           setShowColorPopup(null);
           setMenuCoordinates(null);
-          setClickedTag(null);
         }}
         x={menuCoordinates()?.x}
         y={menuCoordinates()?.y}
