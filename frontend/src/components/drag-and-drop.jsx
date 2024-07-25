@@ -368,7 +368,9 @@ export function DragAndDropContainer(props) {
 			item.style.opacity = '1';
 			item.style.translate = '';
 		})
-		setSortedItemsIds([])
+		setSortedItemsIds([]);
+		const endPadding = flexDirection === 'row' ? 'paddingRight' : 'paddingBottom';
+		containerRef.style[endPadding] = '';
 	});
 
 	// update dragAndDropTarget.to, runs when target top or left changes 
