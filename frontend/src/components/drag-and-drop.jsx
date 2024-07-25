@@ -496,12 +496,13 @@ export function DragAndDropContainer(props) {
 		const maxScroll = Number.MAX_SAFE_INTEGER;
 		let newAutoScrollAmount = 0;
 		const containerEndPos = containerStartPos() + containerRef[clientLengthProperty()];
+		const autoCompleteThreshold = 0.7;
 		if (props.dragAndDropTarget[positionProperty()]
 			&& containerRef[scrollProperty()] < maxScroll
-			&& (props.dragAndDropTarget[positionProperty()] + itemLength / 2) >= containerEndPos
+			&& (props.dragAndDropTarget[positionProperty()] + itemLength * autoCompleteThreshold) >= containerEndPos
 		) {
 			newAutoScrollAmount = 1;
-		} else if (props.dragAndDropTarget[positionProperty()] <= containerStartPos() - itemLength / 2) {
+		} else if (props.dragAndDropTarget[positionProperty()] <= containerStartPos() - itemLength * (1 - autoCompleteThreshold)) {
 			newAutoScrollAmount = -1;
 		}
 		if (autoScrollSign() !== newAutoScrollAmount) {
