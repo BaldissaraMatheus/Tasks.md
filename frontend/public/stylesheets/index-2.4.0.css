@@ -432,6 +432,10 @@ popover > :last-child {
   gap: 6px;
 }
 
+.input-and-error-msg input:focus {
+  outline-offset: -1px !important;
+}
+
 .error-msg {
   color: var(--danger-color);
   font-size: 0.8rem;
