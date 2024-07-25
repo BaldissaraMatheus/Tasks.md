@@ -1,5 +1,5 @@
 import { onMount } from "solid-js";
-import { handleKeyDown } from "../utils";
+import { handleKeyDown, clickOutside } from "../utils";
 
 /**
  * 
@@ -34,6 +34,7 @@ export function NameInput(props) {
         value={props.value}
         onInput={(e) => props.onChange(e.target.value)}
         onFocusOut={handleConfirm}
+        use:clickOutside={handleConfirm}
         onKeyDown={e => handleKeyDown(e, handleConfirm, props.onCancel)}
         class={props.errorMsg ? "error" : ""}
       />
