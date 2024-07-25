@@ -240,10 +240,6 @@ button.small {
   transition: translate 0.25s;
 }
 
-.card[foo] {
-  touch-action: none;
-}
-
 .card.card__drag-disabled {
   cursor: pointer !important;
 }
