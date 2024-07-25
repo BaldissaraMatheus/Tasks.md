@@ -337,6 +337,7 @@ popover > :last-child {
 }
 
 .modal {
+  border: none;
   z-index: 2;
   display: flex;
   flex-direction: column;
