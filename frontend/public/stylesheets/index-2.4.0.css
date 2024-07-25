@@ -47,7 +47,9 @@ strong {
   margin: 0;
 }
 
-ul {
+ul,
+/* TODO explicit class styling because vite builds a different CSS file, once build config is changed this line can be removed */
+.tags {
   list-style-type: none;
   margin: 0;
 }
@@ -306,6 +308,7 @@ popover > :last-child {
   border-radius: 5px;
   border: 1px solid var(--tag-color-1);
   background-color: var(--tag-color-1);
+  user-select: none;
 }
 
 .tag--clicable {
