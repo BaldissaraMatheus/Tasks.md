@@ -49,6 +49,7 @@ strong {
 
 ul {
   list-style-type: none;
+  margin: 0;
 }
 
 #root {
