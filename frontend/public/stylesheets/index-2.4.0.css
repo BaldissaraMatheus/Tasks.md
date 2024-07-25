@@ -246,6 +246,7 @@ button.small {
 
 .card__name {
   overflow: hidden;
+  user-select: none;
 }
 
 .card__toolbar {
