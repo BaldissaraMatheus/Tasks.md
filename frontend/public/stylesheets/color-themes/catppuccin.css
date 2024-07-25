@@ -43,7 +43,7 @@
   --card-background-color: var(--dark-theme-color-4);
   --card-border-color: var(--dark-theme-color-4);
   --card-border-color: var(--dark-theme-color-4);
-  --modal-background-color: var(--dark-theme-color-2);
+  --dialog-background-color: var(--dark-theme-color-2);
   --popup-background-color: var(--dark-theme-color-1);
   --popup-font-color: var(--dark-theme-color-5);
   --popup-border-color: var(--dark-theme-color-4);
@@ -75,7 +75,7 @@
     --lane-background-color: var(--light-theme-color-4);
     --card-background-color: var(--light-theme-color-2);
     --card-border-color: var(--light-theme-color-4);
-    --modal-background-color: var(--light-theme-color-2);
+    --dialog-background-color: var(--light-theme-color-2);
     --popup-background-color: var(--light-theme-color-2);
     --popup-font-color: var(--light-theme-color-5);
     --popup-border-color: var(--light-theme-color-4);

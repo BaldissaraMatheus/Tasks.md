@@ -319,7 +319,7 @@ popover > :last-child {
   font-weight: bold;
 }
 
-.modal-bg {
+.dialog-bg {
   position: absolute;
   top: 0;
   left: 0;
@@ -332,11 +332,11 @@ popover > :last-child {
   padding: 20px;
 }
 
-.modal-bg--maximized {
+.dialog-bg--maximized {
   padding: 0;
 }
 
-.modal {
+.dialog {
   border: none;
   z-index: 2;
   display: flex;
@@ -344,19 +344,19 @@ popover > :last-child {
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--modal-background-color);
+  background: var(--dialog-background-color);
   box-sizing: border-box;
   border-radius: 5px;
   padding: 12px;
   text-align: left;
 }
 
-.modal:not(.modal--maximized) {
+.dialog:not(.dialog--maximized) {
   max-width: 960px;
   max-height: 819px;
 }
 
-.modal__toolbar {
+.dialog__toolbar {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -365,13 +365,13 @@ popover > :last-child {
   /* flex-direction: column; */
 }
 
-.modal__toolbar-name-input {
+.dialog__toolbar-name-input {
   padding: 1.1rem 1.1rem 1.1rem 0.5rem;
   font-size: 1.5rem;
   flex-grow: 1;
 }
 
-.modal__toolbar-name {
+.dialog__toolbar-name {
   /* https://stackoverflow.com/a/36247448 */
   min-width: 0;
   word-wrap: break-word;
@@ -382,13 +382,13 @@ popover > :last-child {
   color: var(--font-color);
 }
 
-.modal__toolbar-btns {
+.dialog__toolbar-btns {
   flex-grow: 0;
   display: flex;
   gap: 8px;
 }
 
-.modal__toolbar-btn {
+.dialog__toolbar-btn {
   width: 35px;
   height: 35px;
   padding: 0;
@@ -402,13 +402,13 @@ popover > :last-child {
   color: var(--font-color) !important;
 }
 
-.modal__tags {
+.dialog__tags {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.modal__tags .tag {
+.dialog__tags .tag {
   padding: 6px;
 }
 
@@ -416,7 +416,7 @@ popover > :last-child {
   pointer-events: none;
 }
 
-.modal__content {
+.dialog__content {
   overflow: hidden;
   flex-grow: 1;
 }

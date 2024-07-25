@@ -24,7 +24,7 @@ import { IoClose } from "solid-icons/io";
  * @param {boolean} props.disableImageUpload Disable local image upload button
  * @param {string[]} props.tags Card tags
  * @param {string[]} props.tagsOptions List of all available tags
- * @param {Function} props.onClose Callback function for when user clicks outside of the modal
+ * @param {Function} props.onClose Callback function for when user clicks outside of the dialog
  * @param {Function} props.onContentChange Callback function for when the content of the card is changed
  * @param {Function} props.onTagColorChange Callback function for when the color of a tag is changed
  * @param {Function} props.onNameChange Callback function for when the name of the card is changed
@@ -325,24 +325,24 @@ function ExpandedCard(props) {
   return (
     <>
       <div
-        class={`modal-bg ${
-          isMaximized() === "true" ? "modal-bg--maximized" : ""
+        class={`dialog-bg ${
+          isMaximized() === "true" ? "dialog-bg--maximized" : ""
         }`}
         onClick={props.onClose}
       >
         <dialog
-          class={`modal ${
-            isMaximized() === "true" ? "modal--maximized" : ""
+          class={`dialog ${
+            isMaximized() === "true" ? "dialog--maximized" : ""
           }`}
           onClick={(event) => event.stopPropagation()}
         >
-          <header class="modal__toolbar">
+          <header class="dialog__toolbar">
             {nameInputValue() !== null ? (
               <div class="input-and-error-msg">
                 <input
                   type="text"
                   id="name-input"
-                  class="modal__toolbar-name-input"
+                  class="dialog__toolbar-name-input"
                   value={nameInputValue()}
                   onFocusOut={handleOnNameInputChange}
                   onKeyDown={handleOnNameInputChange}
@@ -353,7 +353,7 @@ function ExpandedCard(props) {
               </div>
             ) : (
               <h1
-                class="modal__toolbar-name"
+                class="dialog__toolbar-name"
                 onClick={startRenamingCard}
                 onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
                 title="Click to rename card"
@@ -362,21 +362,21 @@ function ExpandedCard(props) {
                 {props.name || "NO NAME"}
               </h1>
             )}
-            <div class="modal__toolbar-btns">
+            <div class="dialog__toolbar-btns">
               <button
-                class="modal__toolbar-btn"
+                class="dialog__toolbar-btn"
                 onClick={() =>
                   setIsMaximized(isMaximized() === "true" ? "false" : "true")
                 }
               >
                 <AiOutlineExpand size="25px" />
               </button>
-              <button class="modal__toolbar-btn" onClick={props.onClose}>
+              <button class="dialog__toolbar-btn" onClick={props.onClose}>
                 <IoClose size="25px" />
               </button>
             </div>
           </header>
-          <div class="modal__tags">
+          <div class="dialog__tags">
             {isCreatingNewTag() ? (
               <>
                 <input
@@ -417,7 +417,7 @@ function ExpandedCard(props) {
               )}
             </For>
           </div>
-          <div class="modal__content">
+          <div class="dialog__content">
             <div
               id="editor-container"
               onKeyDown={handleEditorOnChange}
