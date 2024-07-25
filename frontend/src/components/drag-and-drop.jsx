@@ -119,6 +119,9 @@ export function DragAndDropContainer(props) {
 	const [targetBeforeMoving, setTargetBeforeMoving] = createSignal(null);
 
 	function handlePointerDown(e, currentTarget) {
+		if (e.target.tagName === 'INPUT') {
+			return;
+		}
 		e.preventDefault();
 		e.stopPropagation();
 		if (props.disabled) {
