@@ -20,7 +20,11 @@ const multerInstance = multer();
 
 async function getLanesNames() {
   await fs.promises.mkdir(process.env.TASKS_DIR, { recursive: true });
-  return fs.promises.readdir(process.env.TASKS_DIR);
+  return fs.promises.readdir(process.env.TASKS_DIR, { withFileTypes: true })
+    .then(dirs => dirs
+      .filter(dir => dir.isDirectory())
+      .map(dir => dir.name)
+    );
 }
 
 async function getMdFiles() {
