@@ -14,7 +14,7 @@ import { useLongPress } from "../utils";
 function getPageCoordinatesFromMouseOrTouchEvent(e) {
 	const pageX = e.changedTouches ? e.changedTouches[0].pageX : e.pageX;
 	const pageY = e.changedTouches ? e.changedTouches[0].pageY : e.pageY;
-	return {pageX, pageY};
+	return { pageX, pageY };
 }
 
 export function createDragAndDropTarget() {
@@ -26,14 +26,16 @@ export function createDragAndDropTarget() {
 		cursorDisplacementTop: null,
 		from: null,
 		to: null,
-	}
+	};
 
-	const [dragAndDropTarget, setDragAndDropTarget] = createSignal(initialDragAndDropTarget);
+	const [dragAndDropTarget, setDragAndDropTarget] = createSignal(
+		initialDragAndDropTarget,
+	);
 	return [dragAndDropTarget, setDragAndDropTarget];
 }
 
 export function DragAndDropTarget(props) {
-	const draggableItem = createMemo(prev => {
+	const draggableItem = createMemo((prev) => {
 		if (prev === props.dragAndDropTarget.originalElement) {
 			return prev;
 		}
@@ -44,16 +46,18 @@ export function DragAndDropTarget(props) {
 			return prev;
 		}
 		const target = props.dragAndDropTarget.originalElement.cloneNode(true);
-		const targetComputedStyle = window.getComputedStyle(props.dragAndDropTarget.originalElement);
+		const targetComputedStyle = window.getComputedStyle(
+			props.dragAndDropTarget.originalElement,
+		);
 		target.style.height = targetComputedStyle.height;
 		target.style.width = targetComputedStyle.width;
-		target.style.opacity = '1';
-		target.classList.add('being-dragged');
+		target.style.opacity = "1";
+		target.classList.add("being-dragged");
 		if (props.debug) {
-			target.style.background = 'red';
+			target.style.background = "red";
 		}
 		return target;
-	})
+	});
 
 	function handlePointerMove(e) {
 		if (!props.dragAndDropTarget.originalElement) {
@@ -71,8 +75,12 @@ export function DragAndDropTarget(props) {
 	}
 
 	onMount(() => {
-		document.addEventListener("mousemove", handlePointerMove, { passive: false });
-		document.addEventListener("touchmove", e => handlePointerMove(e), { passive: false });
+		document.addEventListener("mousemove", handlePointerMove, {
+			passive: false,
+		});
+		document.addEventListener("touchmove", (e) => handlePointerMove(e), {
+			passive: false,
+		});
 	});
 
 	onCleanup(() => {
@@ -84,18 +92,18 @@ export function DragAndDropTarget(props) {
 		<Show when={draggableItem}>
 			<div
 				style={{
-					opacity: draggableItem ? '1' : '0',
+					opacity: draggableItem ? "1" : "0",
 					position: "absolute",
 					top: `${props.dragAndDropTarget.top}px`,
 					left: `${props.dragAndDropTarget.left}px`,
-					"z-index": '999',
-					"touch-action": 'none',
+					"z-index": "999",
+					"touch-action": "none",
 				}}
 			>
 				{draggableItem}
 			</div>
 		</Show>
-	)
+	);
 }
 
 export function DragAndDropContainer(props) {
@@ -119,7 +127,7 @@ export function DragAndDropContainer(props) {
 	const [targetBeforeMoving, setTargetBeforeMoving] = createSignal(null);
 
 	function handlePointerDown(e, currentTarget) {
-		if (e.target.tagName === 'INPUT') {
+		if (e.target.tagName === "INPUT") {
 			return;
 		}
 		e.preventDefault();
@@ -152,9 +160,9 @@ export function DragAndDropContainer(props) {
 		if (!startPageCoordinates()) {
 			return;
 		}
-		e.preventDefault()
-		e.stopPropagation()
-		e.stopImmediatePropagation()
+		e.preventDefault();
+		e.stopPropagation();
+		e.stopImmediatePropagation();
 		const { pageX, pageY } = getPageCoordinatesFromMouseOrTouchEvent(e);
 		const diffLeft = Math.abs(pageX - startPageCoordinates().x);
 		const diffTop = Math.abs(pageY - startPageCoordinates().y);
@@ -170,43 +178,51 @@ export function DragAndDropContainer(props) {
 				return;
 			}
 		}
-		props.onDragAndDropTargetChange(prev => ({
+		props.onDragAndDropTargetChange((prev) => ({
 			...prev,
 			...targetBeforeMoving(),
 		}));
-		props.dragAndDropTarget.originalElement.style.opacity = '0';
+		props.dragAndDropTarget.originalElement.style.opacity = "0";
 		setTargetBeforeMoving(null);
 		setStartPageCoordinates(null);
 	}
 
-	const [onLongPressStart, onLongPressEnd] = useLongPress(handleTouchStart, 500)
+	const [onLongPressStart, onLongPressEnd] = useLongPress(
+		handleTouchStart,
+		500,
+	);
 
 	function handleTouchStart(e, currentTarget) {
 		e.preventDefault();
 		handlePointerDown(e, currentTarget);
-		handlePointerMove(e, true)
+		handlePointerMove(e, true);
 	}
 
 	function handlePointerUp() {
 		setTargetBeforeMoving(null);
 		setStartPageCoordinates(null);
-		if (!props.dragAndDropTarget.originalElement
-			|| !sortedItemsIds
-			|| props.dragAndDropTarget.to !== props.id
+		if (
+			!props.dragAndDropTarget.originalElement ||
+			!sortedItemsIds ||
+			props.dragAndDropTarget.to !== props.id
 		) {
 			return;
 		}
-		const index = sortedItemsIds
-			.findIndex(id => id === props.dragAndDropTarget.originalElement.id);
+		const index = sortedItemsIds.findIndex(
+			(id) => id === props.dragAndDropTarget.originalElement.id,
+		);
 		props.onChange({
 			id: props.dragAndDropTarget.originalElement.id,
 			from: props.dragAndDropTarget.from,
 			to: props.dragAndDropTarget.to,
-			index
+			index,
 		});
-		props.onDragAndDropTargetChange(prev => ({ ...prev, originalElement: null }))
+		props.onDragAndDropTargetChange((prev) => ({
+			...prev,
+			originalElement: null,
+		}));
 		setAutoScrollSign(0);
-		containerRef.style[paddingProperty()] = '';
+		containerRef.style[paddingProperty()] = "";
 	}
 
 	function updateChildrenElements() {
@@ -216,66 +232,79 @@ export function DragAndDropContainer(props) {
 		}
 		if (sortedItemsIds.length > items().length) {
 			const newItem = props.dragAndDropTarget.originalElement.cloneNode(true);
-			newItem.style.opacity = '0';
-			newItem.style['z-index'] = '0';
+			newItem.style.opacity = "0";
+			newItem.style["z-index"] = "0";
 			items().push(newItem);
 		}
-		items().forEach(item => {
-			const itemIndex = items()
-				.findIndex(itemToFindIndex => itemToFindIndex.id === item.id)
-			const sortedItemIndex = sortedItemsIds.findIndex(id => id === item.id)
-			let translateToNewPosition = (sortedItemIndex - itemIndex) * itemLength
+		for (const item of items()) {
+			const itemIndex = items().findIndex(
+				(itemToFindIndex) => itemToFindIndex.id === item.id,
+			);
+			const sortedItemIndex = sortedItemsIds.findIndex((id) => id === item.id);
+			let translateToNewPosition = (sortedItemIndex - itemIndex) * itemLength;
 			if (sortedItemIndex < itemIndex) {
 				translateToNewPosition -= gap();
 			}
 			if (sortedItemIndex > itemIndex) {
 				translateToNewPosition += gap();
 			}
-			if (flexDirection() === 'row') {
-				item.style.translate = `${translateToNewPosition}px 0`
+			if (flexDirection() === "row") {
+				item.style.translate = `${translateToNewPosition}px 0`;
 			} else {
-				item.style.translate = `0 ${translateToNewPosition}px`
+				item.style.translate = `0 ${translateToNewPosition}px`;
 			}
 			if (item.id === props.dragAndDropTarget.originalElement?.id) {
-				item.style.opacity = '0';
+				item.style.opacity = "0";
 			}
-		});
+		}
 	}
 
 	function sortItems(direction) {
-		let targetPosition = props.dragAndDropTarget[positionProperty()]
-			+ containerRef[scrollProperty()]
-			+ props.dragAndDropTarget[lengthProperty()] * 0.5 * direction;
+		const targetPosition =
+			props.dragAndDropTarget[positionProperty()] +
+			containerRef[scrollProperty()] +
+			props.dragAndDropTarget[lengthProperty()] * 0.5 * direction;
 		const forIndexStart = direction === 1 ? 0 : sortedItemsIds.length - 1;
-		const checkForCondition = i => direction === 1 ? i < sortedItemsIds.length - 1 : i > 0;
+		const checkForCondition = (i) =>
+			direction === 1 ? i < sortedItemsIds.length - 1 : i > 0;
 		const forIndexIncrement = direction;
 		const aIndexIncrement = direction === 1 ? 0 : -1;
 		const bIndexIncrement = aIndexIncrement + 1;
-		for (let index = forIndexStart; checkForCondition(index); index += forIndexIncrement) {
+		for (
+			let index = forIndexStart;
+			checkForCondition(index);
+			index += forIndexIncrement
+		) {
 			let prevItemPosition = positions()[index + aIndexIncrement];
 			let currItemPosition = positions()[index + bIndexIncrement];
-			if (sortedItemsIds[index + aIndexIncrement] === props.dragAndDropTarget.originalElement.id) {
+			if (
+				sortedItemsIds[index + aIndexIncrement] ===
+				props.dragAndDropTarget.originalElement.id
+			) {
 				prevItemPosition = targetPosition;
 			}
-			if (sortedItemsIds[index + bIndexIncrement] === props.dragAndDropTarget.originalElement.id) {
+			if (
+				sortedItemsIds[index + bIndexIncrement] ===
+				props.dragAndDropTarget.originalElement.id
+			) {
 				currItemPosition = targetPosition;
 			}
 			if (currItemPosition < prevItemPosition) {
 				const tempItem = sortedItemsIds[index + aIndexIncrement];
 				batch(() => {
-					setSortedItemsIds(index + aIndexIncrement, sortedItemsIds[index + bIndexIncrement]);
+					setSortedItemsIds(
+						index + aIndexIncrement,
+						sortedItemsIds[index + bIndexIncrement],
+					);
 					setSortedItemsIds(index + bIndexIncrement, tempItem);
 				});
 			}
 		}
 	}
 
-	function autoScroll(
-		setAutoScrollSign,
-		topOrLeft,
-	) {
+	function autoScroll(setAutoScrollSign, topOrLeft) {
 		if (!autoScrollSign()) {
-			containerRef.style['scroll-snap-type'] = '';
+			containerRef.style["scroll-snap-type"] = "";
 			return;
 		}
 		// TODO get proper maxScroll value
@@ -284,16 +313,16 @@ export function DragAndDropContainer(props) {
 		const maxScroll = Number.MAX_SAFE_INTEGER;
 		if (autoScrollSign() > 0 && containerRef[scrollProperty()] >= maxScroll) {
 			setAutoScrollSign(0);
-			containerRef.style['scroll-snap-type'] = '';
+			containerRef.style["scroll-snap-type"] = "";
 			return;
 		}
 		if (autoScrollSign() < 0 && containerRef[scrollProperty()] <= 0) {
 			setAutoScrollSign(0);
-			containerRef.style['scroll-snap-type'] = '';
+			containerRef.style["scroll-snap-type"] = "";
 			return;
 		}
 		const autoScrollAmount = 4;
-		containerRef.style['scroll-snap-type'] = 'none';
+		containerRef.style["scroll-snap-type"] = "none";
 		containerRef.scrollBy({
 			[topOrLeft]: autoScrollSign() * autoScrollAmount,
 		});
@@ -302,10 +331,7 @@ export function DragAndDropContainer(props) {
 		}
 		sortItems(-1);
 		setTimeout(() => {
-			autoScroll(
-				setAutoScrollSign,
-				topOrLeft,
-			)
+			autoScroll(setAutoScrollSign, topOrLeft);
 		}, 7);
 	}
 
@@ -329,23 +355,37 @@ export function DragAndDropContainer(props) {
 	createEffect(() => {
 		const containerComputedStyle = window.getComputedStyle(containerRef);
 		const computedGap = containerComputedStyle.gap;
-		const gapIsInteger = /[0-9]*px|em|rem|%|vh|vw|vmin|vmax|ex|ch|cm|mm|in/.test(computedGap);
-		const gapIntergerValue = gapIsInteger ? Number(containerComputedStyle.gap.slice(0, -'px'.length)) : 0;
+		const gapIsInteger =
+			/[0-9]*px|em|rem|%|vh|vw|vmin|vmax|ex|ch|cm|mm|in/.test(computedGap);
+		const gapIntergerValue = gapIsInteger
+			? Number(containerComputedStyle.gap.slice(0, -"px".length))
+			: 0;
 		setGap(gapIntergerValue);
 		const flexDirection = containerComputedStyle.flexDirection;
 		setFlexDirection(flexDirection);
-		setPositionProperty(flexDirection === 'row' ? 'left' : 'top');
-		setPaddingProperty(flexDirection === 'row' ? 'paddingLeft' : 'paddingTop');
-		setLengthProperty(flexDirection === 'row' ? 'width' : 'height');
-		setScrollProperty(flexDirection === 'row' ? 'scrollLeft' : 'scrollTop');
-		setClientLengthProperty(flexDirection === 'row' ? 'clientWidth' : 'clientHeight');
-		setContainerStartPos(containerRef.getBoundingClientRect()[positionProperty()]);
-		containerRef.removeEventListener('mousemove', handlePointerMove);
-		containerRef.addEventListener('mousemove', handlePointerMove);
-		containerRef.removeEventListener('touchmove', handlePointerMove, { passive: false });
-		containerRef.addEventListener('touchmove', handlePointerMove, { passive: false });
-		containerRef.removeEventListener('scroll', preventDragWhenScrollingWithTouch);
-		containerRef.addEventListener('scroll', preventDragWhenScrollingWithTouch);
+		setPositionProperty(flexDirection === "row" ? "left" : "top");
+		setPaddingProperty(flexDirection === "row" ? "paddingLeft" : "paddingTop");
+		setLengthProperty(flexDirection === "row" ? "width" : "height");
+		setScrollProperty(flexDirection === "row" ? "scrollLeft" : "scrollTop");
+		setClientLengthProperty(
+			flexDirection === "row" ? "clientWidth" : "clientHeight",
+		);
+		setContainerStartPos(
+			containerRef.getBoundingClientRect()[positionProperty()],
+		);
+		containerRef.removeEventListener("mousemove", handlePointerMove);
+		containerRef.addEventListener("mousemove", handlePointerMove);
+		containerRef.removeEventListener("touchmove", handlePointerMove, {
+			passive: false,
+		});
+		containerRef.addEventListener("touchmove", handlePointerMove, {
+			passive: false,
+		});
+		containerRef.removeEventListener(
+			"scroll",
+			preventDragWhenScrollingWithTouch,
+		);
+		containerRef.addEventListener("scroll", preventDragWhenScrollingWithTouch);
 	});
 
 	function handleContextMenu(e) {
@@ -355,55 +395,71 @@ export function DragAndDropContainer(props) {
 
 	// add event listeners to dom items, runs when items change
 	createEffect(() => {
-		const handleLongPress = e => onLongPressStart(e, e.currentTarget);
-		const handleMouseDown = e => handlePointerDown(e, e.currentTarget);
-		items().forEach(item => {
-			item.removeEventListener('mousedown', handleMouseDown);
-			item.addEventListener('mousedown', handleMouseDown);
-			item.removeEventListener('touchstart', handleLongPress);
-			item.addEventListener('touchstart', handleLongPress);
-			item.removeEventListener('mouseup', onLongPressEnd);
-			item.addEventListener('mouseup', onLongPressEnd);
-			item.removeEventListener('touchend', onLongPressEnd);
-			item.addEventListener('touchend', onLongPressEnd);
-			item.removeEventListener('contextmenu', handleContextMenu);
-			item.addEventListener('contextmenu', handleContextMenu);
-			item.style.opacity = '1';
-			item.style.translate = '';
-		})
+		const handleLongPress = (e) => onLongPressStart(e, e.currentTarget);
+		const handleMouseDown = (e) => handlePointerDown(e, e.currentTarget);
+		for (const item of items()) {
+			item.removeEventListener("mousedown", handleMouseDown);
+			item.addEventListener("mousedown", handleMouseDown);
+			item.removeEventListener("touchstart", handleLongPress);
+			item.addEventListener("touchstart", handleLongPress);
+			item.removeEventListener("mouseup", onLongPressEnd);
+			item.addEventListener("mouseup", onLongPressEnd);
+			item.removeEventListener("touchend", onLongPressEnd);
+			item.addEventListener("touchend", onLongPressEnd);
+			item.removeEventListener("contextmenu", handleContextMenu);
+			item.addEventListener("contextmenu", handleContextMenu);
+			item.style.opacity = "1";
+			item.style.translate = "";
+		}
 		setSortedItemsIds([]);
-		const endPadding = flexDirection === 'row' ? 'paddingRight' : 'paddingBottom';
-		containerRef.style[endPadding] = '';
+		const endPadding =
+			flexDirection === "row" ? "paddingRight" : "paddingBottom";
+		containerRef.style[endPadding] = "";
 	});
 
-	// update dragAndDropTarget.to, runs when target top or left changes 
-	createEffect(prev => {
-		if (!props.dragAndDropTarget.originalElement
-				|| prev === JSON.stringify(props.dragAndDropTarget)
-				|| props.dragAndDropTarget.group !== props.group
-			) {
+	// update dragAndDropTarget.to, runs when target top or left changes
+	createEffect((prev) => {
+		if (
+			!props.dragAndDropTarget.originalElement ||
+			prev === JSON.stringify(props.dragAndDropTarget) ||
+			props.dragAndDropTarget.group !== props.group
+		) {
 			return JSON.stringify(props.dragAndDropTarget);
 		}
 		if (props.id !== props.dragAndDropTarget.to) {
-			setSortedItemsIds(sortedItemsIds.filter(id => id !== props.dragAndDropTarget.originalElement.id));
+			setSortedItemsIds(
+				sortedItemsIds.filter(
+					(id) => id !== props.dragAndDropTarget.originalElement.id,
+				),
+			);
 			return JSON.stringify(props.dragAndDropTarget);
 		}
 		if (props.id !== props.dragAndDropTarget.from) {
-			const endPadding = flexDirection === 'row' ? 'paddingRight' : 'paddingBottom';
-			containerRef.style[endPadding] = `${props.dragAndDropTarget[lengthProperty()]}px`;
+			const endPadding =
+				flexDirection === "row" ? "paddingRight" : "paddingBottom";
+			containerRef.style[endPadding] =
+				`${props.dragAndDropTarget[lengthProperty()]}px`;
 		}
 		if (!sortedItemsIds.length) {
 			const newSortedItemsIds = items()
-				.map(item => item.id)
-				.filter(id => id !== props.dragAndDropTarget.originalElement.id)
-			setSortedItemsIds(newSortedItemsIds)
+				.map((item) => item.id)
+				.filter((id) => id !== props.dragAndDropTarget.originalElement.id);
+			setSortedItemsIds(newSortedItemsIds);
 		}
-		if (!sortedItemsIds.some(id => id === props.dragAndDropTarget.originalElement.id)) {
+		if (
+			!sortedItemsIds.some(
+				(id) => id === props.dragAndDropTarget.originalElement.id,
+			)
+		) {
 			const targetId = props.dragAndDropTarget.originalElement.id;
 			setSortedItemsIds(sortedItemsIds.length, targetId);
-			const containerStartPadding = window.getComputedStyle(containerRef)[paddingProperty()];
-			const containerStartPaddingIntValue = Number(containerStartPadding.slice(0, -2));
-			const firstItemPosition = containerStartPos() + containerStartPaddingIntValue;
+			const containerStartPadding =
+				window.getComputedStyle(containerRef)[paddingProperty()];
+			const containerStartPaddingIntValue = Number(
+				containerStartPadding.slice(0, -2),
+			);
+			const firstItemPosition =
+				containerStartPos() + containerStartPaddingIntValue;
 			let lastPosition = firstItemPosition;
 			const newPositions = [];
 			sortedItemsIds.forEach((id, i) => {
@@ -411,27 +467,31 @@ export function DragAndDropContainer(props) {
 					newPositions.push(lastPosition);
 					return;
 				}
-				const prevItem = items().find(item => item.id === id);
-				const prevItemHeight = id === props.dragAndDropTarget.originalElement.id
-					? props.dragAndDropTarget[lengthProperty()]
-					: prevItem.getBoundingClientRect()[lengthProperty()];
+				const prevItem = items().find((item) => item.id === id);
+				const prevItemHeight =
+					id === props.dragAndDropTarget.originalElement.id
+						? props.dragAndDropTarget[lengthProperty()]
+						: prevItem.getBoundingClientRect()[lengthProperty()];
 				const newPosition = lastPosition + prevItemHeight + gap();
 				lastPosition = newPosition;
 				newPositions.push(newPosition);
 				return;
 			});
-			setPositions(newPositions)
+			setPositions(newPositions);
 		}
 		let direction;
 		if (JSON.parse(prev).originalElement !== null) {
-			direction = Math.sign(props.dragAndDropTarget[positionProperty()] - JSON.parse(prev)[positionProperty()]);
+			direction = Math.sign(
+				props.dragAndDropTarget[positionProperty()] -
+					JSON.parse(prev)[positionProperty()],
+			);
 		}
 		sortItems(direction || -1);
 		return JSON.stringify(props.dragAndDropTarget);
 	});
 
 	// update dom items, runs when sortedItemsIds change
-	createEffect(prev => {
+	createEffect((prev) => {
 		if (prev === JSON.stringify(sortedItemsIds)) {
 			return JSON.stringify(sortedItemsIds);
 		}
@@ -439,10 +499,10 @@ export function DragAndDropContainer(props) {
 			updateChildrenElements();
 		}
 		return JSON.stringify(sortedItemsIds);
-	}, '[]');
+	}, "[]");
 
-	// update dragAndDropTarget.to, runs when target top or left changes 
-	createEffect(prev => {
+	// update dragAndDropTarget.to, runs when target top or left changes
+	createEffect((prev) => {
 		if (!props.dragAndDropTarget.originalElement) {
 			return;
 		}
@@ -452,25 +512,35 @@ export function DragAndDropContainer(props) {
 		if (props.dragAndDropTarget.group !== props.group) {
 			return;
 		}
-		const outerDirection = flexDirection() === 'row' ? 'top' : 'left';
-		const outerClientLength = flexDirection() === 'row' ? 'clientHeight' : 'clientWidth';
+		const outerDirection = flexDirection() === "row" ? "top" : "left";
+		const outerClientLength =
+			flexDirection() === "row" ? "clientHeight" : "clientWidth";
 		if (prev === props.dragAndDropTarget[outerDirection]) {
 			return prev;
 		}
-		const containerEdgeStart = containerRef.getBoundingClientRect()[outerDirection];
-		const containerEdgeEnd = containerRef.getBoundingClientRect()[outerDirection] + containerRef[outerClientLength];
-		const isBeforeEndEdge = props.dragAndDropTarget[outerDirection] + props.dragAndDropTarget.originalElement[outerClientLength] / 2 <= containerEdgeEnd;
-		const isAfterStartEdge = props.dragAndDropTarget[outerDirection] + props.dragAndDropTarget.originalElement[outerClientLength] / 2 > containerEdgeStart;
+		const containerEdgeStart =
+			containerRef.getBoundingClientRect()[outerDirection];
+		const containerEdgeEnd =
+			containerRef.getBoundingClientRect()[outerDirection] +
+			containerRef[outerClientLength];
+		const isBeforeEndEdge =
+			props.dragAndDropTarget[outerDirection] +
+				props.dragAndDropTarget.originalElement[outerClientLength] / 2 <=
+			containerEdgeEnd;
+		const isAfterStartEdge =
+			props.dragAndDropTarget[outerDirection] +
+				props.dragAndDropTarget.originalElement[outerClientLength] / 2 >
+			containerEdgeStart;
 		const isWithinBounds = isBeforeEndEdge && isAfterStartEdge;
 		if (isWithinBounds) {
-			props.onDragAndDropTargetChange(prev => ({
+			props.onDragAndDropTargetChange((prev) => ({
 				...prev,
 				to: props.id,
 			}));
 			return props.dragAndDropTarget[outerDirection];
 		}
 		if (props.dragAndDropTarget.to === props.id) {
-			props.onDragAndDropTargetChange(prev => ({
+			props.onDragAndDropTargetChange((prev) => ({
 				...prev,
 				to: null,
 			}));
@@ -479,7 +549,7 @@ export function DragAndDropContainer(props) {
 	});
 
 	// update autoScrollAmount, runs when target top or left changes
-	createEffect(prev => {
+	createEffect((prev) => {
 		if (!props.dragAndDropTarget.originalElement) {
 			return;
 		}
@@ -490,48 +560,59 @@ export function DragAndDropContainer(props) {
 		if (isSameGroup && props.dragAndDropTarget.to !== props.id) {
 			return;
 		}
-		const isDescendant = containerRef.contains(props.dragAndDropTarget.originalElement)
+		const isDescendant = containerRef.contains(
+			props.dragAndDropTarget.originalElement,
+		);
 		if (!isDescendant && !isSameGroup) {
 			return;
 		}
-		const itemLength = props.dragAndDropTarget.originalElement[clientLengthProperty()];
+		const itemLength =
+			props.dragAndDropTarget.originalElement[clientLengthProperty()];
 		// TODO get proper maxScroll value
 		// const scrollLengthProperty = flexDirection === 'row' ? 'scrollWidth' : 'scrollHeight';
 		// const maxScroll = containerRef[scrollLengthProperty] - containerRef[scrollProperty()];
 		const maxScroll = Number.MAX_SAFE_INTEGER;
 		let newAutoScrollAmount = 0;
-		const containerEndPos = containerStartPos() + containerRef[clientLengthProperty()];
+		const containerEndPos =
+			containerStartPos() + containerRef[clientLengthProperty()];
 		const autoscrollThreshold = 0.7;
-		if (props.dragAndDropTarget[positionProperty()]
-			&& containerRef[scrollProperty()] < maxScroll
-			&& (props.dragAndDropTarget[positionProperty()] + itemLength * autoscrollThreshold) >= containerEndPos
+		if (
+			props.dragAndDropTarget[positionProperty()] &&
+			containerRef[scrollProperty()] < maxScroll &&
+			props.dragAndDropTarget[positionProperty()] +
+				itemLength * autoscrollThreshold >=
+				containerEndPos
 		) {
 			newAutoScrollAmount = 1;
-		} else if (props.dragAndDropTarget[positionProperty()] <= containerStartPos() - itemLength * (1 - autoscrollThreshold)) {
+		} else if (
+			props.dragAndDropTarget[positionProperty()] <=
+			containerStartPos() - itemLength * (1 - autoscrollThreshold)
+		) {
 			newAutoScrollAmount = -1;
 		}
 		if (autoScrollSign() !== newAutoScrollAmount) {
-			setAutoScrollSign(newAutoScrollAmount)
-			autoScroll(
-				setAutoScrollSign,
-				positionProperty(),
-			);
+			setAutoScrollSign(newAutoScrollAmount);
+			autoScroll(setAutoScrollSign, positionProperty());
 		}
 		return props.dragAndDropTarget[positionProperty()];
 	});
 
-	return <ul
-		class={props.class}
-		id={props.id}
-		ref={(el) => {
-			containerRef = el;
-		}}
-		style={{
-			position: 'relative',
-			"touch-action": props.dragAndDropTarget.originalElement ? 'none' : 'auto'
-		}}
-		draggable
-	>
-		{items()}
-	</ul>
+	return (
+		<ul
+			class={props.class}
+			id={props.id}
+			ref={(el) => {
+				containerRef = el;
+			}}
+			style={{
+				position: "relative",
+				"touch-action": props.dragAndDropTarget.originalElement
+					? "none"
+					: "auto",
+			}}
+			draggable
+		>
+			{items()}
+		</ul>
+	);
 }
