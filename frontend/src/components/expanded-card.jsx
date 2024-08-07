@@ -54,6 +54,8 @@ function ExpandedCard(props) {
 		},
 	);
 
+	let dialogRef;
+
 	function focusOutOnEnter(e) {
 		if (e.key === "Enter") {
 			document?.activeElement.blur();
@@ -297,9 +299,10 @@ function ExpandedCard(props) {
 	}
 
 	createEffect(() => {
-		if (!editor) {
+		if (!editor || !dialogRef) {
 			return;
 		}
+		dialogRef.showModal()
 		for (const btn of modeBtns()) {
 			btn.addEventListener("click", handleClickEditorMode);
 		}
@@ -320,120 +323,112 @@ function ExpandedCard(props) {
 
 	return (
 		<>
-			<div
-				class={`dialog-bg ${
-					isMaximized() === "true" ? "dialog-bg--maximized" : ""
-				}`}
-				onClick={props.onClose}
-				onKeyDown={(e) => handleKeyDown(e, props.onClose)}
+			<dialog
+				ref={(el) => {
+					dialogRef = el;
+				}}
+				class={`dialog ${isMaximized() === "true" ? "dialog--maximized" : ""}`}
+				onClick={(e) => e.stopPropagation()}
+				onKeyDown={(e) => handleKeyDown(e, (event) => event.stopPropagation())}
+				use:clickOutside={props.onClose}
 			>
-				<dialog
-					class={`dialog ${
-						isMaximized() === "true" ? "dialog--maximized" : ""
-					}`}
-					onClick={(e) => e.stopPropagation()}
-					onKeyDown={(e) =>
-						handleKeyDown(e, (event) => event.stopPropagation())
-					}
-				>
-					<header class="dialog__toolbar">
-						{nameInputValue() !== null ? (
-							<div class="input-and-error-msg">
-								<input
-									type="text"
-									id="name-input"
-									class="dialog__toolbar-name-input"
-									value={nameInputValue()}
-									onFocusOut={handleOnNameInputChange}
-									onKeyDown={handleOnNameInputChange}
-								/>
-								{nameInputError() ? (
-									<span class="error-msg">{nameInputError()}</span>
-								) : null}
-							</div>
-						) : (
-							<div
-								role="button"
-								class="dialog__toolbar-name"
-								onClick={startRenamingCard}
-								onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
-								title="Click to rename card"
-								tabIndex="0"
-							>
-								<h1>{props.name || "NO NAME"}</h1>
-							</div>
-						)}
-						<div class="dialog__toolbar-btns">
-							<button
-								type="button"
-								class="dialog__toolbar-btn"
-								onClick={() =>
-									setIsMaximized(isMaximized() === "true" ? "false" : "true")
-								}
-							>
-								<AiOutlineExpand size="25px" />
-							</button>
-							<button
-								type="button"
-								class="dialog__toolbar-btn"
-								onClick={props.onClose}
-							>
-								<IoClose size="25px" />
-							</button>
+				<header class="dialog__toolbar">
+					{nameInputValue() !== null ? (
+						<div class="input-and-error-msg">
+							<input
+								type="text"
+								id="name-input"
+								class="dialog__toolbar-name-input"
+								value={nameInputValue()}
+								onFocusOut={handleOnNameInputChange}
+								onKeyDown={handleOnNameInputChange}
+							/>
+							{nameInputError() ? (
+								<span class="error-msg">{nameInputError()}</span>
+							) : null}
 						</div>
-					</header>
-					<div class="dialog__tags">
-						{isCreatingNewTag() ? (
-							<>
-								<input
-									id="tags-input"
-									type="text"
-									value={tagInputValue()}
-									onInput={(e) => setTagInputValue(e.target.value)}
-									onFocusOut={handleTagInputFocusOut}
-									onKeyDown={focusOutOnEnter}
-									list="tags"
-								/>
-								<datalist id="tags">
-									<For each={availableTags()}>
-										{(tag) => <option value={tag.name} />}
-									</For>
-								</datalist>
-							</>
-						) : (
-							<button type="button" onClick={handleAddTagBtnOnClick}>
-								Add tag
-							</button>
-						)}
-						<For each={props.tags || []}>
-							{(tag) => (
-								<div
-									class="tag tag--clicable"
-									style={{
-										"background-color": tag.backgroundColor,
-										"border-color": tag.backgroundColor,
-									}}
-									onClick={(e) => handleTagClick(e, tag)}
-									role="button"
-									onKeyDown={(e) =>
-										handleKeyDown(e, () => handleTagClick(e, tag))
-									}
-									tabIndex={0}
-								>
-									<h5>{tag.name}</h5>
-								</div>
-							)}
-						</For>
-					</div>
-					<div class="dialog__content">
+					) : (
 						<div
-							id="editor-container"
-							onKeyDown={handleEditorOnChange}
-							onClick={handleEditorOnChange}
-						/>
+							role="button"
+							class="dialog__toolbar-name"
+							onClick={startRenamingCard}
+							onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
+							title="Click to rename card"
+							tabIndex="0"
+						>
+							<h1>{props.name || "NO NAME"}</h1>
+						</div>
+					)}
+					<div class="dialog__toolbar-btns">
+						<button
+							type="button"
+							class="dialog__toolbar-btn"
+							onClick={() =>
+								setIsMaximized(isMaximized() === "true" ? "false" : "true")
+							}
+						>
+							<AiOutlineExpand size="25px" />
+						</button>
+						<button
+							type="button"
+							class="dialog__toolbar-btn"
+							onClick={props.onClose}
+						>
+							<IoClose size="25px" />
+						</button>
 					</div>
-				</dialog>
-			</div>
+				</header>
+				<div class="dialog__tags">
+					{isCreatingNewTag() ? (
+						<>
+							<input
+								id="tags-input"
+								type="text"
+								value={tagInputValue()}
+								onInput={(e) => setTagInputValue(e.target.value)}
+								onFocusOut={handleTagInputFocusOut}
+								onKeyDown={focusOutOnEnter}
+								list="tags"
+							/>
+							<datalist id="tags">
+								<For each={availableTags()}>
+									{(tag) => <option value={tag.name} />}
+								</For>
+							</datalist>
+						</>
+					) : (
+						<button type="button" onClick={handleAddTagBtnOnClick}>
+							Add tag
+						</button>
+					)}
+					<For each={props.tags || []}>
+						{(tag) => (
+							<div
+								class="tag tag--clicable"
+								style={{
+									"background-color": tag.backgroundColor,
+									"border-color": tag.backgroundColor,
+								}}
+								onClick={(e) => handleTagClick(e, tag)}
+								role="button"
+								onKeyDown={(e) =>
+									handleKeyDown(e, () => handleTagClick(e, tag))
+								}
+								tabIndex={0}
+							>
+								<h5>{tag.name}</h5>
+							</div>
+						)}
+					</For>
+				</div>
+				<div class="dialog__content">
+					<div
+						id="editor-container"
+						onKeyDown={handleEditorOnChange}
+						onClick={handleEditorOnChange}
+					/>
+				</div>
+			</dialog>
 			<Menu
 				id={clickedTag()?.name}
 				open={showTagPopup()}
