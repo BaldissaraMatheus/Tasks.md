@@ -323,31 +323,17 @@ popover > :last-child {
   font-weight: bold;
 }
 
-.dialog-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100dvw;
-  height: 100dvh;
+dialog::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
 }
 
-.dialog-bg--maximized {
-  padding: 0;
-}
-
-.dialog {
-  border: none;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  position: relative;
+dialog {
   width: 100%;
   height: 100%;
+  inset: 0px;
+  border: none;
+  display: flex;
+  flex-direction: column;
   background: var(--dialog-background-color);
   box-sizing: border-box;
   border-radius: 5px;
@@ -355,7 +341,7 @@ popover > :last-child {
   text-align: left;
 }
 
-.dialog:not(.dialog--maximized) {
+dialog:not(.dialog--maximized) {
   max-width: 960px;
   max-height: 819px;
 }
