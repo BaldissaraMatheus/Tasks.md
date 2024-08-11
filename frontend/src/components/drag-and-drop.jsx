@@ -29,9 +29,6 @@ function getPageCoordinatesFromMouseOrTouchEvent(e) {
  */
 
 export function createDragAndDropTarget() {
-	/**
-	 * 
-	 */
 	const initialDragAndDropTarget = {
 		originalElement: null,
 		top: null,
