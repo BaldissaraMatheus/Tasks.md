@@ -17,7 +17,21 @@ function getPageCoordinatesFromMouseOrTouchEvent(e) {
 	return { pageX, pageY };
 }
 
+/**
+ * 
+ * @typedef {Object} DragAndDropTarget
+ * @property {number} left
+ * @property {number} top
+ * @property {number} cursorDisplacementLeft
+ * @property {number} cursorDisplacementTop
+ * @property {string} from Id of parent element of the target
+ * @property {string} to Id of the new target parent
+ */
+
 export function createDragAndDropTarget() {
+	/**
+	 * 
+	 */
 	const initialDragAndDropTarget = {
 		originalElement: null,
 		top: null,
@@ -34,6 +48,17 @@ export function createDragAndDropTarget() {
 	return [dragAndDropTarget, setDragAndDropTarget];
 }
 
+/**
+ * @callback OnDragAndDropTargetChange
+ * @param {DragAndDropTarget} newDragAndDropTarget
+ */
+
+/**
+ * 
+ * @param {Object} props 
+ * @param {DragAndDropTarget} props.dragAndDropTarget
+ * @param {OnDragAndDropTargetChange} props.onDragAndDropTargetChange
+ */
 export function DragAndDropTarget(props) {
 	const draggableItem = createMemo((prev) => {
 		if (prev === props.dragAndDropTarget.originalElement) {
@@ -106,6 +131,17 @@ export function DragAndDropTarget(props) {
 	);
 }
 
+/**
+ * 
+ * @param {Object} props 
+ * @param {string} props.class
+ * @param {string} props.group Target group if container is nested
+ * @param {string} props.id
+ * @param {DragAndDropTarget} props.dragAndDropTarget
+ * @param {OnDragAndDropTargetChange} props.onDragAndDropTargetChange
+ * @param {OnDragAndDropTargetChange} props.onChange
+ * @param {boolean} props.disabled
+ */
 export function DragAndDropContainer(props) {
 	const [autoScrollSign, setAutoScrollSign] = createSignal(0);
 	const [sortedItemsIds, setSortedItemsIds] = createStore([]);
