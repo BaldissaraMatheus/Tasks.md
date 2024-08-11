@@ -328,22 +328,27 @@ dialog::backdrop {
 }
 
 dialog {
+  padding: 0;
   width: 100%;
   height: 100%;
   inset: 0px;
   border: none;
-  display: flex;
-  flex-direction: column;
   background: var(--dialog-background-color);
-  box-sizing: border-box;
   border-radius: 5px;
-  padding: 12px;
-  text-align: left;
 }
 
 dialog:not(.dialog--maximized) {
   max-width: 960px;
   max-height: 819px;
+}
+
+.dialog__body {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 12px;
+  text-align: left;
+  height: 100%;
 }
 
 .dialog__toolbar {
