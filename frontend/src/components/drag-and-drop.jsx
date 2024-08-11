@@ -7,28 +7,15 @@ import {
 	createMemo,
 	batch,
 	Show,
+	createContext,
+	useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useLongPress } from "../utils";
 
-function getPageCoordinatesFromMouseOrTouchEvent(e) {
-	const pageX = e.changedTouches ? e.changedTouches[0].pageX : e.pageX;
-	const pageY = e.changedTouches ? e.changedTouches[0].pageY : e.pageY;
-	return { pageX, pageY };
-}
+const DragAndDropContext = createContext();
 
-/**
- * 
- * @typedef {Object} DragAndDropTarget
- * @property {number} left
- * @property {number} top
- * @property {number} cursorDisplacementLeft
- * @property {number} cursorDisplacementTop
- * @property {string} from Id of parent element of the target
- * @property {string} to Id of the new target parent
- */
-
-export function createDragAndDropTarget() {
+function Provider(props) {
 	const initialDragAndDropTarget = {
 		originalElement: null,
 		top: null,
@@ -38,59 +25,70 @@ export function createDragAndDropTarget() {
 		from: null,
 		to: null,
 	};
+	const [dragAndDropTarget, setDragAndDropTarget] = createSignal(initialDragAndDropTarget);
 
-	const [dragAndDropTarget, setDragAndDropTarget] = createSignal(
-		initialDragAndDropTarget,
+	return (
+		<DragAndDropContext.Provider value={[dragAndDropTarget, setDragAndDropTarget]}>
+			{props.children}
+		</DragAndDropContext.Provider>
 	);
-	return [dragAndDropTarget, setDragAndDropTarget];
+}
+
+function getPageCoordinatesFromMouseOrTouchEvent(e) {
+	const pageX = e.changedTouches ? e.changedTouches[0].pageX : e.pageX;
+	const pageY = e.changedTouches ? e.changedTouches[0].pageY : e.pageY;
+	return { pageX, pageY };
 }
 
 /**
- * @callback OnDragAndDropTargetChange
- * @param {DragAndDropTarget} newDragAndDropTarget
+ *
+ * @typedef {Object} dragAndDropTarget()
+ * @property {number} left
+ * @property {number} top
+ * @property {number} cursorDisplacementLeft
+ * @property {number} cursorDisplacementTop
+ * @property {string} from Id of parent element of the target
+ * @property {string} to Id of the new target parent
  */
 
 /**
- * 
- * @param {Object} props 
- * @param {DragAndDropTarget} props.dragAndDropTarget
- * @param {OnDragAndDropTargetChange} props.onDragAndDropTargetChange
+ * @callback OnDragAndDropTargetChange
+ * @param {dragAndDropTarget()} newDragAndDropTarget
  */
-export function DragAndDropTarget(props) {
+
+function Target() {
+	const [dragAndDropTarget, setDragAndDropTarget] = useContext(DragAndDropContext);
 	const draggableItem = createMemo((prev) => {
-		if (prev === props.dragAndDropTarget.originalElement) {
+		if (prev === dragAndDropTarget().originalElement) {
 			return prev;
 		}
-		if (!props.dragAndDropTarget.originalElement) {
+		if (!dragAndDropTarget().originalElement) {
 			return null;
 		}
-		if (props.dragAndDropTarget.originalElement && prev) {
+		if (dragAndDropTarget().originalElement && prev) {
 			return prev;
 		}
-		const target = props.dragAndDropTarget.originalElement.cloneNode(true);
+		const target = dragAndDropTarget().originalElement.cloneNode(true);
 		const targetComputedStyle = window.getComputedStyle(
-			props.dragAndDropTarget.originalElement,
+			dragAndDropTarget().originalElement,
 		);
 		target.style.height = targetComputedStyle.height;
 		target.style.width = targetComputedStyle.width;
 		target.style.opacity = "1";
 		target.classList.add("being-dragged");
-		if (props.debug) {
-			target.style.background = "red";
-		}
 		return target;
 	});
 
 	function handlePointerMove(e) {
-		if (!props.dragAndDropTarget.originalElement) {
+		if (!dragAndDropTarget().originalElement) {
 			return;
 		}
 		e.preventDefault();
 		const { pageX, pageY } = getPageCoordinatesFromMouseOrTouchEvent(e);
-		const itemLeft = pageX - props.dragAndDropTarget.cursorDisplacementLeft;
-		const itemTop = pageY - props.dragAndDropTarget.cursorDisplacementTop;
-		props.onDragAndDropTargetChange({
-			...props.dragAndDropTarget,
+		const itemLeft = pageX - dragAndDropTarget().cursorDisplacementLeft;
+		const itemTop = pageY - dragAndDropTarget().cursorDisplacementTop;
+		setDragAndDropTarget({
+			...dragAndDropTarget(),
 			left: itemLeft,
 			top: itemTop,
 		});
@@ -116,8 +114,8 @@ export function DragAndDropTarget(props) {
 				style={{
 					opacity: draggableItem ? "1" : "0",
 					position: "absolute",
-					top: `${props.dragAndDropTarget.top}px`,
-					left: `${props.dragAndDropTarget.left}px`,
+					top: `${dragAndDropTarget().top}px`,
+					left: `${dragAndDropTarget().left}px`,
 					"z-index": "999",
 					"touch-action": "none",
 				}}
@@ -129,17 +127,16 @@ export function DragAndDropTarget(props) {
 }
 
 /**
- * 
- * @param {Object} props 
+ *
+ * @param {Object} props
  * @param {string} props.class
  * @param {string} props.group Target group if container is nested
  * @param {string} props.id
- * @param {DragAndDropTarget} props.dragAndDropTarget
- * @param {OnDragAndDropTargetChange} props.onDragAndDropTargetChange
  * @param {OnDragAndDropTargetChange} props.onChange
  * @param {boolean} props.disabled
  */
-export function DragAndDropContainer(props) {
+function Container(props) {
+	const [dragAndDropTarget, setDragAndDropTarget] = useContext(DragAndDropContext);
 	const [autoScrollSign, setAutoScrollSign] = createSignal(0);
 	const [sortedItemsIds, setSortedItemsIds] = createStore([]);
 	const [positions, setPositions] = createSignal([]);
@@ -211,11 +208,11 @@ export function DragAndDropContainer(props) {
 				return;
 			}
 		}
-		props.onDragAndDropTargetChange((prev) => ({
+		setDragAndDropTarget((prev) => ({
 			...prev,
 			...targetBeforeMoving(),
 		}));
-		props.dragAndDropTarget.originalElement.style.opacity = "0";
+		dragAndDropTarget().originalElement.style.opacity = "0";
 		setTargetBeforeMoving(null);
 		setStartPageCoordinates(null);
 	}
@@ -235,22 +232,22 @@ export function DragAndDropContainer(props) {
 		setTargetBeforeMoving(null);
 		setStartPageCoordinates(null);
 		if (
-			!props.dragAndDropTarget.originalElement ||
+			!dragAndDropTarget().originalElement ||
 			!sortedItemsIds ||
-			props.dragAndDropTarget.to !== props.id
+			dragAndDropTarget().to !== props.id
 		) {
 			return;
 		}
 		const index = sortedItemsIds.findIndex(
-			(id) => id === props.dragAndDropTarget.originalElement.id,
+			(id) => id === dragAndDropTarget().originalElement.id,
 		);
 		props.onChange({
-			id: props.dragAndDropTarget.originalElement.id,
-			from: props.dragAndDropTarget.from,
-			to: props.dragAndDropTarget.to,
+			id: dragAndDropTarget().originalElement.id,
+			from: dragAndDropTarget().from,
+			to: dragAndDropTarget().to,
 			index,
 		});
-		props.onDragAndDropTargetChange((prev) => ({
+		setDragAndDropTarget((prev) => ({
 			...prev,
 			originalElement: null,
 		}));
@@ -259,12 +256,12 @@ export function DragAndDropContainer(props) {
 	}
 
 	function updateChildrenElements() {
-		const itemLength = props.dragAndDropTarget?.[lengthProperty()];
+		const itemLength = dragAndDropTarget()?.[lengthProperty()];
 		if (!itemLength) {
 			return;
 		}
 		if (sortedItemsIds.length > items().length) {
-			const newItem = props.dragAndDropTarget.originalElement.cloneNode(true);
+			const newItem = dragAndDropTarget().originalElement.cloneNode(true);
 			newItem.style.opacity = "0";
 			newItem.style["z-index"] = "0";
 			items().push(newItem);
@@ -286,7 +283,7 @@ export function DragAndDropContainer(props) {
 			} else {
 				item.style.translate = `0 ${translateToNewPosition}px`;
 			}
-			if (item.id === props.dragAndDropTarget.originalElement?.id) {
+			if (item.id === dragAndDropTarget().originalElement?.id) {
 				item.style.opacity = "0";
 			}
 		}
@@ -294,9 +291,9 @@ export function DragAndDropContainer(props) {
 
 	function sortItems(direction) {
 		const targetPosition =
-			props.dragAndDropTarget[positionProperty()] +
+			dragAndDropTarget()[positionProperty()] +
 			containerRef[scrollProperty()] +
-			props.dragAndDropTarget[lengthProperty()] * 0.5 * direction;
+			dragAndDropTarget()[lengthProperty()] * 0.5 * direction;
 		const forIndexStart = direction === 1 ? 0 : sortedItemsIds.length - 1;
 		const checkForCondition = (i) =>
 			direction === 1 ? i < sortedItemsIds.length - 1 : i > 0;
@@ -312,13 +309,13 @@ export function DragAndDropContainer(props) {
 			let currItemPosition = positions()[index + bIndexIncrement];
 			if (
 				sortedItemsIds[index + aIndexIncrement] ===
-				props.dragAndDropTarget.originalElement.id
+				dragAndDropTarget().originalElement.id
 			) {
 				prevItemPosition = targetPosition;
 			}
 			if (
 				sortedItemsIds[index + bIndexIncrement] ===
-				props.dragAndDropTarget.originalElement.id
+				dragAndDropTarget().originalElement.id
 			) {
 				currItemPosition = targetPosition;
 			}
@@ -359,7 +356,7 @@ export function DragAndDropContainer(props) {
 		containerRef.scrollBy({
 			[topOrLeft]: autoScrollSign() * autoScrollAmount,
 		});
-		if (!props.dragAndDropTarget.originalElement) {
+		if (!dragAndDropTarget().originalElement) {
 			return;
 		}
 		sortItems(-1);
@@ -450,41 +447,41 @@ export function DragAndDropContainer(props) {
 		containerRef.style[endPadding] = "";
 	});
 
-	// update dragAndDropTarget.to, runs when target top or left changes
+	// update dragAndDropTarget().to, runs when target top or left changes
 	createEffect((prev) => {
 		if (
-			!props.dragAndDropTarget.originalElement ||
-			prev === JSON.stringify(props.dragAndDropTarget) ||
-			props.dragAndDropTarget.group !== props.group
+			!dragAndDropTarget().originalElement ||
+			prev === JSON.stringify(dragAndDropTarget()) ||
+			dragAndDropTarget().group !== props.group
 		) {
-			return JSON.stringify(props.dragAndDropTarget);
+			return JSON.stringify(dragAndDropTarget());
 		}
-		if (props.id !== props.dragAndDropTarget.to) {
+		if (props.id !== dragAndDropTarget().to) {
 			setSortedItemsIds(
 				sortedItemsIds.filter(
-					(id) => id !== props.dragAndDropTarget.originalElement.id,
+					(id) => id !== dragAndDropTarget().originalElement.id,
 				),
 			);
-			return JSON.stringify(props.dragAndDropTarget);
+			return JSON.stringify(dragAndDropTarget());
 		}
-		if (props.id !== props.dragAndDropTarget.from) {
+		if (props.id !== dragAndDropTarget().from) {
 			const endPadding =
 				flexDirection === "row" ? "paddingRight" : "paddingBottom";
 			containerRef.style[endPadding] =
-				`${props.dragAndDropTarget[lengthProperty()]}px`;
+				`${dragAndDropTarget()[lengthProperty()]}px`;
 		}
 		if (!sortedItemsIds.length) {
 			const newSortedItemsIds = items()
 				.map((item) => item.id)
-				.filter((id) => id !== props.dragAndDropTarget.originalElement.id);
+				.filter((id) => id !== dragAndDropTarget().originalElement.id);
 			setSortedItemsIds(newSortedItemsIds);
 		}
 		if (
 			!sortedItemsIds.some(
-				(id) => id === props.dragAndDropTarget.originalElement.id,
+				(id) => id === dragAndDropTarget().originalElement.id,
 			)
 		) {
-			const targetId = props.dragAndDropTarget.originalElement.id;
+			const targetId = dragAndDropTarget().originalElement.id;
 			setSortedItemsIds(sortedItemsIds.length, targetId);
 			const containerStartPadding =
 				window.getComputedStyle(containerRef)[paddingProperty()];
@@ -502,8 +499,8 @@ export function DragAndDropContainer(props) {
 				}
 				const prevItem = items().find((item) => item.id === id);
 				const prevItemHeight =
-					id === props.dragAndDropTarget.originalElement.id
-						? props.dragAndDropTarget[lengthProperty()]
+					id === dragAndDropTarget().originalElement.id
+						? dragAndDropTarget()[lengthProperty()]
 						: prevItem.getBoundingClientRect()[lengthProperty()];
 				const newPosition = lastPosition + prevItemHeight + gap();
 				lastPosition = newPosition;
@@ -515,12 +512,12 @@ export function DragAndDropContainer(props) {
 		let direction;
 		if (JSON.parse(prev).originalElement !== null) {
 			direction = Math.sign(
-				props.dragAndDropTarget[positionProperty()] -
+				dragAndDropTarget()[positionProperty()] -
 					JSON.parse(prev)[positionProperty()],
 			);
 		}
 		sortItems(direction || -1);
-		return JSON.stringify(props.dragAndDropTarget);
+		return JSON.stringify(dragAndDropTarget());
 	});
 
 	// update dom items, runs when sortedItemsIds change
@@ -534,21 +531,21 @@ export function DragAndDropContainer(props) {
 		return JSON.stringify(sortedItemsIds);
 	}, "[]");
 
-	// update dragAndDropTarget.to, runs when target top or left changes
+	// update dragAndDropTarget().to, runs when target top or left changes
 	createEffect((prev) => {
-		if (!props.dragAndDropTarget.originalElement) {
+		if (!dragAndDropTarget().originalElement) {
 			return;
 		}
-		if (![null, props.id].includes(props.dragAndDropTarget.to)) {
+		if (![null, props.id].includes(dragAndDropTarget().to)) {
 			return;
 		}
-		if (props.dragAndDropTarget.group !== props.group) {
+		if (dragAndDropTarget().group !== props.group) {
 			return;
 		}
 		const outerDirection = flexDirection() === "row" ? "top" : "left";
 		const outerClientLength =
 			flexDirection() === "row" ? "clientHeight" : "clientWidth";
-		if (prev === props.dragAndDropTarget[outerDirection]) {
+		if (prev === dragAndDropTarget()[outerDirection]) {
 			return prev;
 		}
 		const containerEdgeStart =
@@ -557,50 +554,50 @@ export function DragAndDropContainer(props) {
 			containerRef.getBoundingClientRect()[outerDirection] +
 			containerRef[outerClientLength];
 		const isBeforeEndEdge =
-			props.dragAndDropTarget[outerDirection] +
-				props.dragAndDropTarget.originalElement[outerClientLength] / 2 <=
+			dragAndDropTarget()[outerDirection] +
+				dragAndDropTarget().originalElement[outerClientLength] / 2 <=
 			containerEdgeEnd;
 		const isAfterStartEdge =
-			props.dragAndDropTarget[outerDirection] +
-				props.dragAndDropTarget.originalElement[outerClientLength] / 2 >
+			dragAndDropTarget()[outerDirection] +
+				dragAndDropTarget().originalElement[outerClientLength] / 2 >
 			containerEdgeStart;
 		const isWithinBounds = isBeforeEndEdge && isAfterStartEdge;
 		if (isWithinBounds) {
-			props.onDragAndDropTargetChange((prev) => ({
+			setDragAndDropTarget((prev) => ({
 				...prev,
 				to: props.id,
 			}));
-			return props.dragAndDropTarget[outerDirection];
+			return dragAndDropTarget()[outerDirection];
 		}
-		if (props.dragAndDropTarget.to === props.id) {
-			props.onDragAndDropTargetChange((prev) => ({
+		if (dragAndDropTarget().to === props.id) {
+			setDragAndDropTarget((prev) => ({
 				...prev,
 				to: null,
 			}));
 		}
-		return props.dragAndDropTarget[outerDirection];
+		return dragAndDropTarget()[outerDirection];
 	});
 
 	// update autoScrollAmount, runs when target top or left changes
 	createEffect((prev) => {
-		if (!props.dragAndDropTarget.originalElement) {
+		if (!dragAndDropTarget().originalElement) {
 			return;
 		}
-		if (prev === props.dragAndDropTarget[positionProperty()]) {
+		if (prev === dragAndDropTarget()[positionProperty()]) {
 			return prev;
 		}
-		const isSameGroup = props.dragAndDropTarget.group === props.group;
-		if (isSameGroup && props.dragAndDropTarget.to !== props.id) {
+		const isSameGroup = dragAndDropTarget().group === props.group;
+		if (isSameGroup && dragAndDropTarget().to !== props.id) {
 			return;
 		}
 		const isDescendant = containerRef.contains(
-			props.dragAndDropTarget.originalElement,
+			dragAndDropTarget().originalElement,
 		);
 		if (!isDescendant && !isSameGroup) {
 			return;
 		}
 		const itemLength =
-			props.dragAndDropTarget.originalElement[clientLengthProperty()];
+			dragAndDropTarget().originalElement[clientLengthProperty()];
 		// TODO get proper maxScroll value
 		// const scrollLengthProperty = flexDirection === 'row' ? 'scrollWidth' : 'scrollHeight';
 		// const maxScroll = containerRef[scrollLengthProperty] - containerRef[scrollProperty()];
@@ -610,15 +607,15 @@ export function DragAndDropContainer(props) {
 			containerStartPos() + containerRef[clientLengthProperty()];
 		const autoscrollThreshold = 0.7;
 		if (
-			props.dragAndDropTarget[positionProperty()] &&
+			dragAndDropTarget()[positionProperty()] &&
 			containerRef[scrollProperty()] < maxScroll &&
-			props.dragAndDropTarget[positionProperty()] +
+			dragAndDropTarget()[positionProperty()] +
 				itemLength * autoscrollThreshold >=
 				containerEndPos
 		) {
 			newAutoScrollAmount = 1;
 		} else if (
-			props.dragAndDropTarget[positionProperty()] <=
+			dragAndDropTarget()[positionProperty()] <=
 			containerStartPos() - itemLength * (1 - autoscrollThreshold)
 		) {
 			newAutoScrollAmount = -1;
@@ -627,7 +624,7 @@ export function DragAndDropContainer(props) {
 			setAutoScrollSign(newAutoScrollAmount);
 			autoScroll(setAutoScrollSign, positionProperty());
 		}
-		return props.dragAndDropTarget[positionProperty()];
+		return dragAndDropTarget()[positionProperty()];
 	});
 
 	return (
@@ -639,7 +636,7 @@ export function DragAndDropContainer(props) {
 			}}
 			style={{
 				position: "relative",
-				"touch-action": props.dragAndDropTarget.originalElement
+				"touch-action": dragAndDropTarget().originalElement
 					? "none"
 					: "auto",
 			}}
@@ -648,4 +645,10 @@ export function DragAndDropContainer(props) {
 			{items()}
 		</ul>
 	);
+}
+
+export const DragAndDrop = {
+	Provider,
+	Target,
+	Container,
 }

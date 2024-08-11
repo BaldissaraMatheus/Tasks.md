@@ -17,11 +17,7 @@ import { Header } from "./components/header";
 import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
 import { makePersisted } from "@solid-primitives/storage";
-import {
-	DragAndDropContainer,
-	DragAndDropTarget,
-	createDragAndDropTarget,
-} from "./components/drag-and-drop";
+import { DragAndDrop } from "./components/drag-and-drop";
 
 function App() {
 	const [lanes, setLanes] = createSignal([]);
@@ -44,7 +40,6 @@ function App() {
 	const [newCardName, setNewCardName] = createSignal(null);
 	// TODO remove anything related to Sortablejs
 	const [lanesSortableInstance, setLanesSortableInstance] = createSignal(null);
-	const [dragAndDropTarget, setDragAndDropTarget] = createDragAndDropTarget();
 
 	function fetchTitle() {
 		return fetch(`${api}/title`).then((res) => res.text());
@@ -511,124 +506,121 @@ function App() {
 				onNewLaneBtnClick={createNewLane}
 			/>
 			{title() ? <h1 class="app-title">{title()}</h1> : <></>}
-			<DragAndDropContainer
-				class="lanes"
-				onChange={handleLanesSortChange}
-				dragAndDropTarget={dragAndDropTarget()}
-				onDragAndDropTargetChange={setDragAndDropTarget}
-			>
-				<For each={lanes()}>
-					{(lane) => (
-						<div class="lane" id={`lane-${lane}`}>
-							<header class="lane__header">
-								{laneBeingRenamedName() === lane ? (
-									<NameInput
-										value={newLaneName()}
-										errorMsg={validateName(
-											newLaneName(),
-											lanes().filter((lane) => lane !== laneBeingRenamedName()),
-											"lane",
-										)}
-										onChange={(newValue) => setNewLaneName(newValue)}
-										onConfirm={renameLane}
-										onCancel={() => {
-											setNewLaneName(null);
-											setLaneBeingRenamedName(null);
-										}}
-									/>
-								) : (
-									<LaneName
-										name={lane}
-										count={getCardsFromLane(lane).length}
-										onRenameBtnClick={() => startRenamingLane(lane)}
-										onCreateNewCardBtnClick={() => createNewCard(lane)}
-										onDelete={() => deleteLane(lane)}
-										onDeleteCards={() => handleDeleteCardsByLane(lane)}
-									/>
-								)}
-							</header>
-							<DragAndDropContainer
-								class="lane__content"
-								group="cards"
-								id={`lane-content-${lane}`}
-								onChange={handleCardsSortChange}
-								dragAndDropTarget={dragAndDropTarget()}
-								onDragAndDropTargetChange={setDragAndDropTarget}
-								disabled={disableCardsDrag()}
-							>
-								<For each={getCardsFromLane(lane)}>
-									{(card) => (
-										<Card
-											name={card.name}
-											tags={card.tags}
-											onClick={() => setSelectedCard(card)}
-											headerSlot={
-												cardBeingRenamed()?.name === card.name ? (
-													<NameInput
-														value={newCardName()}
-														errorMsg={validateName(
-															newCardName(),
-															cards()
-																.filter(
-																	(card) =>
-																		card.name !== cardBeingRenamed().name,
-																)
-																.map((card) => card.name),
-															"card",
-														)}
-														onChange={(newValue) => setNewCardName(newValue)}
-														onConfirm={renameCard}
-														onCancel={() => {
-															setNewCardName(null);
-															setCardBeingRenamed(null);
-														}}
-													/>
-												) : (
-													<CardName
-														name={card.name}
-														hasContent={!!card.content}
-														onRenameBtnClick={() => startRenamingCard(card)}
-														onDelete={() => deleteCard(card)}
-														onClick={() => setSelectedCard(card)}
-													/>
-												)
-											}
+			<DragAndDrop.Provider>
+				<DragAndDrop.Container
+					class="lanes"
+					onChange={handleLanesSortChange}
+				>
+					<For each={lanes()}>
+						{(lane) => (
+							<div class="lane" id={`lane-${lane}`}>
+								<header class="lane__header">
+									{laneBeingRenamedName() === lane ? (
+										<NameInput
+											value={newLaneName()}
+											errorMsg={validateName(
+												newLaneName(),
+												lanes().filter(
+													(lane) => lane !== laneBeingRenamedName(),
+												),
+												"lane",
+											)}
+											onChange={(newValue) => setNewLaneName(newValue)}
+											onConfirm={renameLane}
+											onCancel={() => {
+												setNewLaneName(null);
+												setLaneBeingRenamedName(null);
+											}}
+										/>
+									) : (
+										<LaneName
+											name={lane}
+											count={getCardsFromLane(lane).length}
+											onRenameBtnClick={() => startRenamingLane(lane)}
+											onCreateNewCardBtnClick={() => createNewCard(lane)}
+											onDelete={() => deleteLane(lane)}
+											onDeleteCards={() => handleDeleteCardsByLane(lane)}
 										/>
 									)}
-								</For>
-							</DragAndDropContainer>
-						</div>
-					)}
-				</For>
-			</DragAndDropContainer>
-			<Show when={!!selectedCard()}>
-				<ExpandedCard
-					name={selectedCard().name}
-					content={selectedCard().content}
-					tags={selectedCard().tags}
-					tagsOptions={tagsOptions()}
-					onClose={() => setSelectedCard(null)}
-					onContentChange={(value) =>
-						debounceChangeCardContent(value, selectedCard().id)
-					}
-					onTagColorChange={handleTagColorChange}
-					onNameChange={handleOnSelectedCardNameChange}
-					getErrorMsg={(newName) =>
-						validateName(
-							newName,
-							cards()
-								.filter((card) => card.name !== selectedCard().name)
-								.map((card) => card.name),
-							"card",
-						)
-					}
-					disableImageUpload={false}
-				/>
-			</Show>
-			<DragAndDropTarget
-				dragAndDropTarget={dragAndDropTarget()}
-				onDragAndDropTargetChange={setDragAndDropTarget}
-			/>
+								</header>
+								<DragAndDrop.Container
+									class="lane__content"
+									group="cards"
+									id={`lane-content-${lane}`}
+									onChange={handleCardsSortChange}
+									disabled={disableCardsDrag()}
+								>
+									<For each={getCardsFromLane(lane)}>
+										{(card) => (
+											<Card
+												name={card.name}
+												tags={card.tags}
+												onClick={() => setSelectedCard(card)}
+												headerSlot={
+													cardBeingRenamed()?.name === card.name ? (
+														<NameInput
+															value={newCardName()}
+															errorMsg={validateName(
+																newCardName(),
+																cards()
+																	.filter(
+																		(card) =>
+																			card.name !== cardBeingRenamed().name,
+																	)
+																	.map((card) => card.name),
+																"card",
+															)}
+															onChange={(newValue) => setNewCardName(newValue)}
+															onConfirm={renameCard}
+															onCancel={() => {
+																setNewCardName(null);
+																setCardBeingRenamed(null);
+															}}
+														/>
+													) : (
+														<CardName
+															name={card.name}
+															hasContent={!!card.content}
+															onRenameBtnClick={() => startRenamingCard(card)}
+															onDelete={() => deleteCard(card)}
+															onClick={() => setSelectedCard(card)}
+														/>
+													)
+												}
+											/>
+										)}
+									</For>
+								</DragAndDrop.Container>
+							</div>
+						)}
+					</For>
+				</DragAndDrop.Container>
+				<Show when={!!selectedCard()}>
+					<ExpandedCard
+						name={selectedCard().name}
+						content={selectedCard().content}
+						tags={selectedCard().tags}
+						tagsOptions={tagsOptions()}
+						onClose={() => setSelectedCard(null)}
+						onContentChange={(value) =>
+							debounceChangeCardContent(value, selectedCard().id)
+						}
+						onTagColorChange={handleTagColorChange}
+						onNameChange={handleOnSelectedCardNameChange}
+						getErrorMsg={(newName) =>
+							validateName(
+								newName,
+								cards()
+									.filter((card) => card.name !== selectedCard().name)
+									.map((card) => card.name),
+								"card",
+							)
+						}
+						disableImageUpload={false}
+					/>
+				</Show>
+				<DragAndDrop.Target />
+			</DragAndDrop.Provider >
 		</>
 	);
 }
