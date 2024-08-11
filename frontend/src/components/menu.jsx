@@ -9,7 +9,6 @@ import { Portal } from "solid-js/web";
  * @param {boolean} props.open
  * @param {number} props.x
  * @param {number} props.y
- * @param {Function} props.onClick
  * @param {Function} props.onClose
  * @param {Object[]} props.options
  */
