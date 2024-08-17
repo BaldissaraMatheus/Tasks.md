@@ -67,15 +67,15 @@ function ExpandedCard(props) {
 			return;
 		}
 		setIsCreatingNewTag(false);
-
+	
 		if (props.tags?.includes(tagInputValue())) {
 			return setTagInputValue(null);
 		}
-
+	
 		if (!tagInputValue()) {
 			return setTagInputValue(null);
 		}
-
+	
 		let actualContent = editor().content;
 		let indexOfTagsKeyword = actualContent.toLowerCase().indexOf("tags: ");
 		if (indexOfTagsKeyword === -1) {
@@ -88,9 +88,21 @@ function ExpandedCard(props) {
 		if (lineBreak > 0) {
 			tagsSubstring = tagsSubstring.split("\n")[0];
 		}
+	
+		// Split existing tags into an array and trim whitespace
+		const existingTagsArray = tagsSubstring.split(",").map(tag => tag.trim());
+	
+		// Check if the new tag already exists in the existing tags
+		if (existingTagsArray.includes(tagInputValue())) {
+			console.log("Tag already exists:", tagInputValue());
+			return setTagInputValue(null);
+		}
+	
+		// Proceed to concatenate the new tag
 		const concatenatedTags = `${tagsSubstring}${
 			tagsSubstring.length === 0 ? "" : ","
-		} ${tagInputValue()}`;
+		} ${tagInputValue()}`.trim();
+
 		const newContent =
 			actualContent.substring(0, tagsIndex) +
 			concatenatedTags +
@@ -98,6 +110,7 @@ function ExpandedCard(props) {
 				tagsIndex + tagsSubstring.length,
 				actualContent.length,
 			);
+
 		props.onContentChange(newContent);
 		editor().content = newContent;
 		setTagInputValue(null);
