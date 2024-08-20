@@ -121,6 +121,16 @@ function App() {
 		setLanes([...lanesFromApiAndSorted, ...lanesFromApiNotYetSorted]);
 	}
 
+	function pickTagColorIndexBasedOnHash(value) {
+		let hash = 0;
+		for (let i = 0; i < value.length; i++) {
+			hash = value.charCodeAt(i) + ((hash << 5) - hash);
+		}
+		const tagOptionsLength = 7;
+		const colorIndex = hash % tagOptionsLength;
+		return colorIndex;
+	}
+
 	const debounceChangeCardContent = debounce(
 		(newContent) => changeCardContent(newContent),
 		250,
@@ -143,13 +153,35 @@ function App() {
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ content: newContent }),
 		});
-		const tags = await fetch(`${api}/tags`, {
+		const newTagsOptions = await fetch(`${api}/tags`, {
 			method: "GET",
 			mode: "cors",
 		}).then((res) => res.json());
-		setTagsOptions(tags);
+		const justAddedTags = newTagsOptions.filter(
+			(newTagOption) =>
+				!tagsOptions().some(
+					(tagOption) => tagOption.name === newTagOption.name,
+				),
+		);
+		for (const tag of justAddedTags) {
+			const tagColorIndex = pickTagColorIndexBasedOnHash(tag.name);
+			const newColor = `var(--tag-color-${tagColorIndex + 1})`;
+			await fetch(`${api}/tags/${tag.name}`, {
+				method: "PATCH",
+				mode: "cors",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					backgroundColor: newColor,
+				}),
+			});
+			const newTagOptionIndex = newTagsOptions.findIndex(
+				(newTag) => newTag.name === tag.name,
+			);
+			newTagsOptions[newTagOptionIndex].backgroundColor = newColor;
+		}
+		setTagsOptions(newTagsOptions);
 		const cardTagsNames = getTags(newContent);
-		newCard.tags = getTagsByTagNames(tags, cardTagsNames);
+		newCard.tags = getTagsByTagNames(newTagsOptions, cardTagsNames);
 		newCards[newCardIndex] = newCard;
 		setCards(newCards);
 		setSelectedCard(newCard);
@@ -507,10 +539,7 @@ function App() {
 			/>
 			{title() ? <h1 class="app-title">{title()}</h1> : <></>}
 			<DragAndDrop.Provider>
-				<DragAndDrop.Container
-					class="lanes"
-					onChange={handleLanesSortChange}
-				>
+				<DragAndDrop.Container class="lanes" onChange={handleLanesSortChange}>
 					<For each={lanes()}>
 						{(lane) => (
 							<div class="lane" id={`lane-${lane}`}>
@@ -620,7 +649,7 @@ function App() {
 					/>
 				</Show>
 				<DragAndDrop.Target />
-			</DragAndDrop.Provider >
+			</DragAndDrop.Provider>
 		</>
 	);
 }
