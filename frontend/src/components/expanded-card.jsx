@@ -67,15 +67,15 @@ function ExpandedCard(props) {
 			return;
 		}
 		setIsCreatingNewTag(false);
-	
+
 		if (props.tags?.includes(tagInputValue())) {
 			return setTagInputValue(null);
 		}
-	
+
 		if (!tagInputValue()) {
 			return setTagInputValue(null);
 		}
-	
+
 		let actualContent = editor().content;
 		let indexOfTagsKeyword = actualContent.toLowerCase().indexOf("tags: ");
 		if (indexOfTagsKeyword === -1) {
@@ -88,16 +88,16 @@ function ExpandedCard(props) {
 		if (lineBreak > 0) {
 			tagsSubstring = tagsSubstring.split("\n")[0];
 		}
-	
+
 		// Split existing tags into an array and trim whitespace
-		const existingTagsArray = tagsSubstring.split(",").map(tag => tag.trim());
-	
+		const existingTagsArray = tagsSubstring.split(",").map((tag) => tag.trim());
+
 		// Check if the new tag already exists in the existing tags
 		if (existingTagsArray.includes(tagInputValue())) {
 			console.log("Tag already exists:", tagInputValue());
 			return setTagInputValue(null);
 		}
-	
+
 		// Proceed to concatenate the new tag
 		const concatenatedTags = `${tagsSubstring}${
 			tagsSubstring.length === 0 ? "" : ","
@@ -230,7 +230,6 @@ function ExpandedCard(props) {
 	}
 
 	function handleColorOptionClick(option) {
-		console.log(clickedTag());
 		setShowColorPopup(null);
 		setMenuCoordinates(null);
 		const tagName = clickedTag().name;
@@ -245,18 +244,21 @@ function ExpandedCard(props) {
 		}).then((res) => props.onTagColorChange());
 	}
 
-	const colorMenuOptions = new Array(7).fill(1).map((option, i) => ({
-		label: (
-			<>
-				Color {i + 1}{" "}
-				<div
-					class="color-preview-option"
-					style={{ "background-color": `var(--tag-color-${i + 1})` }}
-				/>
-			</>
-		),
-		onClick: () => handleColorOptionClick(i),
-	}));
+	const tagOptionsLength = 7;
+	const colorMenuOptions = new Array(tagOptionsLength)
+		.fill(1)
+		.map((option, i) => ({
+			label: (
+				<>
+					Color {i + 1}{" "}
+					<div
+						class="color-preview-option"
+						style={{ "background-color": `var(--tag-color-${i + 1})` }}
+					/>
+				</>
+			),
+			onClick: () => handleColorOptionClick(i),
+		}));
 
 	const tagMenuOptions = createMemo(() =>
 		editor()
