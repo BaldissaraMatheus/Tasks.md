@@ -1,4 +1,4 @@
-FROM node:18-alpine3.17 AS build-stage
+FROM node:20.16.0-alpine3.20 AS build-stage
 
 RUN set -eux \
 	&& mkdir -p /app \
@@ -18,7 +18,7 @@ WORKDIR /api
 RUN set -eux \
 	&& npm ci
 
-FROM alpine:3.17.2 AS final
+FROM alpine:3.20 AS final
 ARG PUID=0
 ARG PGID=0
 ARG TITLE=""
