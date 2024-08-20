@@ -28,12 +28,13 @@ import { IoClose } from "solid-icons/io";
  * @param {Function} props.onContentChange Callback function for when the content of the card is changed
  * @param {Function} props.onTagColorChange Callback function for when the color of a tag is changed
  * @param {Function} props.onNameChange Callback function for when the name of the card is changed
- * @param {Function} props.getErrorMsg Callback function to validate new card name
+ * @param {Function} props.getNameErrorMsg Callback function to validate new card name
  */
 function ExpandedCard(props) {
 	const [isCreatingNewTag, setIsCreatingNewTag] = createSignal(null);
 	const [availableTags, setAvailableTags] = createSignal([]);
 	const [tagInputValue, setTagInputValue] = createSignal(null);
+	const [tagInputError, setTagInputError] = createSignal(null);
 	const [nameInputValue, setNameInputValue] = createSignal(null);
 	const [nameInputError, setNameInputError] = createSignal(null);
 	const [editor, setEditor] = createSignal(null);
@@ -56,6 +57,14 @@ function ExpandedCard(props) {
 
 	let dialogRef;
 
+	function handleTagInputChange(newValue) {
+		setTagInputValue(newValue);
+		const taskAlreadyHasThisTag = props.tags.some(tag => tag.name.toLowerCase() === tagInputValue().toLowerCase());
+		setTagInputError(
+			taskAlreadyHasThisTag ? "Task already has this tag" : null,
+		);
+	}
+
 	function focusOutOnEnter(e) {
 		if (e.key === "Enter") {
 			document?.activeElement.blur();
@@ -68,7 +77,7 @@ function ExpandedCard(props) {
 		}
 		setIsCreatingNewTag(false);
 
-		if (props.tags?.includes(tagInputValue())) {
+		if (tagInputError()) {
 			return setTagInputValue(null);
 		}
 
@@ -87,15 +96,6 @@ function ExpandedCard(props) {
 		const lineBreak = actualContent.indexOf("\n");
 		if (lineBreak > 0) {
 			tagsSubstring = tagsSubstring.split("\n")[0];
-		}
-
-		// Split existing tags into an array and trim whitespace
-		const existingTagsArray = tagsSubstring.split(",").map((tag) => tag.trim());
-
-		// Check if the new tag already exists in the existing tags
-		if (existingTagsArray.includes(tagInputValue())) {
-			console.log("Tag already exists:", tagInputValue());
-			return setTagInputValue(null);
 		}
 
 		// Proceed to concatenate the new tag
@@ -164,6 +164,7 @@ function ExpandedCard(props) {
 		}
 		setIsCreatingNewTag(false);
 		setTagInputValue(null);
+		setTagInputError(null);
 	});
 
 	function handleOnNameInputChange(e) {
@@ -176,7 +177,7 @@ function ExpandedCard(props) {
 		if (isSameName) {
 			return;
 		}
-		const error = props.getErrorMsg(newNameWihtoutSpaces);
+		const error = props.getNameErrorMsg(newNameWihtoutSpaces);
 		setNameInputError(error);
 		if (error) {
 			return;
@@ -282,8 +283,8 @@ function ExpandedCard(props) {
 
 	createEffect(() => {
 		setAvailableTags(
-			props.tagsOptions.filter((tag) =>
-				tag.name.toLowerCase().includes(tagInputValue()?.toLowerCase()),
+			props.tagsOptions.filter(tagOption =>
+				!props.tags.some(tag => tag.name === tagOption.name) && tagOption.name.toLowerCase().includes(tagInputValue()?.toLowerCase()),
 			),
 		);
 	});
@@ -401,12 +402,13 @@ function ExpandedCard(props) {
 					</header>
 					<div class="dialog__tags">
 						{isCreatingNewTag() ? (
-							<>
+							<div class="input-and-error-msg">
+								{/* TODO use nameInput component */}
 								<input
 									id="tags-input"
 									type="text"
 									value={tagInputValue()}
-									onInput={(e) => setTagInputValue(e.target.value)}
+									onInput={(e) => handleTagInputChange(e.target.value)}
 									onFocusOut={handleTagInputFocusOut}
 									onKeyDown={focusOutOnEnter}
 									list="tags"
@@ -416,7 +418,10 @@ function ExpandedCard(props) {
 										{(tag) => <option value={tag.name} />}
 									</For>
 								</datalist>
-							</>
+								{tagInputError() ? (
+									<span class="error-msg">{tagInputError()}</span>
+								) : null}
+							</div>
 						) : (
 							<button type="button" onClick={handleAddTagBtnOnClick}>
 								Add tag

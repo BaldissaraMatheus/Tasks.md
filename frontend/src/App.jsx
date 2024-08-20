@@ -628,7 +628,7 @@ function App() {
 					<ExpandedCard
 						name={selectedCard().name}
 						content={selectedCard().content}
-						tags={selectedCard().tags}
+						tags={selectedCard().tags || []}
 						tagsOptions={tagsOptions()}
 						onClose={() => setSelectedCard(null)}
 						onContentChange={(value) =>
@@ -636,7 +636,7 @@ function App() {
 						}
 						onTagColorChange={handleTagColorChange}
 						onNameChange={handleOnSelectedCardNameChange}
-						getErrorMsg={(newName) =>
+						getNameErrorMsg={(newName) =>
 							validateName(
 								newName,
 								cards()
