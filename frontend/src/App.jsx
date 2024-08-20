@@ -127,7 +127,7 @@ function App() {
 			hash = value.charCodeAt(i) + ((hash << 5) - hash);
 		}
 		const tagOptionsLength = 7;
-		const colorIndex = hash % tagOptionsLength;
+		const colorIndex = Math.abs(hash % tagOptionsLength);
 		return colorIndex;
 	}
 
