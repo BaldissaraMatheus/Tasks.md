@@ -38,8 +38,6 @@ function App() {
 	const [newLaneName, setNewLaneName] = createSignal(null);
 	const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
 	const [newCardName, setNewCardName] = createSignal(null);
-	// TODO remove anything related to Sortablejs
-	const [lanesSortableInstance, setLanesSortableInstance] = createSignal(null);
 
 	function fetchTitle() {
 		return fetch(`${api}/title`).then((res) => res.text());
@@ -441,12 +439,6 @@ function App() {
 		}
 		fetchCards();
 		fetchLanes();
-	});
-
-	onCleanup(() => {
-		if (lanesSortableInstance()) {
-			lanesSortableInstance().destroy();
-		}
 	});
 
 	createEffect(() => {
