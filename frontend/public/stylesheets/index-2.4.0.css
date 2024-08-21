@@ -309,6 +309,7 @@ popover > :last-child {
   border: 1px solid var(--tag-color-1);
   background-color: var(--tag-color-1);
   user-select: none;
+  white-space: nowrap;
 }
 
 .tag--clicable {
@@ -401,6 +402,7 @@ dialog:not(.dialog--maximized) {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .dialog__tags .tag {
