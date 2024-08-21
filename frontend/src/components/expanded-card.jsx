@@ -343,6 +343,16 @@ function ExpandedCard(props) {
 		}
 	}
 
+	function handleDialogCancel(e) {
+		e.preventDefault();
+		if (nameInputValue() || isCreatingNewTag()) {
+			setNameInputValue(null);
+			setIsCreatingNewTag(false);
+			return;
+		}
+		props.onClose();
+	}
+
 	return (
 		<>
 			<dialog
@@ -352,6 +362,7 @@ function ExpandedCard(props) {
 				class={`${isMaximized() === "true" ? "dialog--maximized" : ""}`}
 				onmousedown={closeDialogIfRootElementIsClicked}
 				onKeyDown={(e) => handleKeyDown(e, (event) => event.stopPropagation())}
+				onCancel={handleDialogCancel}
 			>
 				<div class="dialog__body">
 					<header class="dialog__toolbar">
