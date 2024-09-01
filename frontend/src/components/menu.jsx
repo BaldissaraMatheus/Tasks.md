@@ -1,6 +1,5 @@
 import { createSignal, createEffect } from "solid-js";
 import { clickOutside, handleKeyDown } from "../utils";
-import { Portal } from "solid-js/web";
 
 /**
  *
@@ -49,56 +48,56 @@ export function Menu(props) {
 	});
 
 	return (
-		<Portal>
-			<popover
-				id={props.id}
-				ref={(el) => {
-					menuRef = el;
-				}}
-				class="popup"
-				use:clickOutside={close}
-				style={{
-					top: `${props.y}px`,
-					left: `${props.x}px`,
-				}}
-			>
-				<Show when={props.open && !confirmationPromptCb()}>
-					{props.options.map((option) => (
-						<button
-							type="button"
-							onClick={() => handleOptionClick(option)}
-							onKeyDown={(e) =>
-								handleKeyDown(
-									e,
-									() => handleOptionClick(option, true),
-									props.onClose,
-								)
-							}
-						>
-							{option.label}
-						</button>
-					))}
-				</Show>
-				<Show when={confirmationPromptCb()}>
+		<div
+			popover
+			id={props.id}
+			ref={(el) => {
+				menuRef = el;
+			}}
+			class="popup"
+			use:clickOutside={close}
+			style={{
+				top: `${props.y}px`,
+				left: `${props.x}px`,
+			}}
+		>
+			<Show when={props.open && !confirmationPromptCb()}>
+				{props.options.map((option) => (
 					<button
 						type="button"
-						onClick={handleOptionConfirmation}
-						id="confirm-btn"
+						popoverTarget={option.popoverTarget}
+						onClick={() => handleOptionClick(option)}
 						onKeyDown={(e) =>
-							handleKeyDown(e, () => handleOptionConfirmation(e), close)
+							handleKeyDown(
+								e,
+								() => handleOptionClick(option, true),
+								props.onClose,
+							)
 						}
 					>
-						Are you sure?
+						{option.label}
 					</button>
-					<button
-						type="button"
-						onClick={close}
-						onKeyDown={(e) => handleKeyDown(e, close, close)}
-					>
-						Cancel
-					</button>
-				</Show>
-			</popover>
-		</Portal>
+				))}
+			</Show>
+			<Show when={confirmationPromptCb()}>
+				<button
+					type="button"
+					onClick={handleOptionConfirmation}
+					id="confirm-btn"
+					onKeyDown={(e) =>
+						handleKeyDown(e, () => handleOptionConfirmation(e), close)
+					}
+				>
+					Are you sure?
+				</button>
+				<button
+					type="button"
+					onClick={close}
+					onKeyDown={(e) => handleKeyDown(e, close, close)}
+				>
+					Cancel
+				</button>
+			</Show>
+		</div>
 	);
 }

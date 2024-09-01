@@ -128,6 +128,10 @@ button {
   text-align: -webkit-center;
 }
 
+button:focus {
+  outline: none;
+}
+
 button:focus-within {
   outline-style: auto;
   z-index: 2;
@@ -265,7 +269,8 @@ button.small {
   flex-grow: 1;
 }
 
-popover {
+[popover] {
+  inset: unset;
   position: absolute;
   border-radius: 6px;
   border: 1px solid var(--popup-border-color);
@@ -273,12 +278,18 @@ popover {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05), 0 2px 2px rgba(0, 0, 0, 0.05),
     0 4px 4px rgba(0, 0, 0, 0.05), 0 6px 8px rgba(0, 0, 0, 0.05),
     0 8px 16px rgba(0, 0, 0, 0.05);
+  background: none;
   display: flex;
   flex-direction: column;
-  z-index: 99999;
+  padding: 0;
 }
 
-popover > button {
+:popover-open {
+  display: flex;
+  flex-direction: column;
+}
+
+[popover] > button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -289,11 +300,11 @@ popover > button {
   color: var(--popup-font-color);
 }
 
-popover > :first-child {
+[popover] > :first-child {
   border-radius: 6px 6px 0 0;
 }
 
-popover > :last-child {
+[popover] > :last-child {
   border-radius: 0 0 6px 6px;
 }
 

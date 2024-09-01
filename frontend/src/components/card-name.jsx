@@ -2,6 +2,7 @@ import { createSignal } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
 import { BiRegularDotsVerticalRounded } from "solid-icons/bi";
+import { Portal } from "solid-js/web";
 
 /**
  *
@@ -61,6 +62,7 @@ export function CardName(props) {
 					type="button"
 					title="Show card options"
 					class="small"
+					popoverTarget={`${props.name}-card-options`}
 					onClick={handleClick}
 					onKeyDown={(e) =>
 						handleKeyDown(e, () => handleClick(e, true), handleCancel)
@@ -69,14 +71,16 @@ export function CardName(props) {
 					<BiRegularDotsVerticalRounded />
 				</button>
 			</div>
-			<Menu
-				id={props.name}
-				open={showMenu()}
-				options={menuOptions}
-				onClose={handleMenuClose}
-				x={menuCoordinates()?.x}
-				y={menuCoordinates()?.y}
-			/>
+			<Portal>
+				<Menu
+					id={`${props.name}-card-options`}
+					open={showMenu()}
+					options={menuOptions}
+					onClose={handleMenuClose}
+					x={menuCoordinates()?.x}
+					y={menuCoordinates()?.y}
+				/>
+			</Portal>
 		</>
 	);
 }
