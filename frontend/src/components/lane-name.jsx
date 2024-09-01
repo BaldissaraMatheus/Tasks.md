@@ -82,6 +82,7 @@ export function LaneName(props) {
 					type="button"
 					title="Show lane options"
 					class="small"
+					popoverTarget={`${props.name}-lane-options`}
 					onClick={handleOptionsBtnClick}
 					onKeyDown={(e) =>
 						handleKeyDown(e, () => handleOptionsBtnClick(e, true), handleCancel)
@@ -90,15 +91,17 @@ export function LaneName(props) {
 					<BiRegularDotsVerticalRounded />
 				</button>
 			</div>
-			{/* TODO pass target as paramter and calculate x and y within Menu component */}
-			<Menu
-				id={`menu-${props.name}`}
-				open={showMenu()}
-				options={menuOptions}
-				onClose={handleCancel}
-				x={menuCoordinates()?.x}
-				y={menuCoordinates()?.y}
-			/>
+			{/* TODO should be a single menu within App component */}
+			<Portal>
+				<Menu
+					id={`${props.name}-lane-options`}
+					open={showMenu()}
+					options={menuOptions}
+					onClose={handleCancel}
+					x={menuCoordinates()?.x}
+					y={menuCoordinates()?.y}
+				/>
+			</Portal>
 		</>
 	);
 }

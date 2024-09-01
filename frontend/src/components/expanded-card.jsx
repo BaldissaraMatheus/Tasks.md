@@ -11,7 +11,10 @@ import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from "./menu";
-import { getButtonCoordinates, handleKeyDown } from "../utils";
+import {
+	// getButtonCoordinates,
+	handleKeyDown,
+} from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
 import { AiOutlineExpand } from "solid-icons/ai";
 import { IoClose } from "solid-icons/io";
@@ -59,7 +62,9 @@ function ExpandedCard(props) {
 
 	function handleTagInputChange(newValue) {
 		setTagInputValue(newValue);
-		const taskAlreadyHasThisTag = props.tags.some(tag => tag.name.toLowerCase() === tagInputValue().toLowerCase());
+		const taskAlreadyHasThisTag = props.tags.some(
+			(tag) => tag.name.toLowerCase() === tagInputValue().toLowerCase(),
+		);
 		setTagInputError(
 			taskAlreadyHasThisTag ? "Task already has this tag" : null,
 		);
@@ -217,10 +222,31 @@ function ExpandedCard(props) {
 		setTimeout(() => props.onContentChange(editor()?.content), 0);
 	}
 
+	function getButtonCoordinates(event) {
+		event.stopPropagation();
+		const dialogCoordinates = dialogRef.getBoundingClientRect();
+		const {
+			x: dialogX,
+			y: dialogY,
+			height: dialogHeight,
+			width: dialogWidth,
+		} = dialogCoordinates;
+		const btnCoordinates = event.currentTarget.getBoundingClientRect();
+		let x = btnCoordinates.x;
+		const menuWidth = 90;
+		const offsetX =
+			x + btnCoordinates.width + menuWidth > dialogWidth + dialogX
+				? -btnCoordinates.width - menuWidth
+				: btnCoordinates.width;
+		x += offsetX - dialogX;
+		const y = btnCoordinates.y - dialogY;
+		return { x, y };
+	}
+
 	function handleTagClick(event, tag) {
 		event.stopPropagation();
-		const newCoordinates = getButtonCoordinates(event);
-		setMenuCoordinates(newCoordinates);
+		const buttonCoordinates = getButtonCoordinates(event);
+		setMenuCoordinates(buttonCoordinates);
 		setClickedTag(tag);
 		setShowTagPopup(true);
 	}
@@ -264,7 +290,11 @@ function ExpandedCard(props) {
 	const tagMenuOptions = createMemo(() =>
 		editor()
 			? [
-					{ label: "Change color", onClick: handleChangeColorOptionClick },
+					{
+						label: "Change color",
+						onClick: handleChangeColorOptionClick,
+						popoverTarget: "tag-color-menu",
+					},
 					{ label: "Delete tag", onClick: () => deleteTag(clickedTag()?.name) },
 				]
 			: [],
@@ -283,8 +313,10 @@ function ExpandedCard(props) {
 
 	createEffect(() => {
 		setAvailableTags(
-			props.tagsOptions.filter(tagOption =>
-				!props.tags.some(tag => tag.name === tagOption.name) && tagOption.name.toLowerCase().includes(tagInputValue()?.toLowerCase()),
+			props.tagsOptions.filter(
+				(tagOption) =>
+					!props.tags.some((tag) => tag.name === tagOption.name) &&
+					tagOption.name.toLowerCase().includes(tagInputValue()?.toLowerCase()),
 			),
 		);
 	});
@@ -446,8 +478,9 @@ function ExpandedCard(props) {
 										"background-color": tag.backgroundColor,
 										"border-color": tag.backgroundColor,
 									}}
-									onClick={(e) => handleTagClick(e, tag)}
 									role="button"
+									popoverTarget="tag-menu"
+									onClick={(e) => handleTagClick(e, tag)}
 									onKeyDown={(e) =>
 										handleKeyDown(e, () => handleTagClick(e, tag))
 									}
@@ -466,29 +499,29 @@ function ExpandedCard(props) {
 						/>
 					</div>
 				</div>
+				<Menu
+					id="tag-menu"
+					open={showTagPopup()}
+					options={tagMenuOptions()}
+					onClose={() => {
+						setShowTagPopup(null);
+						setMenuCoordinates(null);
+					}}
+					x={menuCoordinates()?.x}
+					y={menuCoordinates()?.y}
+				/>
+				<Menu
+					id="tag-color-menu"
+					open={showColorPopup()}
+					options={colorMenuOptions}
+					onClose={() => {
+						setShowColorPopup(null);
+						setMenuCoordinates(null);
+					}}
+					x={menuCoordinates()?.x}
+					y={menuCoordinates()?.y}
+				/>
 			</dialog>
-			<Menu
-				id={clickedTag()?.name}
-				open={showTagPopup()}
-				options={tagMenuOptions()}
-				onClose={() => {
-					setShowTagPopup(null);
-					setMenuCoordinates(null);
-				}}
-				x={menuCoordinates()?.x}
-				y={menuCoordinates()?.y}
-			/>
-			<Menu
-				id={clickedTag()?.name}
-				open={showColorPopup()}
-				options={colorMenuOptions}
-				onClose={() => {
-					setShowColorPopup(null);
-					setMenuCoordinates(null);
-				}}
-				x={menuCoordinates()?.x}
-				y={menuCoordinates()?.y}
-			/>
 		</>
 	);
 }
