@@ -1,22 +1,22 @@
 FROM node:20.16.0-alpine3.20 AS build-stage
 
 RUN set -eux \
-	&& mkdir -p /app \
-	&& mkdir -p /api \
-	&& mkdir -p /tasks
+    && mkdir -p /app \
+    && mkdir -p /api \
+    && mkdir -p /tasks
 
 COPY frontend/ /app
 
 WORKDIR /app
 RUN set -eux \
-	&& npm ci \
-	&& npm run build
+    && npm ci \
+    && npm run build
 
 COPY backend/ /api/
 
 WORKDIR /api
 RUN set -eux \
-	&& npm ci
+    && npm ci
 
 FROM alpine:3.20 AS final
 ARG PUID=0
@@ -35,7 +35,7 @@ ENV PORT=8080
 USER root
 
 RUN set -eux \
-	&& apk add --no-cache nodejs npm
+    && apk add --no-cache nodejs npm
 
 RUN mkdir /stylesheets
 
@@ -48,11 +48,13 @@ VOLUME /tasks
 VOLUME /config
 WORKDIR /api
 EXPOSE 8080
-ENTRYPOINT mkdir -p /config/stylesheets/ && \
-	mkdir -p /config/images/ && \
-	mkdir -p /config/sort/ && \
-	cp -r /config/stylesheets/. /stylesheets/ && \
-	cp -r /stylesheets/. /config/stylesheets/ && \
-	chown -R $PUID:$PGID /config && \
-	chown -R $PUID:$PGID /tasks && \
-	node /api/server.js
+
+
+ENTRYPOINT mkdir -p ${CONFIG_DIR}/stylesheets/ && \
+           mkdir -p ${CONFIG_DIR}/images/ && \
+           mkdir -p ${CONFIG_DIR}/sort/ && \
+           cp -r ${CONFIG_DIR}/stylesheets/. /stylesheets/ && \
+           cp -r /stylesheets/. ${CONFIG_DIR}/stylesheets/ && \
+           chown -R $PUID:$PGID ${CONFIG_DIR} && \
+           chown -R $PUID:$PGID ${TASKS_DIR} && \
+           node /api/server.js
