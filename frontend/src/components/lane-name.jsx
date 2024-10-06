@@ -29,17 +29,12 @@ export function LaneName(props) {
 		setMenuCoordinates(null);
 	}
 
-	function handleOptionsBtnClick(e, focus) {
+	function handleOptionsBtnClick(e) {
 		e.preventDefault();
 		e.stopPropagation();
 		const coordinates = getButtonCoordinates(e);
 		setMenuCoordinates(coordinates);
 		setShowMenu(true);
-		if (focus) {
-			setTimeout(() => {
-				document.getElementById(`menu-${props.name}`).firstChild.focus();
-			}, 0);
-		}
 	}
 
 	const menuOptions = [

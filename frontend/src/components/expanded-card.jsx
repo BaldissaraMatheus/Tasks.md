@@ -59,6 +59,9 @@ function ExpandedCard(props) {
 	);
 
 	let dialogRef;
+	let tagsInputRef;
+	let nameInputRef;
+	let editorContainerRef;
 
 	function handleTagInputChange(newValue) {
 		setTagInputValue(newValue);
@@ -124,7 +127,7 @@ function ExpandedCard(props) {
 	function handleAddTagBtnOnClick(event) {
 		event.stopPropagation();
 		setIsCreatingNewTag(true);
-		document.getElementById("tags-input")?.focus();
+		tagsInputRef?.focus();
 	}
 
 	function deleteTag(tagName) {
@@ -202,7 +205,7 @@ function ExpandedCard(props) {
 
 	function startRenamingCard() {
 		setNameInputValue(props.name);
-		document.getElementById("name-input").focus();
+		nameInputRef.focus();
 	}
 
 	function uploadImage(file) {
@@ -326,8 +329,7 @@ function ExpandedCard(props) {
 		if (props.disableImageUpload) {
 			editorClasses.push("disable-image-upload");
 		}
-		const editorEl = document.getElementById("editor-container");
-		const newEditor = new StacksEditor(editorEl, props.content || "", {
+		const newEditor = new StacksEditor(editorContainerRef, props.content || "", {
 			classList: ["theme-system"],
 			targetClassList: editorClasses,
 			editorHelpLink: "https://github.com/BaldissaraMatheus/Tasks.md/issues",
@@ -335,7 +337,7 @@ function ExpandedCard(props) {
 		});
 		setEditor(newEditor);
 		const toolbarEndGroupNodes = [
-			...editorEl.childNodes[0].childNodes[1].childNodes[0].childNodes[1]
+			...editorContainerRef.childNodes[0].childNodes[1].childNodes[0].childNodes[1]
 				.childNodes[0].childNodes,
 		];
 		const modeBtns = toolbarEndGroupNodes.filter((node) => node.title);
@@ -359,7 +361,7 @@ function ExpandedCard(props) {
 		);
 		modeBtn.click();
 		const editorTextArea =
-			document.getElementById("editor-container").childNodes[0].childNodes[2];
+			editorContainerRef.childNodes[0].childNodes[2];
 		editorTextArea.focus();
 	});
 
@@ -401,8 +403,10 @@ function ExpandedCard(props) {
 						{nameInputValue() !== null ? (
 							<div class="input-and-error-msg">
 								<input
+									ref={(el) => {
+										nameInputRef = el;
+									}}
 									type="text"
-									id="name-input"
 									class="dialog__toolbar-name-input"
 									value={nameInputValue()}
 									onFocusOut={handleOnNameInputChange}
@@ -448,7 +452,9 @@ function ExpandedCard(props) {
 							<div class="input-and-error-msg">
 								{/* TODO use nameInput component */}
 								<input
-									id="tags-input"
+									ref={(el) => {
+										tagsInputRef = el;
+									}}
 									type="text"
 									value={tagInputValue()}
 									onInput={(e) => handleTagInputChange(e.target.value)}
@@ -494,6 +500,9 @@ function ExpandedCard(props) {
 					<div class="dialog__content">
 						<div
 							id="editor-container"
+							ref={(el) => {
+								editorContainerRef = el;
+							}}
 							onKeyDown={handleEditorOnChange}
 							onClick={handleEditorOnChange}
 						/>

@@ -432,7 +432,6 @@ function App() {
 	}
 
 	onMount(() => {
-		const el = document.getElementById("lanes");
 		const url = window.location.href;
 		if (!url.match(/\/$/)) {
 			window.location.replace(`${url}/`);

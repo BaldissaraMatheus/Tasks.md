@@ -35,7 +35,7 @@ export function CardName(props) {
 		},
 	];
 
-	function handleClick(event, focus) {
+	function handleClickCardOptions(event, focus) {
 		const coordinates = getButtonCoordinates(event);
 		setMenuCoordinates(coordinates);
 		setShowMenu(true);
@@ -63,9 +63,9 @@ export function CardName(props) {
 					title="Show card options"
 					class="small"
 					popoverTarget={`${props.name}-card-options`}
-					onClick={handleClick}
+					onClick={handleClickCardOptions}
 					onKeyDown={(e) =>
-						handleKeyDown(e, () => handleClick(e, true), handleCancel)
+						handleKeyDown(e, () => handleClickCardOptions(e, true), handleCancel)
 					}
 				>
 					<BiRegularDotsVerticalRounded />
