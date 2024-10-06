@@ -14,6 +14,7 @@ import { clickOutside, handleKeyDown } from "../utils";
 export function Menu(props) {
 	const [confirmationPromptCb, setConfirmationPromptCb] = createSignal(null);
 	let menuRef;
+	let confirmBtnRef;
 
 	function close() {
 		setConfirmationPromptCb(null);
@@ -25,7 +26,7 @@ export function Menu(props) {
 			setConfirmationPromptCb(() => option.onClick);
 			if (focus) {
 				setTimeout(() => {
-					document.getElementById("confirm-btn").focus();
+					confirmBtnRef.focus();
 				}, 0);
 			}
 			return;
@@ -81,9 +82,11 @@ export function Menu(props) {
 			</Show>
 			<Show when={confirmationPromptCb()}>
 				<button
+					ref={(el) => {
+						confirmBtnRef = el;
+					}}
 					type="button"
 					onClick={handleOptionConfirmation}
-					id="confirm-btn"
 					onKeyDown={(e) =>
 						handleKeyDown(e, () => handleOptionConfirmation(e), close)
 					}

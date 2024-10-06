@@ -12,11 +12,11 @@ import { handleKeyDown, clickOutside } from "../utils";
  * @returns
  */
 export function NameInput(props) {
+	let inputRef;
+
 	onMount(() => {
-		// TODO use ref instead
-		const input = document.getElementById("rename-input");
-		input.focus();
-		input.setSelectionRange(0, props.value.length);
+		inputRef.focus();
+		inputRef.setSelectionRange(0, props.value.length);
 	});
 
 	function handleConfirm() {
@@ -34,6 +34,9 @@ export function NameInput(props) {
 	return (
 		<div class="input-and-error-msg">
 			<input
+				ref={(el) => {
+					inputRef = el;
+				}}
 				type="text"
 				id="rename-input"
 				class={props.errorMsg ? "error" : ""}
