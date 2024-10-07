@@ -9,6 +9,8 @@ import { handleKeyDown, clickOutside } from "../utils";
  * @param {Function} props.onChange
  * @param {Function} props.onCancel
  * @param {Function} props.onConfirm
+ * @param {HTMLElement} props.datalist
+ * @param {string} props.list
  * @returns
  */
 export function NameInput(props) {
@@ -46,7 +48,9 @@ export function NameInput(props) {
 				use:clickOutside={handleConfirm}
 				onKeyDown={(e) => handleKeyDown(e, handleConfirm, props.onCancel)}
 				onClick={handleClick}
+				list={props.list || ''}
 			/>
+			{props.datalist || null}
 			{props.errorMsg ? <span class="error-msg">{props.errorMsg}</span> : <></>}
 		</div>
 	);
