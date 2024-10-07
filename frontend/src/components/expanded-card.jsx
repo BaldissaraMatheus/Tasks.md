@@ -18,6 +18,7 @@ import {
 import { makePersisted } from "@solid-primitives/storage";
 import { AiOutlineExpand } from "solid-icons/ai";
 import { IoClose } from "solid-icons/io";
+import { NameInput } from "./name-input";
 
 /**
  *
@@ -34,12 +35,12 @@ import { IoClose } from "solid-icons/io";
  * @param {Function} props.getNameErrorMsg Callback function to validate new card name
  */
 function ExpandedCard(props) {
+	const [isCardBeingRenamed, setIsCardBeingRenamed] = createSignal(false);
+	const [newCardName, setNewCardName] = createSignal(null);
 	const [isCreatingNewTag, setIsCreatingNewTag] = createSignal(null);
 	const [availableTags, setAvailableTags] = createSignal([]);
 	const [tagInputValue, setTagInputValue] = createSignal(null);
 	const [tagInputError, setTagInputError] = createSignal(null);
-	const [nameInputValue, setNameInputValue] = createSignal(null);
-	const [nameInputError, setNameInputError] = createSignal(null);
 	const [editor, setEditor] = createSignal(null);
 	const [menuCoordinates, setMenuCoordinates] = createSignal(null);
 	const [clickedTag, setClickedTag] = createSignal(null);
@@ -60,7 +61,6 @@ function ExpandedCard(props) {
 
 	let dialogRef;
 	let tagsInputRef;
-	let nameInputRef;
 	let editorContainerRef;
 
 	function handleTagInputChange(newValue) {
@@ -175,23 +175,15 @@ function ExpandedCard(props) {
 		setTagInputError(null);
 	});
 
-	function handleOnNameInputChange(e) {
-		setNameInputValue(e.target.value);
-		const newNameWihtoutSpaces = e.target.value.trim();
+	function handleOnNameInputChange(value) {
+		setNewCardName(value);
+	}
+
+	function handleRenameConfirm() {
+		const newNameWihtoutSpaces = newCardName().trim();
 		const isSameName = newNameWihtoutSpaces === props.name;
-		if (isSameName && (!e.key || e?.key === "Enter")) {
-			return setNameInputValue(null);
-		}
 		if (isSameName) {
-			return;
-		}
-		const error = props.getNameErrorMsg(newNameWihtoutSpaces);
-		setNameInputError(error);
-		if (error) {
-			return;
-		}
-		if (e.key && e.key !== "Enter") {
-			return;
+			return handleRenameCancel();
 		}
 		fetch(`${api}/cards/${props.name}`, {
 			method: "PATCH",
@@ -200,12 +192,18 @@ function ExpandedCard(props) {
 			body: JSON.stringify({ name: newNameWihtoutSpaces }),
 		});
 		props.onNameChange(newNameWihtoutSpaces);
-		setNameInputValue(null);
+		setNewCardName("");
+		setIsCardBeingRenamed(false);
+	}
+
+	function handleRenameCancel() {
+		setNewCardName("");
+		setIsCardBeingRenamed(false);
 	}
 
 	function startRenamingCard() {
-		setNameInputValue(props.name);
-		nameInputRef.focus();
+		setNewCardName(props.name);
+		setIsCardBeingRenamed(true);
 	}
 
 	function uploadImage(file) {
@@ -329,16 +327,20 @@ function ExpandedCard(props) {
 		if (props.disableImageUpload) {
 			editorClasses.push("disable-image-upload");
 		}
-		const newEditor = new StacksEditor(editorContainerRef, props.content || "", {
-			classList: ["theme-system"],
-			targetClassList: editorClasses,
-			editorHelpLink: "https://github.com/BaldissaraMatheus/Tasks.md/issues",
-			imageUpload: { handler: uploadImage },
-		});
+		const newEditor = new StacksEditor(
+			editorContainerRef,
+			props.content || "",
+			{
+				classList: ["theme-system"],
+				targetClassList: editorClasses,
+				editorHelpLink: "https://github.com/BaldissaraMatheus/Tasks.md/issues",
+				imageUpload: { handler: uploadImage },
+			},
+		);
 		setEditor(newEditor);
 		const toolbarEndGroupNodes = [
-			...editorContainerRef.childNodes[0].childNodes[1].childNodes[0].childNodes[1]
-				.childNodes[0].childNodes,
+			...editorContainerRef.childNodes[0].childNodes[1].childNodes[0]
+				.childNodes[1].childNodes[0].childNodes,
 		];
 		const modeBtns = toolbarEndGroupNodes.filter((node) => node.title);
 		setModeBtns(modeBtns);
@@ -360,8 +362,7 @@ function ExpandedCard(props) {
 			(node) => node.title === lastEditorModeUsed(),
 		);
 		modeBtn.click();
-		const editorTextArea =
-			editorContainerRef.childNodes[0].childNodes[2];
+		const editorTextArea = editorContainerRef.childNodes[0].childNodes[2];
 		editorTextArea.focus();
 	});
 
@@ -379,7 +380,7 @@ function ExpandedCard(props) {
 
 	function handleDialogCancel(e) {
 		e.preventDefault();
-		if (nameInputValue() || isCreatingNewTag()) {
+		if (newCardName() || isCreatingNewTag()) {
 			setNameInputValue(null);
 			setIsCreatingNewTag(false);
 			return;
@@ -400,22 +401,14 @@ function ExpandedCard(props) {
 			>
 				<div class="dialog__body">
 					<header class="dialog__toolbar">
-						{nameInputValue() !== null ? (
-							<div class="input-and-error-msg">
-								<input
-									ref={(el) => {
-										nameInputRef = el;
-									}}
-									type="text"
-									class="dialog__toolbar-name-input"
-									value={nameInputValue()}
-									onFocusOut={handleOnNameInputChange}
-									onKeyDown={handleOnNameInputChange}
-								/>
-								{nameInputError() ? (
-									<span class="error-msg">{nameInputError()}</span>
-								) : null}
-							</div>
+						{isCardBeingRenamed() ? (
+							<NameInput
+								value={newCardName()}
+								errorMsg={props.getNameErrorMsg(newCardName())}
+								onChange={(value) => handleOnNameInputChange(value)}
+								onConfirm={handleRenameConfirm}
+								onCancel={handleRenameCancel}
+							/>
 						) : (
 							<div
 								role="button"
