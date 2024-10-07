@@ -39,8 +39,8 @@ function ExpandedCard(props) {
 	const [newCardName, setNewCardName] = createSignal(null);
 	const [isCreatingNewTag, setIsCreatingNewTag] = createSignal(null);
 	const [availableTags, setAvailableTags] = createSignal([]);
-	const [tagInputValue, setTagInputValue] = createSignal(null);
-	const [tagInputError, setTagInputError] = createSignal(null);
+	const [newTagName, setNewTagName] = createSignal("");
+	const [newTagNameError, setTagNameError] = createSignal(null);
 	const [editor, setEditor] = createSignal(null);
 	const [menuCoordinates, setMenuCoordinates] = createSignal(null);
 	const [clickedTag, setClickedTag] = createSignal(null);
@@ -63,34 +63,22 @@ function ExpandedCard(props) {
 	let tagsInputRef;
 	let editorContainerRef;
 
-	function handleTagInputChange(newValue) {
-		setTagInputValue(newValue);
+	function handleTagRenameChange(newValue) {
+		setNewTagName(newValue);
 		const taskAlreadyHasThisTag = props.tags.some(
-			(tag) => tag.name.toLowerCase() === tagInputValue().toLowerCase(),
+			(tag) => tag.name.toLowerCase() === newTagName().toLowerCase(),
 		);
-		setTagInputError(
-			taskAlreadyHasThisTag ? "Task already has this tag" : null,
-		);
+		setTagNameError(taskAlreadyHasThisTag ? "Task already has this tag" : null);
 	}
 
-	function focusOutOnEnter(e) {
-		if (e.key === "Enter") {
-			document?.activeElement.blur();
-		}
-	}
-
-	function handleTagInputFocusOut(e) {
-		if (e?.key && e.key !== "Enter") {
-			return;
-		}
+	function handleTagRenameConfirm() {
 		setIsCreatingNewTag(false);
-
-		if (tagInputError()) {
-			return setTagInputValue(null);
+		if (newTagNameError()) {
+			return handleTagRenameCancel();
 		}
 
-		if (!tagInputValue()) {
-			return setTagInputValue(null);
+		if (!newTagName()) {
+			return setNewTagName("");
 		}
 
 		let actualContent = editor().content;
@@ -109,7 +97,7 @@ function ExpandedCard(props) {
 		// Proceed to concatenate the new tag
 		const concatenatedTags = `${tagsSubstring}${
 			tagsSubstring.length === 0 ? "" : ","
-		} ${tagInputValue()}`.trim();
+		} ${newTagName()}`.trim();
 
 		const newContent =
 			actualContent.substring(0, tagsIndex) +
@@ -121,11 +109,18 @@ function ExpandedCard(props) {
 
 		props.onContentChange(newContent);
 		editor().content = newContent;
-		setTagInputValue(null);
+		setNewTagName("");
+	}
+
+	function handleTagRenameCancel() {
+		setIsCreatingNewTag(false);
+		setNewTagName("");
+		setTagNameError(null);
 	}
 
 	function handleAddTagBtnOnClick(event) {
 		event.stopPropagation();
+		setNewTagName("");
 		setIsCreatingNewTag(true);
 		tagsInputRef?.focus();
 	}
@@ -163,27 +158,15 @@ function ExpandedCard(props) {
 		props.onContentChange(newContent);
 	}
 
-	createEffect(() => {
-		if (isCreatingNewTag()) {
-			return;
-		}
-		if (!isCreatingNewTag() && tagInputValue()) {
-			return;
-		}
-		setIsCreatingNewTag(false);
-		setTagInputValue(null);
-		setTagInputError(null);
-	});
-
 	function handleOnNameInputChange(value) {
 		setNewCardName(value);
 	}
 
-	function handleRenameConfirm() {
+	function handleCardRenameConfirm() {
 		const newNameWihtoutSpaces = newCardName().trim();
 		const isSameName = newNameWihtoutSpaces === props.name;
 		if (isSameName) {
-			return handleRenameCancel();
+			return handleCardRenameCancel();
 		}
 		fetch(`${api}/cards/${props.name}`, {
 			method: "PATCH",
@@ -196,7 +179,7 @@ function ExpandedCard(props) {
 		setIsCardBeingRenamed(false);
 	}
 
-	function handleRenameCancel() {
+	function handleCardRenameCancel() {
 		setNewCardName("");
 		setIsCardBeingRenamed(false);
 	}
@@ -302,22 +285,11 @@ function ExpandedCard(props) {
 	);
 
 	createEffect(() => {
-		if (isCreatingNewTag()) {
-			return;
-		}
-		if (!isCreatingNewTag() && tagInputValue()) {
-			return;
-		}
-		setIsCreatingNewTag(false);
-		setTagInputValue(null);
-	});
-
-	createEffect(() => {
 		setAvailableTags(
 			props.tagsOptions.filter(
 				(tagOption) =>
 					!props.tags.some((tag) => tag.name === tagOption.name) &&
-					tagOption.name.toLowerCase().includes(tagInputValue()?.toLowerCase()),
+					tagOption.name.toLowerCase().includes(newTagName()?.toLowerCase()),
 			),
 		);
 	});
@@ -406,8 +378,8 @@ function ExpandedCard(props) {
 								value={newCardName()}
 								errorMsg={props.getNameErrorMsg(newCardName())}
 								onChange={(value) => handleOnNameInputChange(value)}
-								onConfirm={handleRenameConfirm}
-								onCancel={handleRenameCancel}
+								onConfirm={handleCardRenameConfirm}
+								onCancel={handleCardRenameCancel}
 							/>
 						) : (
 							<div
@@ -442,28 +414,21 @@ function ExpandedCard(props) {
 					</header>
 					<div class="dialog__tags">
 						{isCreatingNewTag() ? (
-							<div class="input-and-error-msg">
-								{/* TODO use nameInput component */}
-								<input
-									ref={(el) => {
-										tagsInputRef = el;
-									}}
-									type="text"
-									value={tagInputValue()}
-									onInput={(e) => handleTagInputChange(e.target.value)}
-									onFocusOut={handleTagInputFocusOut}
-									onKeyDown={focusOutOnEnter}
-									list="tags"
-								/>
-								<datalist id="tags">
-									<For each={availableTags()}>
-										{(tag) => <option value={tag.name} />}
-									</For>
-								</datalist>
-								{tagInputError() ? (
-									<span class="error-msg">{tagInputError()}</span>
-								) : null}
-							</div>
+							<NameInput
+								value={newTagName()}
+								errorMsg={newTagNameError()}
+								onChange={handleTagRenameChange}
+								onConfirm={handleTagRenameConfirm}
+								onCancel={handleTagRenameCancel}
+								list="tags"
+								datalist={
+									<datalist id="tags">
+										<For each={availableTags()}>
+											{(tag) => <option value={tag.name} />}
+										</For>
+									</datalist>
+								}
+							/>
 						) : (
 							<button type="button" onClick={handleAddTagBtnOnClick}>
 								Add tag
