@@ -392,7 +392,7 @@ function App() {
 		if (newName === "") {
 			return `The ${item} must have a name`;
 		}
-		if (namesList.filter((name) => name === newName).length) {
+		if (namesList.filter((name) => name === (newName || '').trim()).length) {
 			return `There's already a ${item} with that name`;
 		}
 		if (/[<>:"/\\|?*]/g.test(newName)) {
