@@ -368,7 +368,6 @@ dialog:not(.dialog--maximized) {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
   /* flex-direction: column; */
 }
 
