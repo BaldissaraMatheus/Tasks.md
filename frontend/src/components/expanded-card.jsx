@@ -458,6 +458,7 @@ function ExpandedCard(props) {
 					<div class="dialog__content">
 						<div
 							id="editor-container"
+							autofocus
 							ref={(el) => {
 								editorContainerRef = el;
 							}}
