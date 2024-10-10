@@ -379,6 +379,7 @@ function ExpandedCard(props) {
 						<header class="dialog__toolbar">
 							{isCardBeingRenamed() ? (
 								<NameInput
+									class="dialog__toolbar-input"
 									value={newCardName()}
 									errorMsg={props.getNameErrorMsg(newCardName())}
 									onChange={(value) => handleOnNameInputChange(value)}

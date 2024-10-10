@@ -100,7 +100,7 @@ select {
   height: 32px;
   padding: 4px 15px;
   border-radius: 6px;
-  font-size: 0.9rem !important;
+  font-size: 0.9rem;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
   color: var(--font-color);
@@ -374,13 +374,12 @@ dialog:not(.dialog--maximized) {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  /* flex-direction: column; */
+  min-height: 3rem;
 }
 
-.dialog__toolbar-name-input {
-  padding: 1.1rem 1.1rem 1.1rem 0.5rem;
-  font-size: 1.5rem;
-  flex-grow: 1;
+.dialog__toolbar-input {
+  font-size: 2em !important;
+  margin-bottom: 1.65rem;
 }
 
 .dialog__toolbar-name {
