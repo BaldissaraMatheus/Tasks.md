@@ -379,7 +379,8 @@ dialog:not(.dialog--maximized) {
 
 .dialog__toolbar-input {
   font-size: 2em !important;
-  margin-bottom: 1.65rem;
+  height: 2.3rem;
+  margin-bottom: 1.35rem;
 }
 
 .dialog__toolbar-name {
