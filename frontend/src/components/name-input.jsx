@@ -41,7 +41,7 @@ export function NameInput(props) {
 				}}
 				type="text"
 				id="rename-input"
-				class={props.errorMsg ? "error" : ""}
+				class={props.errorMsg ? "input-error" : ""}
 				value={props.value}
 				onInput={(e) => props.onChange(e.target.value)}
 				onFocusOut={handleConfirm}
