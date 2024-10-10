@@ -425,17 +425,9 @@ dialog:not(.dialog--maximized) {
   padding: 6px;
 }
 
-.disabled {
-  pointer-events: none;
-}
-
 .dialog__content {
   overflow: hidden;
   flex-grow: 1;
-}
-
-.error {
-  outline: 1px solid var(--danger-color);
 }
 
 .input-and-error-msg {
@@ -447,6 +439,10 @@ dialog:not(.dialog--maximized) {
 
 .input-and-error-msg input:focus {
   outline-offset: -1px !important;
+}
+
+.input-error {
+  outline: 1px solid var(--danger-color);
 }
 
 .error-msg {
