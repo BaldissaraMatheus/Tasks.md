@@ -19,6 +19,7 @@ import { makePersisted } from "@solid-primitives/storage";
 import { AiOutlineExpand } from "solid-icons/ai";
 import { IoClose } from "solid-icons/io";
 import { NameInput } from "./name-input";
+import { Portal } from "solid-js/web";
 
 /**
  *
@@ -326,7 +327,7 @@ function ExpandedCard(props) {
 		if (!editor || !dialogRef) {
 			return;
 		}
-		dialogRef.showModal();
+		dialogRef.show();
 		for (const btn of modeBtns()) {
 			btn.addEventListener("click", handleClickEditorMode);
 		}
@@ -361,136 +362,140 @@ function ExpandedCard(props) {
 	}
 
 	return (
-		<>
-			<dialog
-				ref={(el) => {
-					dialogRef = el;
-				}}
-				class={`${isMaximized() === "true" ? "dialog--maximized" : ""}`}
-				onmousedown={closeDialogIfRootElementIsClicked}
-				onKeyDown={(e) => handleKeyDown(e, (event) => event.stopPropagation())}
-				onCancel={handleDialogCancel}
-			>
-				<div class="dialog__body">
-					<header class="dialog__toolbar">
-						{isCardBeingRenamed() ? (
-							<NameInput
-								value={newCardName()}
-								errorMsg={props.getNameErrorMsg(newCardName())}
-								onChange={(value) => handleOnNameInputChange(value)}
-								onConfirm={handleCardRenameConfirm}
-								onCancel={handleCardRenameCancel}
-							/>
-						) : (
-							<div
-								role="button"
-								class="dialog__toolbar-name"
-								onClick={startRenamingCard}
-								onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
-								title="Click to rename card"
-								tabIndex="0"
-							>
-								<h1>{props.name || "NO NAME"}</h1>
-							</div>
-						)}
-						<div class="dialog__toolbar-btns">
-							<button
-								type="button"
-								class="dialog__toolbar-btn"
-								onClick={() =>
-									setIsMaximized(isMaximized() === "true" ? "false" : "true")
-								}
-							>
-								<AiOutlineExpand size="25px" />
-							</button>
-							<button
-								type="button"
-								class="dialog__toolbar-btn"
-								onClick={props.onClose}
-							>
-								<IoClose size="25px" />
-							</button>
-						</div>
-					</header>
-					<div class="dialog__tags">
-						{isCreatingNewTag() ? (
-							<NameInput
-								value={newTagName()}
-								errorMsg={newTagNameError()}
-								onChange={handleTagRenameChange}
-								onConfirm={handleTagRenameConfirm}
-								onCancel={handleTagRenameCancel}
-								list="tags"
-								datalist={
-									<datalist id="tags">
-										<For each={availableTags()}>
-											{(tag) => <option value={tag.name} />}
-										</For>
-									</datalist>
-								}
-							/>
-						) : (
-							<button type="button" onClick={handleAddTagBtnOnClick}>
-								Add tag
-							</button>
-						)}
-						<For each={props.tags || []}>
-							{(tag) => (
+		<Portal>
+			<div class="dialog-backdrop">
+				<dialog
+					ref={(el) => {
+						dialogRef = el;
+					}}
+					class={`${isMaximized() === "true" ? "dialog--maximized" : ""}`}
+					onmousedown={closeDialogIfRootElementIsClicked}
+					onKeyDown={(e) =>
+						handleKeyDown(e, (event) => event.stopPropagation())
+					}
+					onCancel={handleDialogCancel}
+				>
+					<div class="dialog__body">
+						<header class="dialog__toolbar">
+							{isCardBeingRenamed() ? (
+								<NameInput
+									value={newCardName()}
+									errorMsg={props.getNameErrorMsg(newCardName())}
+									onChange={(value) => handleOnNameInputChange(value)}
+									onConfirm={handleCardRenameConfirm}
+									onCancel={handleCardRenameCancel}
+								/>
+							) : (
 								<div
-									class="tag tag--clicable"
-									style={{
-										"background-color": tag.backgroundColor,
-										"border-color": tag.backgroundColor,
-									}}
 									role="button"
-									popoverTarget="tag-menu"
-									onClick={(e) => handleTagClick(e, tag)}
-									onKeyDown={(e) =>
-										handleKeyDown(e, () => handleTagClick(e, tag))
-									}
-									tabIndex={0}
+									class="dialog__toolbar-name"
+									onClick={startRenamingCard}
+									onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
+									title="Click to rename card"
+									tabIndex="0"
 								>
-									<h5>{tag.name}</h5>
+									<h1>{props.name || "NO NAME"}</h1>
 								</div>
 							)}
-						</For>
+							<div class="dialog__toolbar-btns">
+								<button
+									type="button"
+									class="dialog__toolbar-btn"
+									onClick={() =>
+										setIsMaximized(isMaximized() === "true" ? "false" : "true")
+									}
+								>
+									<AiOutlineExpand size="25px" />
+								</button>
+								<button
+									type="button"
+									class="dialog__toolbar-btn"
+									onClick={props.onClose}
+								>
+									<IoClose size="25px" />
+								</button>
+							</div>
+						</header>
+						<div class="dialog__tags">
+							{isCreatingNewTag() ? (
+								<NameInput
+									value={newTagName()}
+									errorMsg={newTagNameError()}
+									onChange={handleTagRenameChange}
+									onConfirm={handleTagRenameConfirm}
+									onCancel={handleTagRenameCancel}
+									list="tags"
+									datalist={
+										<datalist id="tags">
+											<For each={availableTags()}>
+												{(tag) => <option value={tag.name} />}
+											</For>
+										</datalist>
+									}
+								/>
+							) : (
+								<button type="button" onClick={handleAddTagBtnOnClick}>
+									Add tag
+								</button>
+							)}
+							<For each={props.tags || []}>
+								{(tag) => (
+									<div
+										class="tag tag--clicable"
+										style={{
+											"background-color": tag.backgroundColor,
+											"border-color": tag.backgroundColor,
+										}}
+										role="button"
+										popoverTarget="tag-menu"
+										onClick={(e) => handleTagClick(e, tag)}
+										onKeyDown={(e) =>
+											handleKeyDown(e, () => handleTagClick(e, tag))
+										}
+										tabIndex={0}
+									>
+										<h5>{tag.name}</h5>
+									</div>
+								)}
+							</For>
+						</div>
+						<div class="dialog__content">
+							<div
+								id="editor-container"
+								autofocus
+								ref={(el) => {
+									editorContainerRef = el;
+								}}
+								onKeyDown={handleEditorOnChange}
+								onClick={handleEditorOnChange}
+							/>
+						</div>
 					</div>
-					<div class="dialog__content">
-						<div
-							id="editor-container"
-							autofocus
-							ref={(el) => {
-								editorContainerRef = el;
-							}}
-							onKeyDown={handleEditorOnChange}
-							onClick={handleEditorOnChange}
-						/>
-					</div>
-				</div>
-				<Menu
-					id="tag-menu"
-					open={showTagPopup()}
-					options={tagMenuOptions()}
-					onClose={() => {
-						setShowTagPopup(null);
-						setMenuCoordinates(null);
-					}}
-					x={menuCoordinates()?.x}
-					y={menuCoordinates()?.y}
-				/>
-				<Menu
-					id="tag-color-menu"
-					open={showColorPopup()}
-					options={colorMenuOptions}
-					onClose={() => {
-						setShowColorPopup(null);
-						setMenuCoordinates(null);
-					}}
-					x={menuCoordinates()?.x}
-					y={menuCoordinates()?.y}
-				/>
-			</dialog>
-		</>
+					<Menu
+						id="tag-menu"
+						open={showTagPopup()}
+						options={tagMenuOptions()}
+						onClose={() => {
+							setShowTagPopup(null);
+							setMenuCoordinates(null);
+						}}
+						x={menuCoordinates()?.x}
+						y={menuCoordinates()?.y}
+					/>
+					<Menu
+						id="tag-color-menu"
+						open={showColorPopup()}
+						options={colorMenuOptions}
+						onClose={() => {
+							setShowColorPopup(null);
+							setMenuCoordinates(null);
+						}}
+						x={menuCoordinates()?.x}
+						y={menuCoordinates()?.y}
+					/>
+				</dialog>
+			</div>
+		</Portal>
 	);
 }
 

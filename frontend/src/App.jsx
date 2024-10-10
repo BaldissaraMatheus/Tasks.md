@@ -392,7 +392,7 @@ function App() {
 		if (newName === "") {
 			return `The ${item} must have a name`;
 		}
-		if (namesList.filter((name) => name === (newName || '').trim()).length) {
+		if (namesList.filter((name) => name === (newName || "").trim()).length) {
 			return `There's already a ${item} with that name`;
 		}
 		if (/[<>:"/\\|?*]/g.test(newName)) {
@@ -615,32 +615,32 @@ function App() {
 						)}
 					</For>
 				</DragAndDrop.Container>
-				<Show when={!!selectedCard()}>
-					<ExpandedCard
-						name={selectedCard().name}
-						content={selectedCard().content}
-						tags={selectedCard().tags || []}
-						tagsOptions={tagsOptions()}
-						onClose={() => setSelectedCard(null)}
-						onContentChange={(value) =>
-							debounceChangeCardContent(value, selectedCard().id)
-						}
-						onTagColorChange={handleTagColorChange}
-						onNameChange={handleOnSelectedCardNameChange}
-						getNameErrorMsg={(newName) =>
-							validateName(
-								newName,
-								cards()
-									.filter((card) => card.name !== selectedCard().name)
-									.map((card) => card.name),
-								"card",
-							)
-						}
-						disableImageUpload={false}
-					/>
-				</Show>
 				<DragAndDrop.Target />
 			</DragAndDrop.Provider>
+			<Show when={!!selectedCard()}>
+				<ExpandedCard
+					name={selectedCard().name}
+					content={selectedCard().content}
+					tags={selectedCard().tags || []}
+					tagsOptions={tagsOptions()}
+					onClose={() => setSelectedCard(null)}
+					onContentChange={(value) =>
+						debounceChangeCardContent(value, selectedCard().id)
+					}
+					onTagColorChange={handleTagColorChange}
+					onNameChange={handleOnSelectedCardNameChange}
+					getNameErrorMsg={(newName) =>
+						validateName(
+							newName,
+							cards()
+								.filter((card) => card.name !== selectedCard().name)
+								.map((card) => card.name),
+							"card",
+						)
+					}
+					disableImageUpload={false}
+				/>
+			</Show>
 		</>
 	);
 }
