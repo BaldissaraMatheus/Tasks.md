@@ -335,11 +335,17 @@ button.small {
   font-weight: bold;
 }
 
-dialog::backdrop {
+.dialog-backdrop {
   background: rgba(0, 0, 0, 0.5);
+  width: 100dvw;
+  height: 100dvh;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 dialog {
+  margin: auto;
   padding: 0;
   width: 100%;
   height: 100%;
