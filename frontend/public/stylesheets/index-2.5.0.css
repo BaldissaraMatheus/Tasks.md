@@ -100,7 +100,7 @@ select {
   height: 32px;
   padding: 4px 15px;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: inherit;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
   color: var(--font-color);
@@ -111,6 +111,12 @@ input,
 select {
   background: var(--input-background-color);
   border: 1px solid var(--input-border-color);
+}
+
+input {
+  font-size: inherit !important;
+  height: inherit;
+  margin: inherit;
 }
 
 button,
@@ -375,12 +381,6 @@ dialog:not(.dialog--maximized) {
   justify-content: space-between;
   gap: 12px;
   min-height: 3rem;
-}
-
-.dialog__toolbar-input {
-  font-size: 2em !important;
-  height: 2.3rem;
-  margin-bottom: 1.35rem;
 }
 
 .dialog__toolbar-name {
