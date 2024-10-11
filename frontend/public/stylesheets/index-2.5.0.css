@@ -236,7 +236,6 @@ button.small {
 }
 
 .card {
-  min-height: 100px;
   width: 100%;
   background: var(--card-background-color);
   border: 1px solid var(--card-border-color);
@@ -267,12 +266,21 @@ button.small {
   box-sizing: border-box;
   display: flex;
   align-items: start;
-  min-height: 33px;
   overflow: hidden;
+  margin-bottom: 12px;
 }
 
 .card__toolbar > :first-child {
   flex-grow: 1;
+}
+
+.card__tags {
+  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow: hidden;
+  min-height: 40px;
 }
 
 [popover] {
@@ -312,12 +320,6 @@ button.small {
 
 [popover] > :last-child {
   border-radius: 0 0 6px 6px;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 .tag {

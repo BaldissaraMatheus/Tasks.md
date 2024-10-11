@@ -20,9 +20,9 @@ export function Card(props) {
 			tabIndex="0"
 		>
 			<div class="card__toolbar">{props.headerSlot}</div>
-			<ul class="tags">
+			<ul class="card__tags">
 				<For each={props.tags}>
-					{(tag) => {
+					{(tag) => (
 						<li
 							class="tag"
 							style={{
@@ -31,8 +31,8 @@ export function Card(props) {
 							}}
 						>
 							<h5>{tag.name}</h5>
-						</li>;
-					}}
+						</li>
+					)}
 				</For>
 			</ul>
 		</div>
