@@ -377,27 +377,30 @@ function ExpandedCard(props) {
 				>
 					<div class="dialog__body">
 						<header class="dialog__toolbar">
-							{isCardBeingRenamed() ? (
-								<NameInput
-									class="dialog__toolbar-input"
-									value={newCardName()}
-									errorMsg={props.getNameErrorMsg(newCardName())}
-									onChange={(value) => handleOnNameInputChange(value)}
-									onConfirm={handleCardRenameConfirm}
-									onCancel={handleCardRenameCancel}
-								/>
-							) : (
-								<div
-									role="button"
-									class="dialog__toolbar-name"
-									onClick={startRenamingCard}
-									onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
-									title="Click to rename card"
-									tabIndex="0"
-								>
-									<h1>{props.name || "NO NAME"}</h1>
-								</div>
-							)}
+							<div class="dialog__toolbar-name">
+								<h1>
+									{isCardBeingRenamed() ? (
+										<NameInput
+											value={newCardName()}
+											errorMsg={props.getNameErrorMsg(newCardName())}
+											onChange={(value) => handleOnNameInputChange(value)}
+											onConfirm={handleCardRenameConfirm}
+											onCancel={handleCardRenameCancel}
+										/>
+									) : (
+										<div
+											role="button"
+											
+											onClick={startRenamingCard}
+											onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
+											title="Click to rename card"
+											tabIndex="0"
+										>
+											{props.name || "NO NAME"}
+										</div>
+									)}
+								</h1>
+							</div>
 							<div class="dialog__toolbar-btns">
 								<button
 									type="button"
