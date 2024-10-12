@@ -388,6 +388,7 @@ dialog:not(.dialog--maximized) {
 .dialog__toolbar-name {
   /* https://stackoverflow.com/a/36247448 */
   min-width: 0;
+  width: 100%;
   word-wrap: break-word;
   text-wrap: balance;
   display: inline-block;
