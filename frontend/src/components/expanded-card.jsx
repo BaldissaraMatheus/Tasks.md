@@ -12,7 +12,6 @@ import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from "./menu";
 import {
-	// getButtonCoordinates,
 	handleKeyDown,
 } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
@@ -390,8 +389,7 @@ function ExpandedCard(props) {
 									) : (
 										<div
 											role="button"
-											
-											onClick={startRenamingCard}
+											// onClick={startRenamingCard}
 											onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
 											title="Click to rename card"
 											tabIndex="0"
