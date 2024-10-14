@@ -11,9 +11,7 @@ import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
 import "@stackoverflow/stacks/dist/css/stacks.css";
 import { Menu } from "./menu";
-import {
-	handleKeyDown,
-} from "../utils";
+import { handleKeyDown, clickOutside } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
 import { AiOutlineExpand } from "solid-icons/ai";
 import { IoClose } from "solid-icons/io";
@@ -202,7 +200,8 @@ function ExpandedCard(props) {
 		});
 	}
 
-	function handleEditorOnChange() {
+	function handleEditorOnChange(e) {
+		console.log(e);
 		setTimeout(() => props.onContentChange(editor()?.content), 0);
 	}
 
@@ -344,14 +343,14 @@ function ExpandedCard(props) {
 		}
 	});
 
-	function closeDialogIfRootElementIsClicked(e) {
+	function closeDialogWhenBackdropIsClicked(e) {
 		if (e.target === dialogRef) {
 			props.onClose();
 		}
 	}
 
 	function handleDialogCancel(e) {
-		e.preventDefault();
+		e?.preventDefault();
 		if (newCardName() || isCreatingNewTag()) {
 			setNameInputValue(null);
 			setIsCreatingNewTag(false);
@@ -368,11 +367,11 @@ function ExpandedCard(props) {
 						dialogRef = el;
 					}}
 					class={`${isMaximized() === "true" ? "dialog--maximized" : ""}`}
-					onmousedown={closeDialogIfRootElementIsClicked}
 					onKeyDown={(e) =>
 						handleKeyDown(e, (event) => event.stopPropagation())
 					}
 					onCancel={handleDialogCancel}
+					use:clickOutside={handleDialogCancel}
 				>
 					<div class="dialog__body">
 						<header class="dialog__toolbar">
