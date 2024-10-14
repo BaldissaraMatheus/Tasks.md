@@ -389,7 +389,7 @@ function ExpandedCard(props) {
 									) : (
 										<div
 											role="button"
-											// onClick={startRenamingCard}
+											onClick={startRenamingCard}
 											onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
 											title="Click to rename card"
 											tabIndex="0"
