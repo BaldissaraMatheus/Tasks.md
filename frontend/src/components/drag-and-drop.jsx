@@ -162,9 +162,6 @@ function Container(props) {
 		}
 		e.preventDefault();
 		e.stopPropagation();
-		if (props.disabled) {
-			return;
-		}
 		const targetBoundingRect = currentTarget.getBoundingClientRect();
 		const { pageX, pageY } = getPageCoordinatesFromMouseOrTouchEvent(e);
 		const cursorDisplacementLeft = pageX - targetBoundingRect.left;

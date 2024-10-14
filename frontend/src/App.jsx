@@ -458,6 +458,9 @@ function App() {
 				"Content-Type": "application/json",
 			},
 		});
+		if (disableCardsDrag()) {
+			return;
+		}
 		const newCards = lanes().flatMap((lane) =>
 			cards().filter((card) => card.lane === lane),
 		);
@@ -568,7 +571,6 @@ function App() {
 									group="cards"
 									id={`lane-content-${lane}`}
 									onChange={handleCardsSortChange}
-									disabled={disableCardsDrag()}
 								>
 									<For each={getCardsFromLane(lane)}>
 										{(card) => (
