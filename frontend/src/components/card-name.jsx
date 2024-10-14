@@ -62,22 +62,28 @@ export function CardName(props) {
 					popoverTarget={`${props.name}-card-options`}
 					onClick={handleClickCardOptions}
 					onKeyDown={(e) =>
-						handleKeyDown(e, () => handleClickCardOptions(e, true), handleCancel)
+						handleKeyDown(
+							e,
+							() => handleClickCardOptions(e, true),
+							handleCancel,
+						)
 					}
 				>
 					<BiRegularDotsVerticalRounded />
 				</button>
 			</div>
-			<Portal>
-				<Menu
-					id={`${props.name}-card-options`}
-					open={showMenu()}
-					options={menuOptions}
-					onClose={handleMenuClose}
-					x={menuCoordinates()?.x}
-					y={menuCoordinates()?.y}
-				/>
-			</Portal>
+			{showMenu() ? (
+				<Portal>
+					<Menu
+						id={`${props.name}-card-options`}
+						open={showMenu()}
+						options={menuOptions}
+						onClose={handleMenuClose}
+						x={menuCoordinates()?.x}
+						y={menuCoordinates()?.y}
+					/>
+				</Portal>
+			) : null}
 		</>
 	);
 }
