@@ -201,7 +201,6 @@ function ExpandedCard(props) {
 	}
 
 	function handleEditorOnChange(e) {
-		console.log(e);
 		setTimeout(() => props.onContentChange(editor()?.content), 0);
 	}
 
