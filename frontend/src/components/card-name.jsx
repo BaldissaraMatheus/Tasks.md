@@ -36,7 +36,6 @@ export function CardName(props) {
 	];
 
 	function handleClickCardOptions(event, focus) {
-		console.log(event)
 		const coordinates = getButtonCoordinates(event);
 		setMenuCoordinates(coordinates);
 		setShowMenu(true);
