@@ -134,9 +134,10 @@ button {
   text-align: -webkit-center;
 }
 
-button:focus-visible {
-  /* Required while StacksEditor is being used, since it changes Firefox defaults */
-  outline: revert !important;
+*:focus-visible, *:focus {
+  /* Required while StacksEditor is being used, since it changes Firefox defaults. Also implies changes on input-error class */
+  outline: 1px solid var(--font-color);
+  border: 1px solid var(--font-color);
 }
 
 button:hover {
@@ -439,6 +440,7 @@ dialog:not(.dialog--maximized) {
 
 .input-error {
   outline: 1px solid var(--danger-color);
+  border-color: var(--danger-color);
 }
 
 .error-msg {
