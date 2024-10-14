@@ -49,58 +49,60 @@ export function Menu(props) {
 	});
 
 	return (
-		<div
-			popover
-			id={props.id}
-			ref={(el) => {
-				menuRef = el;
-			}}
-			class="popup"
-			use:clickOutside={close}
-			style={{
-				top: `${props.y}px`,
-				left: `${props.x}px`,
-			}}
-		>
-			<Show when={props.open && !confirmationPromptCb()}>
-				{props.options.map((option) => (
+		<Show when={props.open}>
+			<div
+				popover
+				id={props.id}
+				ref={(el) => {
+					menuRef = el;
+				}}
+				class="popup"
+				use:clickOutside={close}
+				style={{
+					top: `${props.y}px`,
+					left: `${props.x}px`,
+				}}
+			>
+				<Show
+					when={confirmationPromptCb()}
+					fallback={props.options.map((option) => (
+						<button
+							type="button"
+							popoverTarget={option.popoverTarget}
+							onClick={() => handleOptionClick(option)}
+							onKeyDown={(e) =>
+								handleKeyDown(
+									e,
+									() => handleOptionClick(option, true),
+									props.onClose,
+								)
+							}
+						>
+							{option.label}
+						</button>
+					))}
+				>
 					<button
+						ref={(el) => {
+							confirmBtnRef = el;
+						}}
 						type="button"
-						popoverTarget={option.popoverTarget}
-						onClick={() => handleOptionClick(option)}
+						onClick={handleOptionConfirmation}
 						onKeyDown={(e) =>
-							handleKeyDown(
-								e,
-								() => handleOptionClick(option, true),
-								props.onClose,
-							)
+							handleKeyDown(e, () => handleOptionConfirmation(e), close)
 						}
 					>
-						{option.label}
+						Are you sure?
 					</button>
-				))}
-			</Show>
-			<Show when={confirmationPromptCb()}>
-				<button
-					ref={(el) => {
-						confirmBtnRef = el;
-					}}
-					type="button"
-					onClick={handleOptionConfirmation}
-					onKeyDown={(e) =>
-						handleKeyDown(e, () => handleOptionConfirmation(e), close)
-					}
-				>
-					Are you sure?
-				</button>
-				<button
-					type="button"
-					onClick={close}
-					onKeyDown={(e) => handleKeyDown(e, close, close)}
-				>
-					Cancel
-				</button>
-			</Show>
-		</div>
+					<button
+						type="button"
+						onClick={close}
+						onKeyDown={(e) => handleKeyDown(e, close, close)}
+					>
+						Cancel
+					</button>
+				</Show>
+			</div>
+		</Show>
 	);
 }

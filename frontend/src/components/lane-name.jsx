@@ -86,17 +86,18 @@ export function LaneName(props) {
 					<BiRegularDotsVerticalRounded />
 				</button>
 			</div>
-			{/* TODO should be a single menu within App component */}
-			<Portal>
-				<Menu
-					id={`${props.name}-lane-options`}
-					open={showMenu()}
-					options={menuOptions}
-					onClose={handleCancel}
-					x={menuCoordinates()?.x}
-					y={menuCoordinates()?.y}
-				/>
-			</Portal>
+			{showMenu() ? (
+				<Portal>
+					<Menu
+						id={`${props.name}-lane-options`}
+						open={showMenu()}
+						options={menuOptions}
+						onClose={handleCancel}
+						x={menuCoordinates()?.x}
+						y={menuCoordinates()?.y}
+					/>
+				</Portal>
+			) : null}
 		</>
 	);
 }

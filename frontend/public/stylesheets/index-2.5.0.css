@@ -135,7 +135,7 @@ button {
 }
 
 *:focus-visible, *:focus {
-  /* Required while StacksEditor is being used, since it changes Firefox defaults. Also implies changes on input-error class */
+  /* TODO Required while StacksEditor is being used, since it changes Firefox defaults. Also implies changes on input-error class */
   outline: 1px solid var(--font-color);
   border: 1px solid var(--font-color);
 }
