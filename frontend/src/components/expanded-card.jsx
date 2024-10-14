@@ -7,9 +7,9 @@ import {
 } from "solid-js";
 import { api } from "../api";
 import { StacksEditor } from "@stackoverflow/stacks-editor";
-import "@stackoverflow/stacks-editor/dist/styles.css";
 import "@stackoverflow/stacks";
-import "@stackoverflow/stacks/dist/css/stacks.css";
+import stacksEditorStyle from "@stackoverflow/stacks-editor/dist/styles.css?inline";
+import stacksStyle from "@stackoverflow/stacks/dist/css/stacks.css?inline";
 import { Menu } from "./menu";
 import { handleKeyDown, clickOutside } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
@@ -460,6 +460,12 @@ function ExpandedCard(props) {
 							</For>
 						</div>
 						<div class="dialog__content">
+							<style>
+								{stacksStyle}
+							</style>
+							<style>
+								{stacksEditorStyle}
+							</style>
 							<div
 								id="editor-container"
 								autofocus
