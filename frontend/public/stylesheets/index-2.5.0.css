@@ -134,13 +134,9 @@ button {
   text-align: -webkit-center;
 }
 
-button:focus {
-  outline: none;
-}
-
-button:focus-within {
-  outline-style: auto;
-  z-index: 2;
+button:focus-visible {
+  /* Required while StacksEditor is being used, since it changes Firefox defaults */
+  outline: revert !important;
 }
 
 button:hover {
@@ -439,10 +435,6 @@ dialog:not(.dialog--maximized) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.input-and-error-msg input:focus {
-  outline-offset: -1px !important;
 }
 
 .input-error {
