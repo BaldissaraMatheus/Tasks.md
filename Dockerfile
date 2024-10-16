@@ -1,4 +1,4 @@
-FROM node:20.16.0-alpine3.20 AS build-stage
+FROM node:22-alpine3.20 AS build-stage
 
 RUN set -eux \
     && mkdir -p /app \
@@ -35,7 +35,7 @@ ENV PORT=8080
 USER root
 
 RUN set -eux \
-    && apk add --no-cache nodejs npm
+    && apk add --no-cache nodejs-current npm
 
 RUN mkdir /stylesheets
 
