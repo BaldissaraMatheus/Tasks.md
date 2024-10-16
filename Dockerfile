@@ -9,14 +9,14 @@ COPY frontend/ /app
 
 WORKDIR /app
 RUN set -eux \
-    && npm ci \
+    && npm ci --no-audit \
     && npm run build
 
 COPY backend/ /api/
 
 WORKDIR /api
 RUN set -eux \
-    && npm ci
+    && npm ci --no-audit
 
 FROM alpine:3.20 AS final
 ARG PUID=0
