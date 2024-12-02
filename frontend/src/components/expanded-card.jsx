@@ -58,6 +58,7 @@ function ExpandedCard(props) {
 	);
 
 	let dialogRef;
+	let backdropRef;
 	let tagsInputRef;
 	let editorContainerRef;
 
@@ -358,9 +359,24 @@ function ExpandedCard(props) {
 		props.onClose();
 	}
 
+	function handleBackdropClick(e) {
+		if (e.target === backdropRef) {
+			handleDialogCancel();
+		}
+	}
+
 	return (
 		<Portal>
-			<div class="dialog-backdrop">
+			<div
+				class="dialog-backdrop"
+				onClick={handleBackdropClick}
+				onKeyDown={(e) =>
+					handleKeyDown(e, (event) => handleBackdropClick(event))
+				}
+				ref={(el) => {
+					backdropRef = el;
+				}}
+			>
 				<dialog
 					ref={(el) => {
 						dialogRef = el;
@@ -370,7 +386,8 @@ function ExpandedCard(props) {
 						handleKeyDown(e, (event) => event.stopPropagation())
 					}
 					onCancel={handleDialogCancel}
-					use:clickOutside={handleDialogCancel}
+					// TODO Doesn't work rn because it can be triggered by clicking image upload confirm button. Try again when new editor is implemented
+					// use:clickOutside={handleDialogCancel}
 				>
 					<div class="dialog__body">
 						<header class="dialog__toolbar">
@@ -460,12 +477,8 @@ function ExpandedCard(props) {
 							</For>
 						</div>
 						<div class="dialog__content">
-							<style>
-								{stacksStyle}
-							</style>
-							<style>
-								{stacksEditorStyle}
-							</style>
+							<style>{stacksStyle}</style>
+							<style>{stacksEditorStyle}</style>
 							<div
 								id="editor-container"
 								autofocus
