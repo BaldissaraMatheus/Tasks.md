@@ -1,7 +1,6 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
-import { BiRegularDotsVerticalRounded } from "solid-icons/bi";
 import { Portal } from "solid-js/web";
 
 /**
@@ -69,7 +68,7 @@ export function CardName(props) {
 						)
 					}
 				>
-					<BiRegularDotsVerticalRounded />
+					<span class="jam jam-more-vertical-f" />
 				</button>
 			</div>
 			{showMenu() ? (
