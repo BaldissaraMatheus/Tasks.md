@@ -1,8 +1,6 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
-import { AiOutlinePlus } from "solid-icons/ai";
-import { BiRegularDotsVerticalRounded } from "solid-icons/bi";
 
 /**
  *
@@ -71,7 +69,7 @@ export function LaneName(props) {
 					class="small"
 					onClick={() => props.onCreateNewCardBtnClick()}
 				>
-					<AiOutlinePlus />
+					<span class="jam jam-plus" />
 				</button>
 				<button
 					type="button"
@@ -83,7 +81,7 @@ export function LaneName(props) {
 						handleKeyDown(e, () => handleOptionsBtnClick(e, true), handleCancel)
 					}
 				>
-					<BiRegularDotsVerticalRounded />
+					<span class="jam jam-more-vertical-f" />
 				</button>
 			</div>
 			{showMenu() ? (

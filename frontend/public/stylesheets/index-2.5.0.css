@@ -1,6 +1,11 @@
 /* Reset preset taken from https://keithjgrant.com/posts/2024/01/my-css-resets/ */
 @import url('./reset.css');
 @import url('./custom.css');
+@import url('./jam-icons/stylesheets/jam.min.css');
+
+:root {
+  --accent-color: blue;
+}
 
 html,
 body,
@@ -133,12 +138,6 @@ button {
   text-align: -webkit-center;
 }
 
-*:focus-visible, *:focus {
-  /* TODO Required while StacksEditor is being used, since it changes Firefox defaults. Also implies changes on input-error class */
-  outline: 1px solid var(--font-color);
-  border: 1px solid var(--font-color);
-}
-
 button:hover {
   transition: all 0.1s;
   filter: brightness(1.2);
@@ -155,6 +154,7 @@ button.small {
   width: 25px;
   height: 25px;
   font-size: 1rem;
+  line-height: 1rem;
 }
 
 .header-buttons {
@@ -381,6 +381,10 @@ dialog:not(.dialog--maximized) {
   min-height: 3rem;
 }
 
+.dialog__toolbar h1 {
+  margin-top: 0;
+}
+
 .dialog__toolbar-name {
   /* https://stackoverflow.com/a/36247448 */
   min-width: 0;
@@ -409,10 +413,6 @@ dialog:not(.dialog--maximized) {
   align-items: center;
 }
 
-.editor-toolbar a::before {
-  color: var(--font-color) !important;
-}
-
 .dialog__tags {
   display: flex;
   gap: 8px;
@@ -428,6 +428,109 @@ dialog:not(.dialog--maximized) {
 .dialog__content {
   overflow: hidden;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#editor-container {}
+
+.ProseMirror {
+  background-color: #1E1E1E;
+  flex: 1 1 0;
+  color: white;
+  padding: 12px;
+  overflow: auto;
+
+  ul {
+    list-style-type: initial;
+    padding-left: 12px;
+  }
+
+  li {
+    display: list-item;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  li > div {
+    display: inline;
+  }
+
+  li > div > p {
+    margin-top: 0;
+    margin-left: 10px;
+    display: inline;
+  }
+
+  h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
+    opacity: 0.2;
+  }
+
+  h1::before {
+    content: "# ";
+  }
+
+  h2::before {
+    content: "## ";
+  }
+
+  h3::before {
+    content: "### ";
+  }
+
+  h4::before {
+    content: "#### ";
+  }
+
+  h5::before {
+    content: "##### ";
+  }
+
+  h6::before {
+    content: "###### ";
+  }
+
+  strong::before, strong::after {
+    content: "**";
+  }
+
+  em::before, em::after {
+    content: "*";
+  }
+
+  s::before, s::after {
+    content: "~~";
+    display: inline-block;
+  }
+
+  pre {
+    background-color: #18181A;
+    padding: 12px;
+    display: flex;
+    > :first-child {
+      flex: 1;
+    }
+  }
+
+  code {
+    margin: 0 6px;
+    overflow: auto;
+  }
+
+  blockquote {
+    border-left: 2px solid #ccc;
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+  }
+
+  img.ProseMirror-selectednode {
+    outline: 1px solid red;
+  }
+}
+
+textarea {
+  height: 100%;
+  resize: none;
 }
 
 .input-and-error-msg {
@@ -458,7 +561,7 @@ a > * {
   border-radius: 50%;
 }
 
-#editor-container {
+/* #editor-container {
   height: 100%;
   position: relative;
 }
@@ -475,9 +578,9 @@ a > * {
 
 .disable-image-upload .js-insert-image-btn {
   display: none;
-}
+} */
 
-.editor {
+/* .editor {
   resize: none !important;
 }
 
@@ -515,7 +618,7 @@ a > * {
 
 .editor .s-btn__outlined {
   border-color: var(--button-border-color);
-}
+} */
 
 .being-dragged.card,
 .being-dragged > .lane__header,
@@ -526,4 +629,8 @@ a > * {
 .being-dragged.card,
 .being-dragged > .lane__content {
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px 0px;
+}
+
+.copy-btn {
+  padding: 5px 8px;
 }
