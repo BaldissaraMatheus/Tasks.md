@@ -432,9 +432,11 @@ dialog:not(.dialog--maximized) {
   flex-direction: column;
 }
 
-#editor-container {}
+#editor-container {
+}
 
 .ProseMirror {
+  height: 100%;
   background-color: #1E1E1E;
   flex: 1 1 0;
   color: white;
@@ -524,6 +526,7 @@ dialog:not(.dialog--maximized) {
   }
 
   img.ProseMirror-selectednode {
+    /* TODO update outline style */
     outline: 1px solid red;
   }
 }

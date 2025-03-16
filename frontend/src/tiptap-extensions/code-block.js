@@ -12,7 +12,7 @@ export const backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
 export const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
 
 function copyToClipboard(e) {
-  const codeBlockText = e.target.parentNode.children[0].textContent;
+  const codeBlockText = e.currentTarget.parentNode.children[0].textContent;
   navigator.clipboard.writeText(codeBlockText);
 }
 
