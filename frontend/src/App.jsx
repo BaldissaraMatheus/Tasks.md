@@ -640,6 +640,7 @@ function App() {
 							"card",
 						)
 					}
+					// TODO false?? why
 					disableImageUpload={false}
 				/>
 			</Show>
