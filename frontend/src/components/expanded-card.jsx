@@ -13,9 +13,6 @@ import { NameInput } from "./name-input";
 import { Portal } from "solid-js/web";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
-import Text from "@tiptap/extension-text";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
 import { Markdown } from "tiptap-markdown";
 import { TaskList } from "../tiptap-extensions/task-list";
 import { TaskItem } from "../tiptap-extensions/task-item";
@@ -25,7 +22,7 @@ import { CodeBlock } from "../tiptap-extensions/code-block";
 import Image from "@tiptap/extension-image";
 import Dropcursor from "@tiptap/extension-dropcursor";
 import { IndentHandler } from "../tiptap-extensions/ident-handler";
-// import icons from '../jam.min.css';
+import { UploadImage } from "../tiptap-extensions/upload-image";
 
 /**
  *
@@ -301,34 +298,35 @@ function ExpandedCard(props) {
 
   onMount(() => {
     // TODO add help link to https://github.com/BaldissaraMatheus/Tasks.md/issues
-    // TODO add image upload button to trigger uploadImage function
     const tipTapEditor = new Editor({
       element: editorContainerRef,
       content: props.content || "",
       autofocus: true,
-      onUpdate: () =>
-        props.onContentChange(editor().storage.markdown.getMarkdown()),
+      onUpdate: () => {
+        props.onContentChange(editor().storage.markdown.getMarkdown());
+      },
       extensions: [
-        Document,
-        Paragraph,
-        Text,
-        Image,
         // TODO use env variable to enable/disable ident (for accessibility concerns)
-        IndentHandler,
-        Dropcursor.configure({
-          color: "var(--accent-color)",
-        }),
-        CodeBlock,
         StarterKit.configure({
           bulletList: false,
           listItem: false,
           codeBlock: false,
+          dropcursor: false,
         }),
         Markdown.configure({
           transformPastedText: true,
           transformCopiedText: true,
           tightLists: true,
         }),
+        IndentHandler,
+        UploadImage.configure({
+          uploadFn: uploadImage,
+        }),
+        Image,
+        Dropcursor.configure({
+          color: "var(--accent-color)",
+        }),
+        CodeBlock,
         TaskList.configure({
           keepAttributes: true,
         }),
@@ -341,6 +339,23 @@ function ExpandedCard(props) {
         }),
         ListItem,
       ],
+    });
+    tipTapEditor.on("drop", (params) => {
+      params.event.preventDefault();
+      if (props.disableImageUpload) {
+        return;
+      }
+      if (!params.event.dataTransfer.items.length) {
+        return;
+      }
+      for (const item of [...params.event.dataTransfer.items]) {
+        if (item.kind !== "file") {
+          return;
+        }
+        const file = item.getAsFile();
+        const coord = tipTapEditor.view.posAtCoords({left: params.event.clientX, top: params.event.clientY})
+        tipTapEditor.commands.addImage(file, coord.pos);
+      }
     });
     setEditor(tipTapEditor);
   });
@@ -437,14 +452,20 @@ function ExpandedCard(props) {
                     setIsMaximized(isMaximized() === "true" ? "false" : "true")
                   }
                 >
-                  <span class="jam jam-qr-code" style={{ "font-size": '1.5rem', "margin-top": '-2px' }} />
+                  <span
+                    class="jam jam-qr-code"
+                    style={{ "font-size": "1.5rem", "margin-top": "-2px" }}
+                  />
                 </button>
                 <button
                   type="button"
                   class="dialog__toolbar-btn"
                   onClick={props.onClose}
                 >
-                  <span class="jam jam-close" style={{ "font-size": '2rem', "margin-top": '-2px' }} />
+                  <span
+                    class="jam jam-close"
+                    style={{ "font-size": "2rem", "margin-top": "-2px" }}
+                  />
                 </button>
               </div>
             </header>
@@ -508,6 +529,12 @@ function ExpandedCard(props) {
               >
                 print md
               </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().addImage().run()}
+              >
+                Upload image
+              </button>
             </div>
             <div>
               <button type="button" onClick={() => setMode("richText")}>
@@ -533,7 +560,7 @@ function ExpandedCard(props) {
               value={props.content}
               onChange={(e) => {
                 props.onContentChange(e.target.value);
-                editor().commands.setContent(e.target.value)
+                editor().commands.setContent(e.target.value);
               }}
               style={{ display: mode() === "markdown" ? "initial" : "none" }}
             />
