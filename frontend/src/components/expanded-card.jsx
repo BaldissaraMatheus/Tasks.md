@@ -23,6 +23,7 @@ import Image from "@tiptap/extension-image";
 import Dropcursor from "@tiptap/extension-dropcursor";
 import { IndentHandler } from "../tiptap-extensions/ident-handler";
 import { UploadImage } from "../tiptap-extensions/upload-image";
+import { EnhancedLink } from "../tiptap-extensions/link";
 
 /**
  *
@@ -305,6 +306,9 @@ function ExpandedCard(props) {
       onUpdate: () => {
         props.onContentChange(editor().storage.markdown.getMarkdown());
       },
+      onTransaction: (res) => {
+        setCursorPos(res.transaction.selection.$anchor.pos);
+      },
       extensions: [
         // TODO use env variable to enable/disable ident (for accessibility concerns)
         StarterKit.configure({
@@ -313,6 +317,7 @@ function ExpandedCard(props) {
           codeBlock: false,
           dropcursor: false,
         }),
+        EnhancedLink,
         Markdown.configure({
           transformPastedText: true,
           transformCopiedText: true,
@@ -353,7 +358,10 @@ function ExpandedCard(props) {
           return;
         }
         const file = item.getAsFile();
-        const coord = tipTapEditor.view.posAtCoords({left: params.event.clientX, top: params.event.clientY})
+        const coord = tipTapEditor.view.posAtCoords({
+          left: params.event.clientX,
+          top: params.event.clientY,
+        });
         tipTapEditor.commands.addImage(file, coord.pos);
       }
     });
@@ -394,6 +402,69 @@ function ExpandedCard(props) {
       handleDialogCancel();
     }
   }
+
+  const [cursorPos, setCursorPos] = createSignal(null);
+
+  const activeNodes = createMemo(() => {
+    // if (props.content || props.editor().state.editor) {
+    if (!props.content) {
+      return [];
+    }
+    if (cursorPos() === null) {
+      return [];
+    }
+    const newActiveNodes = [];
+    console.log(editor().isActive("heading", { level: 1 }));
+    if (editor().isActive("heading", { level: 1 })) {
+      newActiveNodes.push("h1");
+    }
+    if (editor().isActive("heading", { level: 2 })) {
+      newActiveNodes.push("h2");
+    }
+    if (editor().isActive("heading", { level: 3 })) {
+      newActiveNodes.push("h3");
+    }
+    if (editor().isActive("heading", { level: 4 })) {
+      newActiveNodes.push("h4");
+    }
+    if (editor().isActive("heading", { level: 5 })) {
+      newActiveNodes.push("h5");
+    }
+    if (editor().isActive("heading", { level: 6 })) {
+      newActiveNodes.push("h6");
+    }
+    if (editor().isActive("bold")) {
+      newActiveNodes.push("bold");
+    }
+    if (editor().isActive("italic")) {
+      newActiveNodes.push("italic");
+    }
+    if (editor().isActive("strike")) {
+      newActiveNodes.push("strike");
+    }
+    if (editor().isActive("code")) {
+      newActiveNodes.push("code");
+    }
+    if (editor().isActive("codeBlock")) {
+      newActiveNodes.push("codeBlock");
+    }
+    if (editor().isActive("blockquote")) {
+      newActiveNodes.push("blockquote");
+    }
+    if (editor().isActive("bulletList")) {
+      newActiveNodes.push("bulletList");
+    }
+    if (editor().isActive("orderedList")) {
+      newActiveNodes.push("orderedList");
+    }
+    if (editor().isActive("taskList")) {
+      newActiveNodes.push("taskList");
+    }
+    if (editor().isActive("link")) {
+      newActiveNodes.push("link");
+    }
+    return newActiveNodes;
+  });
 
   return (
     <Portal>
@@ -512,14 +583,176 @@ function ExpandedCard(props) {
                 )}
               </For>
             </div>
-            <div>
+            <div
+              style={{
+                display: "flex",
+                overflow: "auto",
+                gap: "6px",
+                "margin-bottom": "12px",
+              }}
+            >
               <button
                 type="button"
-                onClick={() => editor()?.chain().focus().toggleTaskList().run()}
-                className={editor()?.isActive("taskList") ? "is-active" : ""}
+                onClick={() => {
+                  console.log(editor().chain().focus());
+                }}
               >
-                Toggle task list
+                commands
               </button>
+              <Show when={editor()}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    editor().chain().focus().toggleHeading({ level: 1 }).run()
+                  }
+                  className={activeNodes().includes("h1") ? "active" : ""}
+                >
+                  H1
+                </button>
+              </Show>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleHeading({ level: 2 }).run()
+                }
+                className={activeNodes().includes("h2") ? "active" : ""}
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleHeading({ level: 3 }).run()
+                }
+                className={activeNodes().includes("h3") ? "active" : ""}
+              >
+                H3
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleHeading({ level: 4 }).run()
+                }
+                className={activeNodes().includes("h4") ? "active" : ""}
+              >
+                H4
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleHeading({ level: 5 }).run()
+                }
+                className={activeNodes().includes("h5") ? "active" : ""}
+              >
+                H5
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().toggleBold().run()}
+                className={activeNodes().includes("bold") ? "active" : ""}
+              >
+                Bold
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().toggleItalic().run()}
+                className={activeNodes().includes("italic") ? "active" : ""}
+              >
+                Italic
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().toggleStrike().run()}
+                className={activeNodes().includes("strike") ? "active" : ""}
+              >
+                Strikethrough
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().toggleCode().run()}
+                className={activeNodes().includes("code") ? "active" : ""}
+              >
+                Inline code
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().toggleCodeBlock().run()}
+                className={activeNodes().includes("codeBlock") ? "active" : ""}
+              >
+                Code block
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleBlockquote().run()
+                }
+                className={activeNodes().includes("blockquote") ? "active" : ""}
+              >
+                Quote
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleBulletList().run()
+                }
+                className={activeNodes().includes("bulletList") ? "active" : ""}
+              >
+                Unnordered List
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor().chain().focus().toggleOrderedList().run()
+                }
+                className={activeNodes().includes("orderedList") ? "active" : ""}
+              >
+                Ordered List
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().toggleTaskList().run()}
+                className={activeNodes().includes("taskList") ? "active" : ""}
+              >
+                Task List
+              </button>
+              <button
+                type="button"
+                // TODO move to function
+                onClick={() => {
+                  const previousUrl = editor().getAttributes("link").href;
+                  const url = window.prompt("URL", previousUrl);
+                  if (url === null) {
+                    return;
+                  }
+                  if (url === "") {
+                    editor()
+                      .chain()
+                      .focus()
+                      .extendMarkRange("link")
+                      .unsetLink()
+                      .run();
+                    return;
+                  }
+                  editor()
+                    .chain()
+                    .focus()
+                    .extendMarkRange("link")
+                    .setLink({ href: url })
+                    .run();
+                }}
+                className={activeNodes().includes("link") ? "active" : ""}
+                // onClick={() => editor().chain().focus().toggleOrderedList().run()}
+              >
+                Link
+              </button>
+              <button
+                type="button"
+                onClick={() => editor().chain().focus().addImage().run()}
+              >
+                Upload Image
+              </button>
+            </div>
+            <div>
               <button
                 type="button"
                 onClick={() =>
@@ -528,12 +761,6 @@ function ExpandedCard(props) {
                 className={editor()?.isActive("taskList") ? "is-active" : ""}
               >
                 print md
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().addImage().run()}
-              >
-                Upload image
               </button>
             </div>
             <div>

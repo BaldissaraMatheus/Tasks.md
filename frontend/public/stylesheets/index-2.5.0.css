@@ -143,6 +143,10 @@ button:hover {
   filter: brightness(1.2);
 }
 
+button:active, button.active {
+  filter: brightness(0.8);
+}
+
 @media (prefers-color-scheme: light) {
   button:hover {
     filter: brightness(1.05);
@@ -493,15 +497,15 @@ dialog:not(.dialog--maximized) {
   }
 
   strong::before, strong::after {
-    content: "**";
+    /* content: "**"; */
   }
 
   em::before, em::after {
-    content: "*";
+    /* content: "*"; */
   }
 
   s::before, s::after {
-    content: "~~";
+    /* content: "~~"; */
     display: inline-block;
   }
 
