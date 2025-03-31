@@ -5,10 +5,8 @@ import {
 /**
  * Matches a task item to a - [ ] on input.
  */
-// export const inputRegex = /^\s*([-+*])\s\[\s*([x ]+)]/
 // https://discuss.prosemirror.net/t/insert-match-in-todom/3900/3
 export const inputRegex = /^\s*([-+*])\s(\[(x|X| )\])\s$/
-// export const inputRegex = /^\s*([-+*])\s\[\s*([x ]+)]/
 
 /**
  * This extension allows you to create task items.
