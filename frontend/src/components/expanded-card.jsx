@@ -14,6 +14,7 @@ import { Portal } from "solid-js/web";
 import { StacksEditor } from './Stacks-Editor/src/stacks-editor/editor'
 import stacksStyle from './Stacks-Editor/node_modules/@stackoverflow/stacks/dist/css/stacks.css?inline'
 import stacksEditorStyle from './Stacks-Editor/src/styles/index.css?inline'
+import { IconClear, IconScreenFull } from '@stackoverflow/stacks-icons/icons'
 
 /**
  *
@@ -417,20 +418,14 @@ function ExpandedCard(props) {
                     setIsMaximized(isMaximized() === "true" ? "false" : "true")
                   }
                 >
-                  <span
-                    class="jam jam-qr-code"
-                    style={{ "font-size": "1.5rem", "margin-top": "-2px" }}
-                  />
+                  <span innerHTML={IconScreenFull} />
                 </button>
                 <button
                   type="button"
                   class="dialog__toolbar-btn"
                   onClick={props.onClose}
                 >
-                  <span
-                    class="jam jam-close"
-                    style={{ "font-size": "2rem", "margin-top": "-2px" }}
-                  />
+                  <span innerHTML={IconClear} />
                 </button>
               </div>
             </header>
