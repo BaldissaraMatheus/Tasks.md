@@ -11,8 +11,8 @@ import { handleKeyDown, clickOutside } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
 import { NameInput } from "./name-input";
 import { Portal } from "solid-js/web";
-import { StacksEditor } from './Stacks-Editor/src/stacks-editor/editor'
-import stacksStyle from './Stacks-Editor/node_modules/@stackoverflow/stacks/dist/css/stacks.css?inline'
+import { StacksEditor } from 'stacks-editor/src/stacks-editor/editor'
+import stacksStyle from '@stackoverflow/stacks/dist/css/stacks.css?inline'
 import stacksEditorStyle from './Stacks-Editor/src/styles/index.css?inline'
 import { IconClear, IconScreenFull } from '@stackoverflow/stacks-icons/icons'
 
