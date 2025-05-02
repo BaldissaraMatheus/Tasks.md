@@ -11,19 +11,9 @@ import { handleKeyDown, clickOutside } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
 import { NameInput } from "./name-input";
 import { Portal } from "solid-js/web";
-import { Editor } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
-import { TaskList } from "../tiptap-extensions/task-list";
-import { TaskItem } from "../tiptap-extensions/task-item";
-import { BulletList } from "../tiptap-extensions/bullet-list";
-import ListItem from "@tiptap/extension-list-item";
-import { CodeBlock } from "../tiptap-extensions/code-block";
-import Image from "@tiptap/extension-image";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import { IndentHandler } from "../tiptap-extensions/ident-handler";
-import { UploadImage } from "../tiptap-extensions/upload-image";
-import { EnhancedLink } from "../tiptap-extensions/link";
+import { StacksEditor } from './Stacks-Editor/src/stacks-editor/editor'
+import stacksStyle from './Stacks-Editor/node_modules/@stackoverflow/stacks/dist/css/stacks.css?inline'
+import stacksEditorStyle from './Stacks-Editor/src/styles/index.css?inline'
 
 /**
  *
@@ -298,81 +288,48 @@ function ExpandedCard(props) {
   });
 
   onMount(() => {
-    // TODO add help link to https://github.com/BaldissaraMatheus/Tasks.md/issues
-    const tipTapEditor = new Editor({
-      element: editorContainerRef,
-      content: props.content || "",
-      autofocus: true,
-      onUpdate: () => {
-        props.onContentChange(editor().storage.markdown.getMarkdown());
-      },
-      onTransaction: (res) => {
-        setCursorPos(res.transaction.selection.$anchor.pos);
-      },
-      extensions: [
-        // TODO use env variable to enable/disable ident (for accessibility concerns)
-        StarterKit.configure({
-          bulletList: false,
-          listItem: false,
-          codeBlock: false,
-          dropcursor: false,
-        }),
-        EnhancedLink,
-        Markdown.configure({
-          transformPastedText: true,
-          transformCopiedText: true,
-          tightLists: true,
-        }),
-        IndentHandler,
-        UploadImage.configure({
-          uploadFn: uploadImage,
-        }),
-        Image,
-        Dropcursor.configure({
-          color: "var(--accent-color)",
-        }),
-        CodeBlock,
-        TaskList.configure({
-          keepAttributes: true,
-        }),
-        TaskItem.configure({
-          keepAttributes: true,
-          nested: true,
-        }),
-        BulletList.configure({
-          itemTypeName: "listItem",
-        }),
-        ListItem,
-      ],
-    });
-    tipTapEditor.on("drop", (params) => {
-      params.event.preventDefault();
-      if (props.disableImageUpload) {
-        return;
+    const editorClasses = ["editor", "theme-system"];
+    if (props.disableImageUpload) {
+      editorClasses.push("disable-image-upload");
+    }
+    console.log(StacksEditor)
+    const newEditor = new StacksEditor(
+      editorContainerRef,
+      props.content || "",
+      {
+        classList: ["theme-system"],
+        targetClassList: editorClasses,
+        editorHelpLink: "https://github.com/BaldissaraMatheus/Tasks.md/issues",
+        imageUpload: { handler: uploadImage },
       }
-      if (!params.event.dataTransfer.items.length) {
-        return;
-      }
-      for (const item of [...params.event.dataTransfer.items]) {
-        if (item.kind !== "file") {
-          return;
-        }
-        const file = item.getAsFile();
-        const coord = tipTapEditor.view.posAtCoords({
-          left: params.event.clientX,
-          top: params.event.clientY,
-        });
-        tipTapEditor.commands.addImage(file, coord.pos);
-      }
-    });
-    setEditor(tipTapEditor);
+    );
+    setEditor(newEditor);
+    const toolbarEndGroupNodes = [
+      ...editorContainerRef.childNodes[0].childNodes[1].childNodes[0]
+        .childNodes[1].childNodes[0].childNodes,
+    ];
+    const modeBtns = toolbarEndGroupNodes.filter((node) => node.title);
+    setModeBtns(modeBtns);
   });
+
+  function handleClickEditorMode(e) {
+    setMode(e.currentTarget.title);
+  }
 
   createEffect(() => {
     if (!editor || !dialogRef) {
       return;
     }
     dialogRef.show();
+    for (const btn of modeBtns()) {
+      btn.addEventListener("click", handleClickEditorMode);
+    }
+    const modeBtn = modeBtns().find(
+      (node) => node.title === mode()
+    );
+    modeBtn.click();
+    const editorTextArea = editorContainerRef.childNodes[0].childNodes[2];
+    editorTextArea.focus();
   });
 
   onCleanup(() => {
@@ -402,69 +359,6 @@ function ExpandedCard(props) {
       handleDialogCancel();
     }
   }
-
-  const [cursorPos, setCursorPos] = createSignal(null);
-
-  const activeNodes = createMemo(() => {
-    // if (props.content || props.editor().state.editor) {
-    if (!props.content) {
-      return [];
-    }
-    if (cursorPos() === null) {
-      return [];
-    }
-    const newActiveNodes = [];
-    console.log(editor().isActive("heading", { level: 1 }));
-    if (editor().isActive("heading", { level: 1 })) {
-      newActiveNodes.push("h1");
-    }
-    if (editor().isActive("heading", { level: 2 })) {
-      newActiveNodes.push("h2");
-    }
-    if (editor().isActive("heading", { level: 3 })) {
-      newActiveNodes.push("h3");
-    }
-    if (editor().isActive("heading", { level: 4 })) {
-      newActiveNodes.push("h4");
-    }
-    if (editor().isActive("heading", { level: 5 })) {
-      newActiveNodes.push("h5");
-    }
-    if (editor().isActive("heading", { level: 6 })) {
-      newActiveNodes.push("h6");
-    }
-    if (editor().isActive("bold")) {
-      newActiveNodes.push("bold");
-    }
-    if (editor().isActive("italic")) {
-      newActiveNodes.push("italic");
-    }
-    if (editor().isActive("strike")) {
-      newActiveNodes.push("strike");
-    }
-    if (editor().isActive("code")) {
-      newActiveNodes.push("code");
-    }
-    if (editor().isActive("codeBlock")) {
-      newActiveNodes.push("codeBlock");
-    }
-    if (editor().isActive("blockquote")) {
-      newActiveNodes.push("blockquote");
-    }
-    if (editor().isActive("bulletList")) {
-      newActiveNodes.push("bulletList");
-    }
-    if (editor().isActive("orderedList")) {
-      newActiveNodes.push("orderedList");
-    }
-    if (editor().isActive("taskList")) {
-      newActiveNodes.push("taskList");
-    }
-    if (editor().isActive("link")) {
-      newActiveNodes.push("link");
-    }
-    return newActiveNodes;
-  });
 
   return (
     <Portal>
@@ -583,214 +477,19 @@ function ExpandedCard(props) {
                 )}
               </For>
             </div>
-            <div
-              style={{
-                display: "flex",
-                overflow: "auto",
-                gap: "6px",
-                "margin-bottom": "12px",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  console.log(editor().chain().focus());
+            <div class="dialog__content">
+              <style>{stacksStyle}</style>
+              <style>{stacksEditorStyle}</style>
+              <div
+                id="editor-container"
+                autofocus
+                ref={(el) => {
+                  editorContainerRef = el;
                 }}
-              >
-                commands
-              </button>
-              <Show when={editor()}>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor().chain().focus().toggleHeading({ level: 1 }).run()
-                  }
-                  className={activeNodes().includes("h1") ? "active" : ""}
-                >
-                  H1
-                </button>
-              </Show>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleHeading({ level: 2 }).run()
-                }
-                className={activeNodes().includes("h2") ? "active" : ""}
-              >
-                H2
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleHeading({ level: 3 }).run()
-                }
-                className={activeNodes().includes("h3") ? "active" : ""}
-              >
-                H3
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleHeading({ level: 4 }).run()
-                }
-                className={activeNodes().includes("h4") ? "active" : ""}
-              >
-                H4
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleHeading({ level: 5 }).run()
-                }
-                className={activeNodes().includes("h5") ? "active" : ""}
-              >
-                H5
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().toggleBold().run()}
-                className={activeNodes().includes("bold") ? "active" : ""}
-              >
-                Bold
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().toggleItalic().run()}
-                className={activeNodes().includes("italic") ? "active" : ""}
-              >
-                Italic
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().toggleStrike().run()}
-                className={activeNodes().includes("strike") ? "active" : ""}
-              >
-                Strikethrough
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().toggleCode().run()}
-                className={activeNodes().includes("code") ? "active" : ""}
-              >
-                Inline code
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().toggleCodeBlock().run()}
-                className={activeNodes().includes("codeBlock") ? "active" : ""}
-              >
-                Code block
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleBlockquote().run()
-                }
-                className={activeNodes().includes("blockquote") ? "active" : ""}
-              >
-                Quote
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleBulletList().run()
-                }
-                className={activeNodes().includes("bulletList") ? "active" : ""}
-              >
-                Unnordered List
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  editor().chain().focus().toggleOrderedList().run()
-                }
-                className={activeNodes().includes("orderedList") ? "active" : ""}
-              >
-                Ordered List
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().toggleTaskList().run()}
-                className={activeNodes().includes("taskList") ? "active" : ""}
-              >
-                Task List
-              </button>
-              <button
-                type="button"
-                // TODO move to function
-                onClick={() => {
-                  const previousUrl = editor().getAttributes("link").href;
-                  const url = window.prompt("URL", previousUrl);
-                  if (url === null) {
-                    return;
-                  }
-                  if (url === "") {
-                    editor()
-                      .chain()
-                      .focus()
-                      .extendMarkRange("link")
-                      .unsetLink()
-                      .run();
-                    return;
-                  }
-                  editor()
-                    .chain()
-                    .focus()
-                    .extendMarkRange("link")
-                    .setLink({ href: url })
-                    .run();
-                }}
-                className={activeNodes().includes("link") ? "active" : ""}
-                // onClick={() => editor().chain().focus().toggleOrderedList().run()}
-              >
-                Link
-              </button>
-              <button
-                type="button"
-                onClick={() => editor().chain().focus().addImage().run()}
-              >
-                Upload Image
-              </button>
+                onKeyDown={handleEditorOnChange}
+                onClick={handleEditorOnChange}
+              />
             </div>
-            <div>
-              <button
-                type="button"
-                onClick={() =>
-                  console.log(editor().storage.markdown.getMarkdown())
-                }
-                className={editor()?.isActive("taskList") ? "is-active" : ""}
-              >
-                print md
-              </button>
-            </div>
-            <div>
-              <button type="button" onClick={() => setMode("richText")}>
-                Rich text
-              </button>
-              <button type="button" onClick={() => setMode("markdown")}>
-                Markdown
-              </button>
-            </div>
-            <div
-              class="dialog__content"
-              id="editor-container"
-              ref={(el) => {
-                editorContainerRef = el;
-              }}
-              style={{
-                display: mode() === "richText" ? "initial" : "none",
-              }}
-              // onKeyDown={handleEditorOnChange}
-              // onClick={handleEditorOnChange}
-            />
-            <textarea
-              value={props.content}
-              onChange={(e) => {
-                props.onContentChange(e.target.value);
-                editor().commands.setContent(e.target.value);
-              }}
-              style={{ display: mode() === "markdown" ? "initial" : "none" }}
-            />
           </div>
           <Menu
             id="tag-menu"
