@@ -2,6 +2,7 @@ import { createSignal } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
 import { Portal } from "solid-js/web";
+import { IconEllipsisVertical } from '@stackoverflow/stacks-icons/icons'
 
 /**
  *
@@ -68,7 +69,7 @@ export function CardName(props) {
 						)
 					}
 				>
-					<span class="jam jam-more-vertical-f" />
+					<span innerHTML={IconEllipsisVertical} />
 				</button>
 			</div>
 			{showMenu() ? (

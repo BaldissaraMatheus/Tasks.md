@@ -1,6 +1,7 @@
 import { createSignal } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
+import { IconPlusSm, IconEllipsisVertical } from '@stackoverflow/stacks-icons/icons'
 
 /**
  *
@@ -69,7 +70,7 @@ export function LaneName(props) {
 					class="small"
 					onClick={() => props.onCreateNewCardBtnClick()}
 				>
-					<span class="jam jam-plus" />
+					<span innerHTML={IconPlusSm} />
 				</button>
 				<button
 					type="button"
@@ -81,7 +82,7 @@ export function LaneName(props) {
 						handleKeyDown(e, () => handleOptionsBtnClick(e, true), handleCancel)
 					}
 				>
-					<span class="jam jam-more-vertical-f" />
+					<span innerHTML={IconEllipsisVertical} />
 				</button>
 			</div>
 			{showMenu() ? (

@@ -1,7 +1,6 @@
 /* Reset preset taken from https://keithjgrant.com/posts/2024/01/my-css-resets/ */
 @import url('./reset.css');
 @import url('./custom.css');
-@import url('./jam-icons/stylesheets/jam.min.css');
 
 :root {
   --accent-color: blue;
@@ -145,6 +144,10 @@ button:hover {
 
 button:active, button.active {
   filter: brightness(0.8);
+}
+
+button svg {
+ fill: var(--button-font-color); 
 }
 
 @media (prefers-color-scheme: light) {
