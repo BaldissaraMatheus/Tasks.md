@@ -2,10 +2,6 @@
 @import url('./reset.css');
 @import url('./custom.css');
 
-:root {
-  --accent-color: blue;
-}
-
 html,
 body,
 input,
@@ -476,4 +472,65 @@ a > * {
 .being-dragged.card,
 .being-dragged > .lane__content {
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px 0px;
+}
+
+
+
+#editor-container {
+  height: 100%;
+  position: relative;
+}
+
+.editor {
+  height: 100%;
+  max-height: none;
+  resize: none;
+  margin-bottom: 4rem;
+  background: var(--editor-background-color) !important;
+  border-color: var(--input-border-color) !important;
+  color: var(--font-color) !important;
+}
+
+.disable-image-upload .js-insert-image-btn {
+  display: none;
+}
+
+.editor {
+  resize: none !important;
+}
+
+.editor .s-btn {
+  color: var(--font-color);
+}
+
+.editor .s-btn:hover {
+  background: var(--button-background-color) !important;
+}
+
+.editor .is-selected {
+  background: var(--tag-color-1) !important;
+  color: var(--tag-color-1);
+}
+
+.editor .s-popover {
+  background: var(--popup-background-color);
+  border-color: var(--popup-border-color);
+  color: var(--popup-font-color);
+}
+
+.editor .s-popover button {
+  color: var(--popup-font-color);
+  border: none 0;
+}
+
+.editor .s-popover--arrow {
+  color: var(--popup-background-color) important;
+}
+
+.editor pre {
+  background: var(--editor-code-background-color);
+}
+
+.editor .s-btn__outlined {
+  border-color: var(--button-border-color);
 }
