@@ -58,7 +58,7 @@ Use the Docker section above as reference for setting up variables and volumes.
 
 
 ### Source code
-Open a terminal instance in the frontend directory and another one in the backend directory, then in both of them run `npm install` and `npm start`.
+Clone the repository with `git clone --recursive`, open a terminal instance in the `/frontend` directory and another one in the `/backend` directory, then in both of them run `npm install` and `npm start`.
 
 ## 🎨 Customize
 All CSS files are available in the stylesheets directory under the config volume, any custom style is recommended to be added to `custom.css` file. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, change the first line of `/stylesheets/custom.css` to the path of the color theme you want, then hard-reload the browser (`Ctr+F5`). You can find the built-in themes  under `/stylesheets/color-themes`.
