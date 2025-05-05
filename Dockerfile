@@ -1,5 +1,6 @@
 FROM node:18.20.4-alpine3.20 AS build-stage
 
+RUN apk add git
 RUN set -eux \
     && mkdir -p /app \
     && mkdir -p /api \
@@ -8,8 +9,8 @@ RUN set -eux \
 COPY frontend/ /app
 
 WORKDIR /app
+RUN git clone https://github.com/BaldissaraMatheus/Stacks-Editor src/components/Stacks-Editor
 RUN set -eux \
-    && git submodule update --init --recursive \
     && npm ci --no-audit \
     && npm run build
 
