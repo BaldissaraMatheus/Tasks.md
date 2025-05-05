@@ -28,8 +28,6 @@
     "@tiptap/extension-list-item": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
     "editor.md": "^1.5.0",
-    "solid-js": "^1.6.10",
-    "tiptap": "^1.32.2",
-    "tiptap-markdown": "^0.8.10"
+    "solid-js": "^1.6.10"
   }
 }
