@@ -9,6 +9,7 @@ COPY frontend/ /app
 
 WORKDIR /app
 RUN set -eux \
+    && git submodule update --init --recursive \
     && npm ci --no-audit \
     && npm run build
 
