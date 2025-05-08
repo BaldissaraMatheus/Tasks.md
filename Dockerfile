@@ -46,8 +46,6 @@ COPY --from=build-stage --chown=$PUID:$PGID /app/dist/stylesheets/. /stylesheets
 COPY --from=build-stage --chown=$PUID:$PGID /api/ /api/
 RUN rm -r /static/stylesheets
 
-VOLUME /tasks
-VOLUME /config
 WORKDIR /api
 EXPOSE 8080
 
