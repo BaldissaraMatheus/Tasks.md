@@ -3,8 +3,7 @@ FROM node:18.20.4-alpine3.20 AS build-stage
 RUN apk add git
 RUN set -eux \
     && mkdir -p /app \
-    && mkdir -p /api \
-    && mkdir -p /tasks
+    && mkdir -p /api
 
 COPY frontend/ /app
 
@@ -53,7 +52,8 @@ WORKDIR /api
 EXPOSE 8080
 
 
-ENTRYPOINT mkdir -p ${CONFIG_DIR}/stylesheets/ && \
+ENTRYPOINT mkdir -p ${TASKS_DIR} && \
+           mkdir -p ${CONFIG_DIR}/stylesheets/ && \
            mkdir -p ${CONFIG_DIR}/images/ && \
            mkdir -p ${CONFIG_DIR}/sort/ && \
            cp -r ${CONFIG_DIR}/stylesheets/. /stylesheets/ && \
