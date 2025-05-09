@@ -12,9 +12,9 @@ import { makePersisted } from "@solid-primitives/storage";
 import { NameInput } from "./name-input";
 import { Portal } from "solid-js/web";
 import { StacksEditor } from './Stacks-Editor/src/stacks-editor/editor'
+import { IconClear, IconScreenFull } from '@stackoverflow/stacks-icons/icons'
 import stacksStyle from '@stackoverflow/stacks/dist/css/stacks.css?inline'
 import stacksEditorStyle from './Stacks-Editor/src/styles/index.css?inline'
-import { IconClear, IconScreenFull } from '@stackoverflow/stacks-icons/icons'
 
 /**
  *
@@ -244,7 +244,7 @@ function ExpandedCard(props) {
       mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        backgroundColor: `var(--tag-color-${option + 1})`,
+        backgroundColor: `var(--color-alt-${option + 1})`,
       }),
     }).then((res) => props.onTagColorChange());
   }
@@ -258,7 +258,7 @@ function ExpandedCard(props) {
           Color {i + 1}{" "}
           <div
             class="color-preview-option"
-            style={{ "background-color": `var(--tag-color-${i + 1})` }}
+            style={{ "background-color": `var(--color-alt-${i + 1})` }}
           />
         </>
       ),
@@ -293,7 +293,6 @@ function ExpandedCard(props) {
     if (props.disableImageUpload) {
       editorClasses.push("disable-image-upload");
     }
-    console.log(StacksEditor)
     const newEditor = new StacksEditor(
       editorContainerRef,
       props.content || "",
@@ -363,6 +362,7 @@ function ExpandedCard(props) {
 
   return (
     <Portal>
+      {/* <style>{regularStyle}</style> */}
       <div
         class="dialog-backdrop"
         onClick={handleBackdropClick}
@@ -457,7 +457,6 @@ function ExpandedCard(props) {
                     class="tag tag--clicable"
                     style={{
                       "background-color": tag.backgroundColor,
-                      "border-color": tag.backgroundColor,
                     }}
                     role="button"
                     popoverTarget="tag-menu"
@@ -473,8 +472,8 @@ function ExpandedCard(props) {
               </For>
             </div>
             <div class="dialog__content">
-              <style>{stacksStyle}</style>
               <style>{stacksEditorStyle}</style>
+              <style>{stacksStyle}</style>
               <div
                 id="editor-container"
                 autofocus

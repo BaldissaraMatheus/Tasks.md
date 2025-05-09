@@ -1,6 +1,8 @@
-/* Reset preset taken from https://keithjgrant.com/posts/2024/01/my-css-resets/ */
 @import url('./reset.css');
-@import url('./custom.css');
+
+:root {
+  --accent-color: var(--color-accent);
+}
 
 html,
 body,
@@ -20,7 +22,7 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: var(--font-color);
+  color: var(--color-foreground);
   overflow: hidden;
 }
 
@@ -57,7 +59,7 @@ ul,
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  background: var(--app-background-color);
+  background: var(--color-background-1);
 }
 
 .app-header {
@@ -66,14 +68,14 @@ ul,
   align-items: center;
   gap: 12px;
   padding: 12px 24px;
-  background: var(--app-header-background-color);
-  border-bottom: 1px solid var(--app-header-border-color);
+  background: var(--color-background-2);
+  border-bottom: 1px solid var(--color-background-4);
   max-width: 100%;
   flex-wrap: wrap;
 }
 
 .lanes {
-  background: var(--app-background-color);
+  background: var(--color-background-1);
   padding: 20px;
   box-sizing: border-box;
   display: flex;
@@ -102,14 +104,14 @@ select {
   font-size: inherit;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
-  color: var(--font-color);
+  color: var(--color-foreground);
   white-space: nowrap;
 }
 
 input,
 select {
-  background: var(--input-background-color);
-  border: 1px solid var(--input-border-color);
+  background: var(--color-background-4);
+  border: 0;
 }
 
 input {
@@ -125,9 +127,9 @@ select {
 
 button {
   transition: all 0.1s;
-  background: var(--button-background-color);
-  border: 1px solid var(--button-border-color);
-  color: var(--button-font-color);
+  background: var(--color-background-4);
+  border: none;
+  color: var(--color-foreground);
   text-align: center;
   text-align: -moz-center;
   text-align: -webkit-center;
@@ -138,18 +140,18 @@ button:hover {
   filter: brightness(1.2);
 }
 
+@media (prefers-color-scheme: light) {
+  button:hover {
+    filter: brightness(1.05);
+  }
+}
+
 button:active, button.active {
   filter: brightness(0.8);
 }
 
 button svg {
- fill: var(--button-font-color); 
-}
-
-@media (prefers-color-scheme: light) {
-  button:hover {
-    filter: brightness(1.05);
-  }
+ fill: var(--color-foreground); 
 }
 
 button.small {
@@ -221,7 +223,7 @@ button.small {
 .lane__content {
   flex-grow: 1;
   width: 300px;
-  background: var(--lane-background-color);
+  background: var(--color-background-2);
   border-radius: 8px;
   padding: 12px;
   box-sizing: border-box;
@@ -236,8 +238,7 @@ button.small {
 
 .card {
   width: 100%;
-  background: var(--card-background-color);
-  border: 1px solid var(--card-border-color);
+  background: var(--color-background-3);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -280,13 +281,17 @@ button.small {
   gap: 8px;
   overflow: hidden;
   min-height: 40px;
+  padding: 0;
+  /* Those are required to override stacks classes */
+  margin: 0;
+  list-style-type: none;
 }
 
 [popover] {
   inset: unset;
   position: absolute;
   border-radius: 6px;
-  border: 1px solid var(--popup-border-color);
+  border: 1px solid var(--color-background-4);
   box-sizing: border-box;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05), 0 2px 2px rgba(0, 0, 0, 0.05),
     0 4px 4px rgba(0, 0, 0, 0.05), 0 6px 8px rgba(0, 0, 0, 0.05),
@@ -308,9 +313,9 @@ button.small {
   gap: 8px;
   border: 0;
   text-align: left;
-  background: var(--popup-background-color);
+  background: var(--color-background-2);
   border-radius: 0;
-  color: var(--popup-font-color);
+  color: var(--color-foreground);
 }
 
 [popover] > :first-child {
@@ -324,8 +329,7 @@ button.small {
 .tag {
   padding: 4px;
   border-radius: 5px;
-  border: 1px solid var(--tag-color-1);
-  background-color: var(--tag-color-1);
+  background: var(--color-accent);
   user-select: none;
   white-space: nowrap;
 }
@@ -335,7 +339,7 @@ button.small {
 }
 
 .tag h5 {
-  color: var(--tag-text-color);
+  color: var(--color-foreground);
 }
 
 .counter {
@@ -358,7 +362,7 @@ dialog {
   height: 100%;
   inset: 0px;
   border: none;
-  background: var(--dialog-background-color);
+  background: var(--color-background-2);
   border-radius: 5px;
 }
 
@@ -397,7 +401,7 @@ dialog:not(.dialog--maximized) {
   display: inline-block;
   margin-top: 0;
   margin-bottom: 0;
-  color: var(--font-color);
+  color: var(--color-foreground);
 }
 
 .dialog__toolbar-btns {
@@ -443,18 +447,18 @@ dialog:not(.dialog--maximized) {
 }
 
 .input-error {
-  outline: 1px solid var(--danger-color);
-  border-color: var(--danger-color);
+  outline: 1px solid var(--color-alt-1);
+  border-color: var(--color-alt-1);
 }
 
 .error-msg {
-  color: var(--danger-color);
+  color: var(--color-alt-1);
   font-size: 0.8rem;
 }
 
 a,
 a > * {
-  color: var(--link-color) !important;
+  color: var(--color-accent) !important;
 }
 
 .color-preview-option {
@@ -473,9 +477,6 @@ a > * {
 .being-dragged > .lane__content {
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 12px 0px;
 }
-
-
-
 #editor-container {
   height: 100%;
   position: relative;
@@ -486,9 +487,9 @@ a > * {
   max-height: none;
   resize: none;
   margin-bottom: 4rem;
-  background: var(--editor-background-color) !important;
-  border-color: var(--input-border-color) !important;
-  color: var(--font-color) !important;
+  background: var(--color-background-1) !important;
+  border: none !important;
+  color: var(--color-foreground) !important;
 }
 
 .disable-image-upload .js-insert-image-btn {
@@ -500,37 +501,37 @@ a > * {
 }
 
 .editor .s-btn {
-  color: var(--font-color);
+  color: var(--color-accent);
 }
 
 .editor .s-btn:hover {
-  background: var(--button-background-color) !important;
+  background: var(--color-background-3) !important;
 }
 
 .editor .is-selected {
-  background: var(--tag-color-1) !important;
-  color: var(--tag-color-1);
+  background: var(--color-accent) !important;
+  color: var(--color-accent);
 }
 
 .editor .s-popover {
-  background: var(--popup-background-color);
-  border-color: var(--popup-border-color);
-  color: var(--popup-font-color);
+  background: var(--color-background-2);
+  border-color: var(--color-accent);
+  color: var(--color-foreground);
 }
 
 .editor .s-popover button {
-  color: var(--popup-font-color);
+  color: var(--color-foreground);
   border: none 0;
 }
 
 .editor .s-popover--arrow {
-  color: var(--popup-background-color) important;
+  color: var(--color-foreground) !important;
 }
 
 .editor pre {
-  background: var(--editor-code-background-color);
+  background: var(--color-background-2) !important;
 }
 
 .editor .s-btn__outlined {
-  border-color: var(--button-border-color);
+  border-color: var(--color-background-4) !important;
 }

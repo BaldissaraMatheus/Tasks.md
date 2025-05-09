@@ -61,7 +61,23 @@ Use the Docker section above as reference for setting up variables and volumes.
 Clone the repository with `git clone --recursive`, open a terminal instance in the `/frontend` directory and another one in the `/backend` directory, then in both of them run `npm install` and `npm start`.
 
 ## 🎨 Customize
-All CSS files are available in the stylesheets directory under the config volume, any custom style is recommended to be added to `custom.css` file. It already comes with 3 color themes: [Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin). To use them, change the first line of `/stylesheets/custom.css` to the path of the color theme you want, then hard-reload the browser (`Ctr+F5`). You can find the built-in themes  under `/stylesheets/color-themes`.
+You can customize the application CSS through the `custom.css` (within `/config` directory if you're on Docker). You can replace the default `adwaita` theme with `nord` or `catppuccin`, or you can make your own changes. The easieste way to customize the application is using the existing color variables (detailed [below](#color-variables)), but if you want to make changes other than color replacements you can use [index.css](frontend/src/stylesheets/index.css) file as a reference.
+
+### Color variables
+- `color-accent`: Highlight color;
+- `color-foreground`: Anything that goes against background that needs contrast, Text color;
+- `color-background-1`: Main background color, used as background color for the app main page;
+- `color-background-2`: 1 layer above main background color, used as background color for editor code-block, dialog, popovers, lanes and header;
+- `color-background-3`: 2 layer above main background color, used as background color for cards;
+- `color-background-4`: 3 layer above main background color, used as background color for buttons and inputs;
+- `color-alt-1`: Used as tag color and input error;
+- `color-alt-2`: Used as tag color;
+- `color-alt-3`: Used as tag color;
+- `color-alt-4`: Used as tag color;
+- `color-alt-5`: Used as tag color;
+- `color-alt-6`: Used as tag color;
+- `color-alt-7`: Used as tag color;
+
 
 ## 📁 Files structure
 The way directories and files are organized in Tasks.md is quite simple. Every lane you add within the app is a directory in your filesystem and every task is file.

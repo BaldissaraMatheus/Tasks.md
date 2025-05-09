@@ -68,7 +68,7 @@ async function getTags(ctx) {
     (tag) =>
       allTags.find((tagToFind) => tagToFind.name.toLowerCase() === tag) || {
         name: tag,
-        backgroundColor: "var(--tag-color-1)",
+        backgroundColor: "var(--color-alt-1)",
       }
   );
   await fs.promises.writeFile(

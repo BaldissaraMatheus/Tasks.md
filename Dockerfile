@@ -9,6 +9,7 @@ RUN set -eux \
 COPY frontend/ /app
 
 WORKDIR /app
+RUN rm -r src/components/Stacks-Editor
 RUN git clone https://github.com/BaldissaraMatheus/Stacks-Editor src/components/Stacks-Editor
 RUN set -eux \
     && npm ci --no-audit \
