@@ -3,10 +3,6 @@ import { render } from "solid-js/web";
 
 import App from "./App";
 
-if (import.meta.env.DEV) {
-	await import("../public/stylesheets/index-2.5.0.css");
-}
-
 const root = document.getElementById("root");
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {

@@ -18,6 +18,7 @@ import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
 import { makePersisted } from "@solid-primitives/storage";
 import { DragAndDrop } from "./components/drag-and-drop";
+import './stylesheets/index.css';
 
 function App() {
 	const [lanes, setLanes] = createSignal([]);
@@ -45,12 +46,18 @@ function App() {
 
 	const [title] = createResource(fetchTitle);
 
+	function getTagBackgroundCssColor(tagColor) {
+		const backgroundColorNumber = RegExp('[0-9]').exec(`${tagColor || '1'}`)[0];
+		const backgroundColor = `var(--color-alt-${backgroundColorNumber})`;
+		return backgroundColor;
+	}
+
 	function getTagsByTagNames(tags, tagNames) {
 		return tagNames.map((tagName) => {
 			const foundTag = tags.find(
 				(tag) => tag.name.toLowerCase() === tagName.toLowerCase(),
 			);
-			const backgroundColor = foundTag?.backgroundColor || "var(--tag-color-1)";
+			const backgroundColor = getTagBackgroundCssColor(foundTag?.backgroundColor)
 			return { name: tagName, backgroundColor };
 		});
 	}
@@ -92,6 +99,7 @@ function App() {
 			newCard.tags = getTagsByTagNames(tags, cardTagsNames);
 			return newCard;
 		});
+		console.log(newCardsWithTags)
 		setCards(newCardsWithTags);
 	}
 
@@ -163,7 +171,7 @@ function App() {
 		);
 		for (const tag of justAddedTags) {
 			const tagColorIndex = pickTagColorIndexBasedOnHash(tag.name);
-			const newColor = `var(--tag-color-${tagColorIndex + 1})`;
+			const newColor = `var(--color-alt-${tagColorIndex + 1})`;
 			await fetch(`${api}/tags/${tag.name}`, {
 				method: "PATCH",
 				mode: "cors",
