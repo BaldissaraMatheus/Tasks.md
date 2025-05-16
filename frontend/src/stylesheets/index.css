@@ -267,7 +267,7 @@ button.small {
   display: flex;
   align-items: start;
   overflow: hidden;
-  margin-bottom: 12px;
+  gap: 8px;
 }
 
 .card__toolbar > :first-child {
@@ -280,11 +280,20 @@ button.small {
   flex-wrap: wrap;
   gap: 8px;
   overflow: hidden;
-  min-height: 40px;
+  min-height: 24px;
   padding: 0;
   /* Those are required to override stacks classes */
   margin: 0;
   list-style-type: none;
+}
+
+.card__tags:not(:empty) {
+  margin-top: 12px;
+}
+
+.card__content {
+  display: none;
+  margin-top: 12px;
 }
 
 [popover] {
@@ -534,4 +543,53 @@ a > * {
 
 .editor .s-btn__outlined {
   border-color: var(--color-background-4) !important;
+}
+
+.view-mode-extended .card__content {
+  display: -webkit-box;
+  height: auto;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  max-height: 3rem;
+}
+
+.view-mode-compact .card__tags  {
+  min-height: 0;
+}
+
+.view-mode-tight .card {
+  padding: 8px;
+}
+
+.view-mode-tight .card__name {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.view-mode-tight .card__tags  {
+  flex-wrap: nowrap;
+  width: 100%;
+  overflow: auto;
+  min-height: 0;
+  margin-top: 6px;
+}
+
+.view-mode-tight .card__toolbar  {
+  gap: 8px;
+}
+
+.view-mode-tight .card .tag  {
+  padding: 2px;
+}
+
+.view-mode-tight .card button {
+  height: 20px;
+  width: 19px;
+}
+
+.view-mode-tight .lane__content {
+  gap: 6px;
 }
