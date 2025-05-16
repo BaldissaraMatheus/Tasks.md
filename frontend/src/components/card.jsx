@@ -20,6 +20,7 @@ export function Card(props) {
 			tabIndex="0"
 		>
 			<div class="card__toolbar">{props.headerSlot}</div>
+			<h5 class="card__content">{props.content}</h5>
 			<ul class="card__tags">
 				<For each={props.tags}>
 					{(tag) => (

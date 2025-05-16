@@ -39,6 +39,10 @@ function App() {
 	const [newLaneName, setNewLaneName] = createSignal(null);
 	const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
 	const [newCardName, setNewCardName] = createSignal(null);
+	const [viewMode, setViewMode] = makePersisted(createSignal('regular'), {
+		storage: localStorage,
+		name: "viewMode",
+	});
 
 	function fetchTitle() {
 		return fetch(`${api}/title`).then((res) => res.text());
@@ -99,7 +103,6 @@ function App() {
 			newCard.tags = getTagsByTagNames(tags, cardTagsNames);
 			return newCard;
 		});
-		console.log(newCardsWithTags)
 		setCards(newCardsWithTags);
 	}
 
@@ -527,6 +530,10 @@ function App() {
 
 	const disableCardsDrag = createMemo(() => sort() !== "none");
 
+	createEffect(() => {
+		document.body.setAttribute('class', `view-mode-${viewMode()}`)
+	})
+
 	return (
 		<>
 			<Header
@@ -538,10 +545,12 @@ function App() {
 				filteredTag={filteredTag()}
 				onTagChange={handleFilterSelectOnChange}
 				onNewLaneBtnClick={createNewLane}
+				viewMode={viewMode()}
+				onViewModeChange={e => setViewMode(e.target.value)}
 			/>
 			{title() ? <h1 class="app-title">{title()}</h1> : <></>}
 			<DragAndDrop.Provider>
-				<DragAndDrop.Container class="lanes" onChange={handleLanesSortChange}>
+				<DragAndDrop.Container class={`lanes`} onChange={handleLanesSortChange}>
 					<For each={lanes()}>
 						{(lane) => (
 							<div class="lane" id={`lane-${lane}`}>
@@ -585,6 +594,7 @@ function App() {
 											<Card
 												name={card.name}
 												tags={card.tags}
+												content={card.content}
 												onClick={() => setSelectedCard(card)}
 												headerSlot={
 													cardBeingRenamed()?.name === card.name ? (
