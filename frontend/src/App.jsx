@@ -531,7 +531,7 @@ function App() {
 	const disableCardsDrag = createMemo(() => sort() !== "none");
 
 	createEffect(() => {
-		document.body.setAttribute('class', `view-mode-${viewMode()}`)
+		document.body.classList.add(`view-mode-${viewMode()}`);
 	})
 
 	return (
