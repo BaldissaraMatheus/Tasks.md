@@ -8,6 +8,8 @@
  * @param {Function} props.onSearchChange
  * @param {Function} props.onTagChange
  * @param {Function} props.onNewLanBtnClick
+ * @param {Function} props.viewMode
+ * @param {Function} props.onViewModeChange
  */
 export function Header(props) {
 	return (
@@ -36,6 +38,15 @@ export function Header(props) {
 				>
 					<option value="none">None</option>
 					<For each={props.tagOptions}>{(tag) => <option>{tag}</option>}</For>
+				</select>
+			</div>
+			<div class="app-header__group-item">
+				<div class="app-header__group-item-label">App view:</div>
+				<select onChange={props.onViewModeChange} value={props.viewMode}>
+					<option value="extended">Extended</option>
+					<option value="regular">Regular</option>
+					<option value="compact">Compact</option>
+					<option value="tight">Tight</option>
 				</select>
 			</div>
 			<button type="button" onClick={props.onNewLaneBtnClick}>
