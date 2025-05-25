@@ -403,6 +403,9 @@ function App() {
 		if (newName === "") {
 			return `The ${item} must have a name`;
 		}
+		if (newName.startsWith('.')) {
+			return 'Cards and lanes with names starting with dot are hidden';
+		}
 		if (namesList.filter((name) => name === (newName || "").trim()).length) {
 			return `There's already a ${item} with that name`;
 		}
