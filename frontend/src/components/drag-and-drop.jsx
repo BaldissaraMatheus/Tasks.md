@@ -187,6 +187,8 @@ function Container(props) {
       group: props.group,
     });
     setStartPageCoordinates({ x: pageX, y: pageY });
+    const newPositions = calculateNewPositions();
+    setPositions(newPositions);
   }
 
   function handlePointerMove(e, touch) {
@@ -290,52 +292,90 @@ function Container(props) {
     }
   }
 
+  function calculateNewPositions() {
+    const containerStartPadding =
+      window.getComputedStyle(containerRef)[paddingProperty()];
+    const containerStartPaddingIntValue = Number(
+      containerStartPadding.slice(0, -2)
+    );
+    const firstItemPosition =
+      containerStartPos() + containerStartPaddingIntValue;
+    let lastPosition = firstItemPosition;
+    let prevItemHeight = 0;
+    const newPositions = sortedItemsIds.map((id, i) => {
+      const item = items().find((itemToFind) => itemToFind.id === id);
+      const itemLength = item?.getBoundingClientRect()[lengthProperty()] || 0;
+      if (i === 0) {
+        prevItemHeight = itemLength;
+        return lastPosition;
+      }
+      const newPosition = lastPosition + gap() + prevItemHeight;
+      lastPosition = newPosition;
+      prevItemHeight = itemLength;
+      return newPosition;
+    });
+    return newPositions;
+  }
+
+  createEffect(() => {
+    if (!sortedItemsIds.length) {
+      return;
+    }
+    const newPositions = calculateNewPositions();
+    setPositions(newPositions);
+  })
+
+  function getItemLength(id) {
+    const item = items().find((item) => item.id === id);
+    const lengthInPx = getComputedStyle(item)[lengthProperty()];
+    const length = Number(lengthInPx.substring(0, lengthInPx.length - 2));
+    return length;
+  }
+
   function sortItems(direction) {
+    if (!sortedItemsIds.every(id => items().some(item => item.id === id))) {
+      return;
+    }
+    const targetId = dragAndDropTarget().originalElement.id;
     const targetPosition =
       dragAndDropTarget()[positionProperty()] + containerRef[scrollProperty()];
-    const forIndexStart = direction === 1 ? 0 : sortedItemsIds.length - 1;
-    const checkForCondition = (i) =>
-      direction === 1 ? i < sortedItemsIds.length - 1 : i > 0;
-    const forIndexIncrement = direction;
-    const aIndexIncrement = direction === 1 ? 0 : -1;
-    const bIndexIncrement = aIndexIncrement + 1;
-    for (
-      let index = forIndexStart;
-      checkForCondition(index);
-      index += forIndexIncrement
-    ) {
-      let prevItemPosition = positions()[index + aIndexIncrement];
-      let currItemPosition = positions()[index + bIndexIncrement];
-      const computedStyle = getComputedStyle(items()[index]);
-      const itemHeight = Number(
-        computedStyle.height.substring(
-          0,
-          computedStyle.height.length - "px".length
-        )
-      );
-      if (
-        sortedItemsIds[index + aIndexIncrement] ===
-        dragAndDropTarget().originalElement.id
-      ) {
-        prevItemPosition = targetPosition + itemHeight * 0.5 * direction;
+
+    if (direction === 1) {
+      for (let i = 0; i < sortedItemsIds.length - 1; i++) {
+        let currPos = positions()[i];
+        const nextPos = positions()[i + 1];
+        if (sortedItemsIds[i] === targetId) {
+          const currItemHeight = getItemLength(sortedItemsIds[i]);
+          currPos = targetPosition + currItemHeight;
+        }
+        const nextItemLength = getItemLength(sortedItemsIds[i + 1]);
+        if (currPos > nextPos + nextItemLength * 0.5) {
+          const tempItem = sortedItemsIds[i + 1];
+          batch(() => {
+            setSortedItemsIds(i + 1, sortedItemsIds[i]);
+            setSortedItemsIds(i, tempItem);
+          });
+        }
       }
-      if (
-        sortedItemsIds[index + bIndexIncrement] ===
-        dragAndDropTarget().originalElement.id
-      ) {
-        currItemPosition = targetPosition + itemHeight * 0.5 * direction;
+      return;
+    }
+
+    for (let i = sortedItemsIds.length - 1; i > 0; i--) {
+      let currPos = positions()[i];
+      const nextPos = positions()[i - 1];
+      if (sortedItemsIds[i] === targetId) {
+        currPos = targetPosition;
       }
-      if (currItemPosition < prevItemPosition) {
-        const tempItem = sortedItemsIds[index + aIndexIncrement];
+      const nextItemLength = getItemLength(sortedItemsIds[i - 1]);
+      if (currPos < nextPos + nextItemLength * 0.5) {
+        const tempItem = sortedItemsIds[i - 1];
         batch(() => {
-          setSortedItemsIds(
-            index + aIndexIncrement,
-            sortedItemsIds[index + bIndexIncrement]
-          );
-          setSortedItemsIds(index + bIndexIncrement, tempItem);
+          setSortedItemsIds(i - 1, sortedItemsIds[i]);
+          setSortedItemsIds(i, tempItem);
         });
       }
     }
+    
   }
 
   function autoScroll(setAutoScrollSign, topOrLeft) {
@@ -365,7 +405,7 @@ function Container(props) {
     if (!dragAndDropTarget().originalElement) {
       return;
     }
-    sortItems(-1);
+    sortItems(autoScrollSign());
     setTimeout(() => {
       autoScroll(setAutoScrollSign, topOrLeft);
     }, 7);
@@ -477,9 +517,7 @@ function Container(props) {
         `${dragAndDropTarget()[lengthProperty()]}px`;
     }
     if (!sortedItemsIds.length) {
-      const newSortedItemsIds = items()
-        .map((item) => item.id)
-        .filter((id) => id !== dragAndDropTarget().originalElement.id);
+      const newSortedItemsIds = items().map((item) => item.id);
       setSortedItemsIds(newSortedItemsIds);
     }
     if (
@@ -489,31 +527,6 @@ function Container(props) {
     ) {
       const targetId = dragAndDropTarget().originalElement.id;
       setSortedItemsIds(sortedItemsIds.length, targetId);
-      const containerStartPadding =
-        window.getComputedStyle(containerRef)[paddingProperty()];
-      const containerStartPaddingIntValue = Number(
-        containerStartPadding.slice(0, -2)
-      );
-      const firstItemPosition =
-        containerStartPos() + containerStartPaddingIntValue;
-      let lastPosition = firstItemPosition;
-      const newPositions = [];
-      sortedItemsIds.forEach((id, i) => {
-        if (i === 0) {
-          newPositions.push(lastPosition);
-          return;
-        }
-        const prevItem = items().find((item) => item.id === id);
-        const prevItemHeight =
-          id === dragAndDropTarget().originalElement.id
-            ? dragAndDropTarget()[lengthProperty()]
-            : prevItem.getBoundingClientRect()[lengthProperty()];
-        const newPosition = lastPosition + prevItemHeight + gap();
-        lastPosition = newPosition;
-        newPositions.push(newPosition);
-        return;
-      });
-      setPositions(newPositions);
     }
     let direction;
     if (JSON.parse(prev).originalElement !== null) {
