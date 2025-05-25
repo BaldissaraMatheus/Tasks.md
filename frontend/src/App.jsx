@@ -530,8 +530,10 @@ function App() {
 
 	const disableCardsDrag = createMemo(() => sort() !== "none");
 
-	createEffect(() => {
+	createEffect((prev) => {
+		document.body.classList.remove(`view-mode-${prev}`);
 		document.body.classList.add(`view-mode-${viewMode()}`);
+		return viewMode();
 	})
 
 	return (
