@@ -383,9 +383,6 @@ function Container(props) {
       containerRef.style["scroll-snap-type"] = "";
       return;
     }
-    // TODO get proper maxScroll value
-    // const scrollLengthProperty = flexDirection === 'row' ? 'scrollWidth' : 'scrollHeight';
-    // const maxScroll = containerRef[scrollLengthProperty] - containerRef[clientLengthProperty()];
     const maxScroll = Number.MAX_SAFE_INTEGER;
     if (autoScrollSign() > 0 && containerRef[scrollProperty()] >= maxScroll) {
       setAutoScrollSign(0);
@@ -617,9 +614,6 @@ function Container(props) {
     }
     const itemLength =
       dragAndDropTarget().originalElement[clientLengthProperty()];
-    // TODO get proper maxScroll value
-    // const scrollLengthProperty = flexDirection === 'row' ? 'scrollWidth' : 'scrollHeight';
-    // const maxScroll = containerRef[scrollLengthProperty] - containerRef[scrollProperty()];
     const maxScroll = Number.MAX_SAFE_INTEGER;
     let newAutoScrollAmount = 0;
     const containerEndPos =

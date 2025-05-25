@@ -382,8 +382,6 @@ function ExpandedCard(props) {
             handleKeyDown(e, (event) => event.stopPropagation())
           }
           onCancel={handleDialogCancel}
-          // TODO Doesn't work rn because it can be triggered by clicking image upload confirm button. Try again when new editor is implemented
-          // use:clickOutside={handleDialogCancel}
         >
           <div class="dialog__body">
             <header class="dialog__toolbar">
