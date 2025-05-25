@@ -24,6 +24,7 @@ async function getLanesNames() {
     .then(dirs => dirs
       .filter(dir => dir.isDirectory())
       .map(dir => dir.name)
+      .filter(dirName => !dirName.startsWith('.'))
     );
 }
 
@@ -33,12 +34,13 @@ async function getMdFiles() {
     lanes.map((lane) =>
       fs.promises
         .readdir(`${process.env.TASKS_DIR}/${lane}`)
-        .then((files) => files.map((file) => ({ lane, name: file })))
+        .then((files) => files
+        .map((file) => ({ lane, name: file })))
     )
   );
   const files = lanesFiles
     .flat()
-    .filter(file => file.name.endsWith('.md'));
+    .filter(file => file.name.endsWith('.md') && !file.name.startsWith("."));
   return files;
 }
 
@@ -131,7 +133,7 @@ async function getLaneByCardName(cardName) {
 
 async function getLanes(ctx) {
   const lanes = await fs.promises.readdir(process.env.TASKS_DIR);
-  ctx.body = lanes;
+  ctx.body = lanes.filter(dirName => !dirName.startsWith('.'));
 }
 
 router.get("/lanes", getLanes);
