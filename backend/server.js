@@ -109,18 +109,8 @@ async function updateTagBackgroundColor(ctx) {
 router.patch("/tags/:tagName", updateTagBackgroundColor);
 
 function getTagsTextsFromCardContent(cardContent) {
-  const indexOfTagsKeyword = cardContent.toLowerCase().indexOf("tags: ");
-  if (indexOfTagsKeyword === -1) {
-    return [];
-  }
-  let startOfTags = cardContent.substring(indexOfTagsKeyword + "tags: ".length);
-  const lineBreak = cardContent.indexOf("\n");
-  if (lineBreak > 0) {
-    startOfTags = startOfTags.split("\n")[0];
-  }
-  const tags = startOfTags
-    .split(",")
-    .map((tag) => tag.trim())
+  const tags = [...cardContent.matchAll(/\[tag:(.*?)\]/g)]
+    .map((tagMatch) => tagMatch[1].trim())
     .filter((tag) => tag !== "");
 
   return tags;

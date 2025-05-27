@@ -28,6 +28,8 @@ export function Header(props) {
 					<option value="name:desc">Name desc</option>
 					<option value="tags:asc">Tags asc</option>
 					<option value="tags:desc">Tags desc</option>
+					<option value="due:asc">Due date asc</option>
+					<option value="due:desc">Due date desc</option>
 				</select>
 			</div>
 			<div class="app-header__group-item">
@@ -41,7 +43,7 @@ export function Header(props) {
 				</select>
 			</div>
 			<div class="app-header__group-item">
-				<div class="app-header__group-item-label">App view:</div>
+				<div class="app-header__group-item-label">View mode:</div>
 				<select onChange={props.onViewModeChange} value={props.viewMode}>
 					<option value="extended">Extended</option>
 					<option value="regular">Regular</option>
