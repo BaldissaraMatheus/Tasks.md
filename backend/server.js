@@ -20,11 +20,13 @@ const multerInstance = multer();
 
 async function getLanesNames() {
   await fs.promises.mkdir(process.env.TASKS_DIR, { recursive: true });
-  return fs.promises.readdir(process.env.TASKS_DIR, { withFileTypes: true })
-    .then(dirs => dirs
-      .filter(dir => dir.isDirectory())
-      .map(dir => dir.name)
-      .filter(dirName => !dirName.startsWith('.'))
+  return fs.promises
+    .readdir(process.env.TASKS_DIR, { withFileTypes: true })
+    .then((dirs) =>
+      dirs
+        .filter((dir) => dir.isDirectory())
+        .map((dir) => dir.name)
+        .filter((dirName) => !dirName.startsWith("."))
     );
 }
 
@@ -34,18 +36,21 @@ async function getMdFiles() {
     lanes.map((lane) =>
       fs.promises
         .readdir(`${process.env.TASKS_DIR}/${lane}`)
-        .then((files) => files
-        .map((file) => ({ lane, name: file })))
+        .then((files) => files.map((file) => ({ lane, name: file })))
     )
   );
   const files = lanesFiles
     .flat()
-    .filter(file => file.name.endsWith('.md') && !file.name.startsWith("."));
+    .filter((file) => file.name.endsWith(".md") && !file.name.startsWith("."));
   return files;
 }
 
 function getContent(path) {
   return fs.promises.readFile(path).then((res) => res.toString());
+}
+
+function getStats(path) {
+  return fs.promises.stat(path);
 }
 
 async function getTags(ctx) {
@@ -123,7 +128,7 @@ async function getLaneByCardName(cardName) {
 
 async function getLanes(ctx) {
   const lanes = await fs.promises.readdir(process.env.TASKS_DIR);
-  ctx.body = lanes.filter(dirName => !dirName.startsWith('.'));
+  ctx.body = lanes.filter((dirName) => !dirName.startsWith("."));
 }
 
 router.get("/lanes", getLanes);
@@ -132,11 +137,14 @@ async function getCards(ctx) {
   const files = await getMdFiles();
   const filesContents = await Promise.all(
     files.map(async (file) => {
-      const content = await getContent(
-        `${process.env.TASKS_DIR}/${file.lane}/${file.name}`
-      );
+      const path = `${process.env.TASKS_DIR}/${file.lane}/${file.name}`;
+      const [content, stats] = await Promise.all([
+        getContent(path),
+        getStats(path),
+      ]);
+      const lastUpdated = stats.mtime;
       const newName = file.name.substring(0, file.name.length - 3);
-      return { ...file, content, name: newName };
+      return { ...file, content, name: newName, lastUpdated };
     })
   );
   ctx.body = filesContents;
@@ -166,8 +174,10 @@ async function updateCard(ctx) {
   const oldLane = await getLaneByCardName(ctx.params.card);
   const name = ctx.params.card;
   const newLane = ctx.request.body.lane || oldLane;
-  const newName = (ctx.request.body.name || name)
-    .replaceAll(/<>:"\/\\\|\?\*/g, ' ');
+  const newName = (ctx.request.body.name || name).replaceAll(
+    /<>:"\/\\\|\?\*/g,
+    " "
+  );
   const newContent = ctx.request.body.content;
   if (newLane !== oldLane || name !== newName) {
     await fs.promises.rename(
@@ -228,8 +238,7 @@ router.post("/lanes", createLane);
 
 async function updateLane(ctx) {
   const name = ctx.params.lane;
-  const newName = ctx.request.body.name
-    .replaceAll(/[<>:"/\\|?*]/g, ' ');
+  const newName = ctx.request.body.name.replaceAll(/[<>:"/\\|?*]/g, " ");
   await fs.promises.rename(
     `${process.env.TASKS_DIR}/${name}`,
     `${process.env.TASKS_DIR}/${newName}`
@@ -363,7 +372,9 @@ app.use(async (ctx, next) => {
 });
 app.use(mount(`${BASE_PATH}api`, router.routes()));
 app.use(mount(BASE_PATH, serve("/static")));
-app.use(mount(`${BASE_PATH}api/images`, serve(`${process.env.CONFIG_DIR}/images`)));
+app.use(
+  mount(`${BASE_PATH}api/images`, serve(`${process.env.CONFIG_DIR}/images`))
+);
 app.use(
   mount(
     `${BASE_PATH}stylesheets/`,
