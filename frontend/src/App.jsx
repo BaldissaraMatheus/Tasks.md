@@ -97,13 +97,15 @@ function App() {
 				),
 		);
 		const newCards = [...cardsFromApiAndSorted, ...cardsFromApiNotYetSorted];
-		const newCardsWithTags = newCards.map((card) => {
+		const newCardsWithTagsAndDueDate = newCards.map((card) => {
 			const newCard = structuredClone(card);
 			const cardTagsNames = getTags(card.content) || [];
 			newCard.tags = getTagsByTagNames(tags, cardTagsNames);
+			const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
+			newCard.dueDate = dueDateStringMatch?.length ? dueDateStringMatch[1] : '';
 			return newCard;
 		});
-		setCards(newCardsWithTags);
+		setCards(newCardsWithTagsAndDueDate);
 	}
 
 	async function fetchLanes() {
@@ -191,24 +193,16 @@ function App() {
 		setTagsOptions(newTagsOptions);
 		const cardTagsNames = getTags(newContent);
 		newCard.tags = getTagsByTagNames(newTagsOptions, cardTagsNames);
+		const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
+		newCard.dueDate = dueDateStringMatch?.length ? dueDateStringMatch[1] : '';
 		newCards[newCardIndex] = newCard;
 		setCards(newCards);
 		setSelectedCard(newCard);
 	}
 
 	function getTags(text) {
-		const indexOfTagsKeyword = text.toLowerCase().indexOf("tags: ");
-		if (indexOfTagsKeyword === -1) {
-			return [];
-		}
-		let startOfTags = text.substring(indexOfTagsKeyword + "tags: ".length);
-		const lineBreak = text.indexOf("\n");
-		if (lineBreak > 0) {
-			startOfTags = startOfTags.split("\n")[0];
-		}
-		const tags = startOfTags
-			.split(",")
-			.map((tag) => tag.trim())
+		const tags = [...text.matchAll(/\[tag:(.*?)\]/g)]
+			.map((tagMatch) => tagMatch[1].trim())
 			.filter((tag) => tag !== "");
 		return tags;
 	}
@@ -327,6 +321,15 @@ function App() {
 		});
 	}
 
+	function sortCardsByDue() {
+		const newCards = structuredClone(cards());
+		return newCards.sort((a, b) => {
+			return sortDirection() === "asc"
+				? (a.dueDate || 'z').localeCompare(b.dueDate || 'z')
+				: (b.dueDate || '').localeCompare(a.dueDate || '');
+		});
+	}
+
 	function handleOnSelectedCardNameChange(newName) {
 		const newCards = structuredClone(cards());
 		const newCardIndex = structuredClone(
@@ -392,6 +395,9 @@ function App() {
 		}
 		if (sort() === "tags") {
 			return sortCardsByTags();
+		}
+		if (sort() === "due") {
+			return sortCardsByDue();
 		}
 		return cards();
 	});
@@ -599,6 +605,7 @@ function App() {
 											<Card
 												name={card.name}
 												tags={card.tags}
+												dueDate={card.dueDate}
 												content={card.content}
 												onClick={() => setSelectedCard(card)}
 												headerSlot={

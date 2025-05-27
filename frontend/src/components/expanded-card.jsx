@@ -11,10 +11,10 @@ import { handleKeyDown, clickOutside } from "../utils";
 import { makePersisted } from "@solid-primitives/storage";
 import { NameInput } from "./name-input";
 import { Portal } from "solid-js/web";
-import { StacksEditor } from './Stacks-Editor/src/stacks-editor/editor'
-import { IconClear, IconScreenFull } from '@stackoverflow/stacks-icons/icons'
-import stacksStyle from '@stackoverflow/stacks/dist/css/stacks.css?inline'
-import stacksEditorStyle from './Stacks-Editor/src/styles/index.css?inline'
+import { StacksEditor } from "./Stacks-Editor/src/stacks-editor/editor";
+import { IconClear, IconScreenFull } from "@stackoverflow/stacks-icons/icons";
+import stacksStyle from "@stackoverflow/stacks/dist/css/stacks.css?inline";
+import stacksEditorStyle from "./Stacks-Editor/src/styles/index.css?inline";
 
 /**
  *
@@ -52,6 +52,17 @@ function ExpandedCard(props) {
     name: "lastEditorModeUsed",
   });
 
+  const dueDate = createMemo(() => {
+    if (!props.content) {
+      return null;
+    }
+    const dueDateStringMatch = props.content.match(/\[due:(.*?)\]/);
+    if (!dueDateStringMatch?.length) {
+      return null;
+    }
+    return dueDateStringMatch[1];
+  });
+
   let dialogRef;
   let backdropRef;
   let tagsInputRef;
@@ -75,32 +86,13 @@ function ExpandedCard(props) {
       return setNewTagName("");
     }
 
-    let actualContent = editor().content;
-    let indexOfTagsKeyword = actualContent.toLowerCase().indexOf("tags: ");
-    if (indexOfTagsKeyword === -1) {
-      actualContent = `tags: \n${actualContent}`;
-      indexOfTagsKeyword = 0;
-    }
-    const tagsIndex = indexOfTagsKeyword + "tags: ".length;
-    let tagsSubstring = actualContent.substring(tagsIndex);
-    const lineBreak = actualContent.indexOf("\n");
-    if (lineBreak > 0) {
-      tagsSubstring = tagsSubstring.split("\n")[0];
-    }
-
-    // Proceed to concatenate the new tag
-    const concatenatedTags = `${tagsSubstring}${
-      tagsSubstring.length === 0 ? "" : ","
-    } ${newTagName()}`.trim();
-
-    const newContent =
-      actualContent.substring(0, tagsIndex) +
-      concatenatedTags +
-      actualContent.substring(
-        tagsIndex + tagsSubstring.length,
-        actualContent.length
-      );
-
+    const actualContent = editor().content;
+    const emptyLineIfFirstTag = [...actualContent.matchAll(/\[tag:(.*?)\]/g)]
+      .length
+      ? ""
+      : "\n\n";
+    const newTag = newTagName().trim();
+    const newContent = `[tag:${newTag}] ${emptyLineIfFirstTag}${actualContent}`;
     props.onContentChange(newContent);
     editor().content = newContent;
     setNewTagName("");
@@ -123,30 +115,17 @@ function ExpandedCard(props) {
     setShowTagPopup(false);
     setMenuCoordinates(null);
     let currentContent = editor().content;
-    let indexOfTagsKeyword = currentContent.toLowerCase().indexOf("tags: ");
-    if (indexOfTagsKeyword === -1) {
-      currentContent = `tags: \n${currentContent}`;
-      indexOfTagsKeyword = 0;
+    const tagWithBrackets = `[tag:${tagName}]`;
+    const tagWithBracketsAndSpace = `${tagWithBrackets} `;
+    let tagLength = tagWithBracketsAndSpace.length;
+    let indexOfTag = currentContent
+      .toLowerCase()
+      .indexOf(tagWithBracketsAndSpace);
+    if (indexOfTag === -1) {
+      indexOfTag = currentContent.toLowerCase().indexOf(tagWithBrackets);
+      tagLength += 1;
     }
-    const tagsIndex = indexOfTagsKeyword + "tags: ".length;
-    let tagsSubstring = currentContent.substring(tagsIndex);
-    const lineBreak = currentContent.indexOf("\n");
-    if (lineBreak > 0) {
-      tagsSubstring = tagsSubstring.split("\n")[0];
-    }
-
-    const newTags = tagsSubstring
-      .split(", ")
-      .map((newTag) => newTag.trim())
-      .filter((newTag) => newTag !== tagName);
-    const newTagsSubstring = newTags.join(", ");
-    const endPart = currentContent.substring(
-      tagsIndex + tagsSubstring.length,
-      currentContent.length
-    );
-    const newContent = newTags.length
-      ? currentContent.substring(0, tagsIndex) + newTagsSubstring + endPart
-      : endPart;
+    const newContent = `${currentContent.substring(0, indexOfTag)}${currentContent.substring(indexOfTag + tagLength, currentContent.length)}`;
     editor().content = newContent;
     setClickedTag(null);
     props.onContentChange(newContent);
@@ -324,9 +303,7 @@ function ExpandedCard(props) {
     for (const btn of modeBtns()) {
       btn.addEventListener("click", handleClickEditorMode);
     }
-    const modeBtn = modeBtns().find(
-      (node) => node.title === mode()
-    );
+    const modeBtn = modeBtns().find((node) => node.title === mode());
     modeBtn.click();
     const editorTextArea = editorContainerRef.childNodes[0].childNodes[2];
     editorTextArea.focus();
@@ -337,12 +314,6 @@ function ExpandedCard(props) {
       btn.removeEventListener("click", handleClickEditorMode);
     }
   });
-
-  function closeDialogWhenBackdropIsClicked(e) {
-    if (e.target === dialogRef) {
-      props.onClose();
-    }
-  }
 
   function handleDialogCancel(e) {
     e?.preventDefault();
@@ -360,9 +331,17 @@ function ExpandedCard(props) {
     }
   }
 
+  function handleChangeDueDate(e) {
+    const newDueDateTag = `[due:${e.target.value}]`;
+    const newContent = dueDate()
+      ? props.content.replace(`[due:${dueDate()}]`, newDueDateTag)
+      : `${newDueDateTag}\n\n${props.content}`;
+    editor().content = newContent;
+    props.onContentChange(newContent)
+  }
+
   return (
     <Portal>
-      {/* <style>{regularStyle}</style> */}
       <div
         class="dialog-backdrop"
         onClick={handleBackdropClick}
@@ -427,47 +406,53 @@ function ExpandedCard(props) {
                 </button>
               </div>
             </header>
-            <div class="dialog__tags">
-              {isCreatingNewTag() ? (
-                <NameInput
-                  value={newTagName()}
-                  errorMsg={newTagNameError()}
-                  onChange={handleTagRenameChange}
-                  onConfirm={handleTagRenameConfirm}
-                  onCancel={handleTagRenameCancel}
-                  list="tags"
-                  datalist={
-                    <datalist id="tags">
-                      <For each={availableTags()}>
-                        {(tag) => <option value={tag.name} />}
-                      </For>
-                    </datalist>
-                  }
-                />
-              ) : (
-                <button type="button" onClick={handleAddTagBtnOnClick}>
-                  Add tag
-                </button>
-              )}
-              <For each={props.tags || []}>
-                {(tag) => (
-                  <div
-                    class="tag tag--clicable"
-                    style={{
-                      "background-color": tag.backgroundColor,
-                    }}
-                    role="button"
-                    popoverTarget="tag-menu"
-                    onClick={(e) => handleTagClick(e, tag)}
-                    onKeyDown={(e) =>
-                      handleKeyDown(e, () => handleTagClick(e, tag))
+            <div class="dialog__tags-and-due-date">
+              <div class="dialog__tags">
+                {isCreatingNewTag() ? (
+                  <NameInput
+                    value={newTagName()}
+                    errorMsg={newTagNameError()}
+                    onChange={handleTagRenameChange}
+                    onConfirm={handleTagRenameConfirm}
+                    onCancel={handleTagRenameCancel}
+                    list="tags"
+                    datalist={
+                      <datalist id="tags">
+                        <For each={availableTags()}>
+                          {(tag) => <option value={tag.name} />}
+                        </For>
+                      </datalist>
                     }
-                    tabIndex={0}
-                  >
-                    <h5>{tag.name}</h5>
-                  </div>
+                  />
+                ) : (
+                  <button type="button" onClick={handleAddTagBtnOnClick}>
+                    Add tag
+                  </button>
                 )}
-              </For>
+                <For each={props.tags || []}>
+                  {(tag) => (
+                    <div
+                      class="tag tag--clicable"
+                      style={{
+                        "background-color": tag.backgroundColor,
+                      }}
+                      role="button"
+                      popoverTarget="tag-menu"
+                      onClick={(e) => handleTagClick(e, tag)}
+                      onKeyDown={(e) =>
+                        handleKeyDown(e, () => handleTagClick(e, tag))
+                      }
+                      tabIndex={0}
+                    >
+                      <h5>{tag.name}</h5>
+                    </div>
+                  )}
+                </For>
+              </div>
+              <div class="dialog__due-date">
+                <label for="due">Due date: </label>
+                <input name="due" type="date" value={dueDate()} onChange={handleChangeDueDate}></input>
+              </div>
             </div>
             <div class="dialog__content">
               <style>{stacksEditorStyle}</style>

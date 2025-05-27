@@ -55,6 +55,10 @@ ul,
   margin: 0;
 }
 
+label {
+  color: var(--color-foreground);
+}
+
 #root {
   display: flex;
   flex-direction: column;
@@ -275,8 +279,8 @@ button.small {
 }
 
 .card__tags {
-  align-items: start;
   display: flex;
+  align-items: start;
   flex-wrap: wrap;
   gap: 8px;
   overflow: hidden;
@@ -287,7 +291,13 @@ button.small {
   list-style-type: none;
 }
 
-.card__tags:not(:empty) {
+.card__due-date {
+  display: flex;
+  align-items: center;
+}
+
+.card__tags:not(:empty),
+.card__due-date:not(:empty) {
   margin-top: 12px;
 }
 
@@ -429,12 +439,26 @@ dialog:not(.dialog--maximized) {
   align-items: center;
 }
 
+.dialog__tags-and-due-date {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
 .dialog__tags {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
   flex-wrap: wrap;
   align-items: start;
+}
+
+.dialog__due-date {
+  height: 32px;
+  gap: 8px;
+  display: flex;
+  align-items: center;
 }
 
 .dialog__tags .tag {
@@ -574,6 +598,10 @@ a > * {
   width: 100%;
   overflow: auto;
   min-height: 0;
+}
+
+.view-mode-tight .card__tags:not(:empty),
+.view-mode-tight .card__due-date:not(:empty) {
   margin-top: 6px;
 }
 
