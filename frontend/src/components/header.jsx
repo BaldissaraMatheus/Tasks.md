@@ -31,6 +31,7 @@ export function Header(props) {
 					<option value="due:asc">Due date asc</option>
 					<option value="due:desc">Due date desc</option>
 					<option value="lastUpdated:desc">Last updated</option>
+					<option value="createdFirst:asc">Created first</option>
 				</select>
 			</div>
 			<div class="app-header__group-item">

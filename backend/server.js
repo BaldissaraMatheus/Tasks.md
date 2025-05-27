@@ -143,8 +143,9 @@ async function getCards(ctx) {
         getStats(path),
       ]);
       const lastUpdated = stats.mtime;
+      const createdAt = stats.birthtime;
       const newName = file.name.substring(0, file.name.length - 3);
-      return { ...file, content, name: newName, lastUpdated };
+      return { ...file, content, name: newName, lastUpdated, createdAt };
     })
   );
   ctx.body = filesContents;

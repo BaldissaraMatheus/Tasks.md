@@ -194,7 +194,7 @@ function App() {
 		const cardTagsNames = getTags(newContent);
 		newCard.tags = getTagsByTagNames(newTagsOptions, cardTagsNames);
 		const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
-		newCard.lastUpdated = new Date().toLocaleDateString()
+		newCard.lastUpdated = new Date().toISOString()
 		newCard.dueDate = dueDateStringMatch?.length ? dueDateStringMatch[1] : '';
 		newCards[newCardIndex] = newCard;
 		setCards(newCards);
@@ -237,7 +237,8 @@ function App() {
 			body: JSON.stringify({ lane: newCard.lane }),
 		}).then((res) => res.text());
 		newCard.name = newCardName;
-		newCard.lastUpdated = new Date().toLocaleDateString()
+		newCard.lastUpdated = new Date().toISOString()
+		newCard.createdAt = new Date().toISOString()
 		newCards.unshift(newCard);
 		setCards(newCards);
 		startRenamingCard(cards()[0]);
@@ -335,7 +336,14 @@ function App() {
 	function sortCardsByLastUpdated() {
 		const newCards = structuredClone(cards());
 		return newCards.sort((a, b) => {
-			return (b.lastUpdated).localeCompare(a.lastUpdated)
+			return (b.lastUpdated || '').localeCompare(a.lastUpdated || '')
+		});
+	}
+
+	function sortCardsByCreatedFirst() {
+		const newCards = structuredClone(cards());
+		return newCards.sort((a, b) => {
+			return (a.createdAt || '').localeCompare(b.createdAt || '')
 		});
 	}
 
@@ -434,6 +442,9 @@ function App() {
 		}
 		if (sort() === "lastUpdated") {
 			return sortCardsByLastUpdated();
+		}
+		if (sort() === "createdFirst") {
+			return sortCardsByCreatedFirst();
 		}
 		return cards();
 	});
