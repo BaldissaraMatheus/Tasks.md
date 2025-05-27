@@ -461,6 +461,14 @@ dialog:not(.dialog--maximized) {
   align-items: center;
 }
 
+.card__due-date--in-time {
+  color: var(--color-alt-3);
+}
+
+.card__due-date--past-time {
+  color: var(--color-alt-1);
+}
+
 .dialog__tags .tag {
   padding: 6px;
 }
