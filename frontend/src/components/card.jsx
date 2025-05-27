@@ -45,7 +45,13 @@ export function Card(props) {
       id={`card-${props.name}`}
       class={`card ${props.disableDrag ? "card__drag-disabled" : ""}`}
       onKeyDown={(e) => handleKeyDown(e, props.onClick)}
-      onClick={props.onClick}
+      onClick={e => {
+        const isDescendant = e.currentTarget === e.target || e.currentTarget.contains(e.target);
+        if (!isDescendant) {
+          return;
+        }
+        props.onClick()
+      }}
       tabIndex="0"
     >
       <div class="card__toolbar">{props.headerSlot}</div>
