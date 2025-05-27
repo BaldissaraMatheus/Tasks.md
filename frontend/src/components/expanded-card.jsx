@@ -176,6 +176,15 @@ function ExpandedCard(props) {
   }
 
   function handleEditorOnChange(e) {
+    // Prevent update when opening dialog
+    if (
+      e.target.name?.includes("mode-toggle") ||
+      e.target.class?.includes("iconRichText") ||
+      e.target.title?.includes("mode")
+    ) {
+      return;
+    }
+    console.log(e.target);
     setTimeout(() => props.onContentChange(editor()?.content), 0);
   }
 
@@ -337,7 +346,7 @@ function ExpandedCard(props) {
       ? props.content.replace(`[due:${dueDate()}]`, newDueDateTag)
       : `${newDueDateTag}\n\n${props.content}`;
     editor().content = newContent;
-    props.onContentChange(newContent)
+    props.onContentChange(newContent);
   }
 
   return (
@@ -451,7 +460,12 @@ function ExpandedCard(props) {
               </div>
               <div class="dialog__due-date">
                 <label for="due">Due date: </label>
-                <input name="due" type="date" value={dueDate()} onChange={handleChangeDueDate}></input>
+                <input
+                  name="due"
+                  type="date"
+                  value={dueDate()}
+                  onChange={handleChangeDueDate}
+                ></input>
               </div>
             </div>
             <div class="dialog__content">

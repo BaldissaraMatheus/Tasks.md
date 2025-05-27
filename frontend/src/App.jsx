@@ -194,6 +194,7 @@ function App() {
 		const cardTagsNames = getTags(newContent);
 		newCard.tags = getTagsByTagNames(newTagsOptions, cardTagsNames);
 		const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
+		newCard.lastUpdated = new Date().toLocaleDateString()
 		newCard.dueDate = dueDateStringMatch?.length ? dueDateStringMatch[1] : '';
 		newCards[newCardIndex] = newCard;
 		setCards(newCards);
@@ -236,6 +237,7 @@ function App() {
 			body: JSON.stringify({ lane: newCard.lane }),
 		}).then((res) => res.text());
 		newCard.name = newCardName;
+		newCard.lastUpdated = new Date().toLocaleDateString()
 		newCards.unshift(newCard);
 		setCards(newCards);
 		startRenamingCard(cards()[0]);
@@ -330,6 +332,14 @@ function App() {
 		});
 	}
 
+	function sortCardsByLastUpdated() {
+		const newCards = structuredClone(cards());
+		console.log(newCards)
+		return newCards.sort((a, b) => {
+			return (b.lastUpdated).localeCompare(a.lastUpdated)
+		});
+	}
+
 	function handleOnSelectedCardNameChange(newName) {
 		const newCards = structuredClone(cards());
 		const newCardIndex = structuredClone(
@@ -386,22 +396,6 @@ function App() {
 		setSelectedCard(cards()[newCardIndex]);
 	}
 
-	const sortedCards = createMemo(() => {
-		if (sort() === "none") {
-			return cards();
-		}
-		if (sort() === "name") {
-			return sortCardsByName();
-		}
-		if (sort() === "tags") {
-			return sortCardsByTags();
-		}
-		if (sort() === "due") {
-			return sortCardsByDue();
-		}
-		return cards();
-	});
-
 	function validateName(newName, namesList, item) {
 		if (newName === null) {
 			return null;
@@ -425,6 +419,25 @@ function App() {
 		setNewLaneName(lane);
 		setLaneBeingRenamedName(lane);
 	}
+
+	const sortedCards = createMemo(() => {
+		if (sort() === "none") {
+			return cards();
+		}
+		if (sort() === "name") {
+			return sortCardsByName();
+		}
+		if (sort() === "tags") {
+			return sortCardsByTags();
+		}
+		if (sort() === "due") {
+			return sortCardsByDue();
+		}
+		if (sort() === "lastUpdated") {
+			return sortCardsByLastUpdated();
+		}
+		return cards();
+	});
 
 	const filteredCards = createMemo(() =>
 		sortedCards()
