@@ -334,7 +334,6 @@ function App() {
 
 	function sortCardsByLastUpdated() {
 		const newCards = structuredClone(cards());
-		console.log(newCards)
 		return newCards.sort((a, b) => {
 			return (b.lastUpdated).localeCompare(a.lastUpdated)
 		});

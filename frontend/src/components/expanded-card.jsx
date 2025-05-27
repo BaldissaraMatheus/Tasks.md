@@ -184,7 +184,6 @@ function ExpandedCard(props) {
     ) {
       return;
     }
-    console.log(e.target);
     setTimeout(() => props.onContentChange(editor()?.content), 0);
   }
 
