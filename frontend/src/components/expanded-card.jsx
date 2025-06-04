@@ -226,14 +226,10 @@ function ExpandedCard(props) {
     setMenuCoordinates(null);
     const tagName = clickedTag().name;
     setClickedTag(null);
-    fetch(`${api}/tags/${tagName}`, {
-      method: "PATCH",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        backgroundColor: `var(--color-alt-${option + 1})`,
-      }),
-    }).then((res) => props.onTagColorChange());
+    const mapTagToColor = {
+      [tagName]: `var(--color-alt-${option + 1})`,
+    };
+    props.onTagColorChange(mapTagToColor)
   }
 
   const tagOptionsLength = 7;
