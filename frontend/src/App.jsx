@@ -104,8 +104,7 @@ function App() {
   }
 
   async function fetchData() {
-    // TODO moveo to promise.all
-    const resourcesReq = await fetch(`${api}/resource/${board()}`, {
+    const resourcesReq = fetch(`${api}/resource/${board()}`, {
       method: "GET",
       mode: "cors",
     }).then((res) => res.json());
@@ -120,13 +119,12 @@ function App() {
         }))
       )
     );
-    const [tagsColors, resources] = await Promise.all([tagsReq, resourcesReq]);
-
-    const lanesFromApi = resources.map((resource) => resource.name);
-    const lanesSortedReq = fetch(`${api}/sort/${board()}`, {
+    const sortReq = fetch(`${api}/sort/${board()}`, {
       method: "GET",
     }).then((res) => res.json());
-    const [manualSort] = await Promise.all([lanesSortedReq]);
+    const [tagsColors, resources, manualSort] = await Promise.all([tagsReq, resourcesReq, sortReq]);
+
+    const lanesFromApi = resources.map((resource) => resource.name);
     const lanesSortedKeys = Object.keys(manualSort);
     const newLanes = lanesFromApi.toSorted(
       (a, b) => lanesSortedKeys.indexOf(a) - lanesSortedKeys.indexOf(b)
@@ -196,7 +194,14 @@ function App() {
     250
   );
 
-  function updateTags(newTags) {}
+  function updateTagColors(mapTagToColor) {
+    return fetch(`${api}/tags/${board()}`, {
+      method: "PATCH",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(mapTagToColor),
+    })
+  }
 
   async function changeCardContent(newContent) {
     const newCards = structuredClone(cards());
@@ -221,11 +226,13 @@ function App() {
       method: "GET",
       mode: "cors",
     }).then((res) =>
-      res.json().then((resJson) =>
-        Object.entries(resJson).map((entry) => ({
+      res.json().then((resJson) => {
+        console.log(resJson, Object.entries(resJson))
+        return Object.entries(resJson).map((entry) => ({
           name: entry[0],
           backgroundColor: entry[1],
         }))
+      }
       )
     );
     const justAddedTags = newTagsOptions.filter(
@@ -242,12 +249,7 @@ function App() {
       );
       newTagsOptions[newTagOptionIndex].backgroundColor = newColor;
     }
-    await fetch(`${api}/tags/${board()}`, {
-      method: "PATCH",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newTagColors),
-    });
+    updateTagColors(newTagColors)
     setTagsOptions(newTagsOptions);
     const cardTagsNames = getTagsByCardContent(newContent);
     newCard.tags = getTagsByTagNames(newTagsOptions, cardTagsNames);
@@ -456,7 +458,16 @@ function App() {
     setCardBeingRenamed(null);
   }
 
-  async function handleTagColorChange() {
+  async function updateTagColorFromExpandedCard(tagColor) {
+    const oldCardTagColors = selectedCard().tags.reduce((prev, curr) => ({
+      ...prev,
+      [curr.name]: curr.backgroundColor
+    }), {});
+    const newTagColors = {
+      ...oldCardTagColors,
+      ...tagColor,
+    }
+    await updateTagColors(newTagColors)
     await fetchData();
     const newCardIndex = structuredClone(
       cards().findIndex(
@@ -749,7 +760,7 @@ function App() {
           onContentChange={(value) =>
             debounceChangeCardContent(value, selectedCard().id)
           }
-          onTagColorChange={handleTagColorChange}
+          onTagColorChange={updateTagColorFromExpandedCard}
           onNameChange={handleOnSelectedCardNameChange}
           getNameErrorMsg={(newName) =>
             validateName(
