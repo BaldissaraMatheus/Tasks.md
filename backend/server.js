@@ -18,10 +18,11 @@ const BASE_PATH =
 
 const multerInstance = multer();
 
-async function getLanesNames() {
+async function getLanesNames(path = "/") {
   await fs.promises.mkdir(process.env.TASKS_DIR, { recursive: true });
+  const fullPath = decodeURI(`${process.env.TASKS_DIR}${path}`);
   return fs.promises
-    .readdir(process.env.TASKS_DIR, { withFileTypes: true })
+    .readdir(`${fullPath}`, { withFileTypes: true })
     .then((dirs) =>
       dirs
         .filter((dir) => dir.isDirectory())
@@ -30,12 +31,12 @@ async function getLanesNames() {
     );
 }
 
-async function getMdFiles() {
-  const lanes = await getLanesNames();
+async function getMdFiles(path = "/") {
+  const lanes = await getLanesNames(path);
   const lanesFiles = await Promise.all(
     lanes.map((lane) =>
       fs.promises
-        .readdir(`${process.env.TASKS_DIR}/${lane}`)
+        .readdir(`${process.env.TASKS_DIR}${decodeURI(`${path}`)}${lane}`)
         .then((files) => files.map((file) => ({ lane, name: file })))
     )
   );
@@ -49,217 +50,44 @@ function getContent(path) {
   return fs.promises.readFile(path).then((res) => res.toString());
 }
 
-function getStats(path) {
-  return fs.promises.stat(path);
-}
-
 async function getTags(ctx) {
-  const files = await getMdFiles();
-  const filesContents = await Promise.all(
-    files.map((file) =>
-      getContent(`${process.env.TASKS_DIR}/${file.lane}/${file.name}`)
-    )
-  );
-  const usedTagsTexts = filesContents
-    .map((content) => getTagsTextsFromCardContent(content))
-    .flat()
-    .sort((a, b) => a.localeCompare(b));
-  const usedTagsTextsWithoutDuplicates = Array.from(
-    new Set(usedTagsTexts.map((tagText) => tagText.toLowerCase()))
-  );
-  const allTags = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/tags.json`)
-    .then((res) => JSON.parse(res.toString()))
-    .catch((err) => []);
-  const usedTags = usedTagsTextsWithoutDuplicates.map(
-    (tag) =>
-      allTags.find((tagToFind) => tagToFind.name.toLowerCase() === tag) || {
-        name: tag,
-        backgroundColor: "var(--color-alt-1)",
-      }
-  );
-  await fs.promises.writeFile(
-    `${process.env.CONFIG_DIR}/tags.json`,
-    JSON.stringify(usedTags)
-  );
-  ctx.status = 200;
-  ctx.body = usedTags;
-}
-
-router.get("/tags", getTags);
-
-async function updateTagBackgroundColor(ctx) {
-  const name = ctx.params.tagName;
-  const backgroundColor = ctx.request.body.backgroundColor;
+  const subPath = decodeURI(ctx.request.url.substring("/tags".length));
   const tags = await fs.promises
     .readFile(`${process.env.CONFIG_DIR}/tags.json`)
     .then((res) => JSON.parse(res.toString()))
-    .catch((err) => []);
-  const tagIndex = tags.findIndex(
-    (tag) => tag.name.toLowerCase() === name.toLowerCase()
-  );
-  if (tagIndex === -1) {
-    ctx.status = 404;
-    ctx.body = `Tag ${name} not found`;
-    return;
-  }
-  tags[tagIndex].backgroundColor = backgroundColor;
+    .catch((err) => ({}));
+  const pathTags = JSON.stringify(tags[subPath])
+  ctx.body = pathTags || {};
+  ctx.status = 200;
+}
+
+router.get("/tags/:path*", getTags);
+
+async function updateTagBackgroundColor(ctx) {
+  const subPath = decodeURI(ctx.request.url.substring("/tags".length));
+  const tags = await fs.promises
+    .readFile(`${process.env.CONFIG_DIR}/tags.json`)
+    .then((res) => JSON.parse(res.toString() || '{}'))
+    .catch((err) => ({}));
+  const tagsColors = ctx.request.body;
+  const newTags = { ...tags, [subPath]: tagsColors }
+  console.log({ tags, tagsColors, newTags })
   await fs.promises.writeFile(
     `${process.env.CONFIG_DIR}/tags.json`,
-    JSON.stringify(tags)
+    JSON.stringify(newTags)
   );
   ctx.status = 204;
 }
 
-router.patch("/tags/:tagName", updateTagBackgroundColor);
+router.patch("/tags/:path*", updateTagBackgroundColor);
 
-function getTagsTextsFromCardContent(cardContent) {
-  const tags = [...cardContent.matchAll(/\[tag:(.*?)\]/g)]
-    .map((tagMatch) => tagMatch[1].trim())
-    .filter((tag) => tag !== "");
+// function getTagsTextsFromCardContent(cardContent) {
+//   const tags = [...cardContent.matchAll(/\[tag:(.*?)\]/g)]
+//     .map((tagMatch) => tagMatch[1].trim())
+//     .filter((tag) => tag !== "");
 
-  return tags;
-}
-
-async function getLaneByCardName(cardName) {
-  const files = await getMdFiles();
-  return files.find((file) => file.name === `${cardName}.md`).lane;
-}
-
-async function getLanes(ctx) {
-  const lanes = await fs.promises.readdir(process.env.TASKS_DIR);
-  ctx.body = lanes.filter((dirName) => !dirName.startsWith("."));
-}
-
-router.get("/lanes", getLanes);
-
-async function getCards(ctx) {
-  const files = await getMdFiles();
-  const filesContents = await Promise.all(
-    files.map(async (file) => {
-      const path = `${process.env.TASKS_DIR}/${file.lane}/${file.name}`;
-      const [content, stats] = await Promise.all([
-        getContent(path),
-        getStats(path),
-      ]);
-      const lastUpdated = stats.mtime;
-      const createdAt = stats.birthtime;
-      const newName = file.name.substring(0, file.name.length - 3);
-      return { ...file, content, name: newName, lastUpdated, createdAt };
-    })
-  );
-  ctx.body = filesContents;
-}
-
-router.get("/cards", getCards);
-
-async function createCard(ctx) {
-  const lane = ctx.request.body.lane;
-  const name = uuid.v4();
-  await fs.promises.writeFile(
-    `${process.env.TASKS_DIR}/${lane}/${name}.md`,
-    ""
-  );
-  await fs.promises.chown(
-    `${process.env.TASKS_DIR}/${lane}/${name}.md`,
-    PUID,
-    PGID
-  );
-  ctx.body = name;
-  ctx.status = 201;
-}
-
-router.post("/cards", createCard);
-
-async function updateCard(ctx) {
-  const oldLane = await getLaneByCardName(ctx.params.card);
-  const name = ctx.params.card;
-  const newLane = ctx.request.body.lane || oldLane;
-  const newName = (ctx.request.body.name || name).replaceAll(
-    /<>:"\/\\\|\?\*/g,
-    " "
-  );
-  const newContent = ctx.request.body.content;
-  if (newLane !== oldLane || name !== newName) {
-    await fs.promises.rename(
-      `${process.env.TASKS_DIR}/${oldLane}/${name}.md`,
-      `${process.env.TASKS_DIR}/${newLane}/${newName}.md`
-    );
-  }
-  if (newContent) {
-    await fs.promises.writeFile(
-      `${process.env.TASKS_DIR}/${newLane}/${newName}.md`,
-      newContent
-    );
-  }
-  await fs.promises.chown(
-    `${process.env.TASKS_DIR}/${newLane}/${newName}.md`,
-    PUID,
-    PGID
-  );
-  ctx.status = 204;
-}
-
-router.patch("/cards/:card", updateCard);
-
-async function deleteCard(ctx) {
-  const lane = await getLaneByCardName(ctx.params.card);
-  const name = ctx.params.card;
-  await fs.promises.rm(`${process.env.TASKS_DIR}/${lane}/${name}.md`);
-  ctx.status = 204;
-}
-
-router.delete("/cards/:card", deleteCard);
-
-async function createCard(ctx) {
-  const lane = ctx.request.body.lane;
-  const name = uuid.v4();
-  await fs.promises.writeFile(
-    `${process.env.TASKS_DIR}/${lane}/${name}.md`,
-    ""
-  );
-  await fs.promises.chown(
-    `${process.env.TASKS_DIR}/${lane}/${name}.md`,
-    PUID,
-    PGID
-  );
-  ctx.body = name;
-  ctx.status = 201;
-}
-
-async function createLane(ctx) {
-  const lane = uuid.v4();
-  await fs.promises.mkdir(`${process.env.TASKS_DIR}/${lane}`);
-  await fs.promises.chown(`${process.env.TASKS_DIR}/${lane}`, PUID, PGID);
-  ctx.body = lane;
-  ctx.status = 201;
-}
-
-router.post("/lanes", createLane);
-
-async function updateLane(ctx) {
-  const name = ctx.params.lane;
-  const newName = ctx.request.body.name.replaceAll(/[<>:"/\\|?*]/g, " ");
-  await fs.promises.rename(
-    `${process.env.TASKS_DIR}/${name}`,
-    `${process.env.TASKS_DIR}/${newName}`
-  );
-  await fs.promises.chown(`${process.env.TASKS_DIR}/${newName}`, PUID, PGID);
-  ctx.status = 204;
-}
-
-router.patch("/lanes/:lane", updateLane);
-
-async function deleteLane(ctx) {
-  const lane = ctx.params.lane;
-  await fs.promises.rm(`${process.env.TASKS_DIR}/${lane}`, {
-    force: true,
-    recursive: true,
-  });
-  ctx.status = 204;
-}
-
-router.delete("/lanes/:lane", deleteLane);
+//   return tags;
+// }
 
 async function getTitle(ctx) {
   ctx.body = process.env.TITLE;
@@ -267,65 +95,121 @@ async function getTitle(ctx) {
 
 router.get("/title", getTitle);
 
-async function getLanesSort(ctx) {
-  const lanes = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/sort/lanes.json`)
-    .then((res) => JSON.parse(res.toString()))
-    .catch((err) => []);
-  ctx.status = 200;
-  ctx.body = lanes;
+async function getResources(ctx) {
+  const path = ctx.request.url.substring("/resources".length);
+  const resources = await fs.promises.readdir(
+    `${process.env.TASKS_DIR}/${decodeURI(path)}`,
+    { withFileTypes: true }
+  );
+  const lanes = resources
+    .filter((dir) => dir.isDirectory() && !dir.name.startsWith("."))
+    .map((dir) => dir.name);
+
+  const lanesWithFiles = await Promise.all(
+    lanes.map(async (lane) => {
+      const filesPromises = await fs.promises
+        .readdir(`${process.env.TASKS_DIR}/${decodeURI(`${path}`)}/${lane}`)
+        .then((files) =>
+          files
+            .filter(
+              (fileName) =>
+                fileName.endsWith(".md") && !fileName.startsWith(".")
+            )
+            .map(async (fileName) => {
+              const getFileContent = fs.promises.readFile(
+                `${process.env.TASKS_DIR}/${decodeURI(`${path}`)}/${lane}/${fileName}`
+              );
+              const getFileStats = fs.promises.stat(
+                `${process.env.TASKS_DIR}/${decodeURI(`${path}`)}/${lane}/${fileName}`
+              );
+              const [content, stats] = await Promise.all([
+                getFileContent,
+                getFileStats,
+              ]);
+              return {
+                name: fileName.substring(0, fileName.length - 3),
+                content: content.toString(),
+                lastUpdated: stats.mtime,
+                createdAt: stats.birthtime,
+              };
+            })
+        );
+      const files = await Promise.all(filesPromises)
+      return {
+        name: lane,
+        files,
+      };
+    })
+  );
+  ctx.body = lanesWithFiles
 }
 
-router.get("/sort/lanes", getLanesSort);
+router.get("/resource/:path*", getResources);
 
-async function saveLanesSort(ctx) {
-  const newSort = JSON.stringify(ctx.request.body || []);
-  await fs.promises.mkdir(`${process.env.CONFIG_DIR}/sort`, {
-    recursive: true,
-  });
-  await fs.promises.writeFile(
-    `${process.env.CONFIG_DIR}/sort/lanes.json`,
-    newSort
-  );
+async function createResource(ctx) {
+  const subPath = decodeURI(ctx.request.url.substring("/resources".length));
+  const splittedPath = subPath.split("/").filter((val) => !!val);
+  const subPathWithoutName = `${splittedPath
+    .filter((_val, i) => i < splittedPath.length - 1)
+    .join("/")}`;
+  const name = splittedPath.at(-1);
+  // TODO snitized name needed?
+  const sanitizedName = name.replaceAll(/<>:"\/\\\|\?\*/g, " ");
+  const isFile = name.substring(name.length - 3) === ".md";
+  if (isFile) {
+    await fs.promises.writeFile(`${process.env.TASKS_DIR}/${subPath}`, "");
+  } else {
+    await fs.promises.mkdir(
+      `${process.env.TASKS_DIR}/${subPath}`
+    );
+  }
   await fs.promises.chown(
-    `${process.env.CONFIG_DIR}/sort/lanes.json`,
+    `${process.env.TASKS_DIR}/${subPath}`,
     PUID,
     PGID
   );
-  ctx.status = 200;
+  ctx.status = 201;
 }
 
-router.post("/sort/lanes", saveLanesSort);
+router.post("/resource/:path*", createResource);
 
-async function getCardsSort(ctx) {
-  const cards = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/sort/cards.json`)
-    .then((res) => JSON.parse(res.toString()))
-    .catch((err) => []);
-  ctx.status = 200;
-  ctx.body = cards;
+async function updateResource(ctx) {
+  const oldPath = decodeURI(ctx.request.url.substring("/resources".length));
+  const splittedPath = oldPath.split("/").filter((val) => !!val);
+  const name = splittedPath.at(-1);
+  const isFile = name.substring(name.length - 3) === ".md";
+  const newPath = decodeURI(ctx.request.body.newPath || oldPath).replaceAll(/<>:"\/\\\|\?\*/g, " ");
+  // const oldLane = await getLaneByCardName(ctx.params.card);
+  // const newLane = ctx.request.body.lane || oldLane;
+  if (newPath !== oldPath) {
+    await fs.promises.rename(
+      `${process.env.TASKS_DIR}/${oldPath}`,
+      `${process.env.TASKS_DIR}/${newPath}`
+    );
+  }
+  const newContent = ctx.request.body.content;
+  if (isFile && newContent) {
+    await fs.promises.writeFile(
+      `${process.env.TASKS_DIR}/${newPath}`,
+      newContent
+    );
+  }
+  await fs.promises.chown(`${process.env.TASKS_DIR}/${newPath}`, PUID, PGID);
+  ctx.status = 204;
 }
 
-router.get("/sort/cards", getCardsSort);
+router.patch("/resource/:path*", updateResource);
 
-async function saveCardsSort(ctx) {
-  const newSort = JSON.stringify(ctx.request.body || []);
-  await fs.promises.mkdir(`${process.env.CONFIG_DIR}/sort`, {
+async function deleteResource(ctx) {
+  const subPath = decodeURI(ctx.request.url.substring("/resources".length));
+  await fs.promises.rm(`${process.env.TASKS_DIR}/${subPath}`, {
+    force: true,
     recursive: true,
   });
-  await fs.promises.writeFile(
-    `${process.env.CONFIG_DIR}/sort/cards.json`,
-    newSort
-  );
-  await fs.promises.chown(
-    `${process.env.CONFIG_DIR}/sort/cards.json`,
-    PUID,
-    PGID
-  );
-  ctx.status = 200;
+  ctx.status = 204;
 }
 
-router.post("/sort/cards", saveCardsSort);
+router.delete("/resource/:path*", deleteResource);
 
 async function saveImage(ctx) {
   const imageName = ctx.request.file.originalname;
@@ -345,6 +229,41 @@ async function saveImage(ctx) {
 }
 
 router.post("/images", multerInstance.single("file"), saveImage);
+
+async function updateSort(ctx) {
+  const subPath = decodeURI(ctx.request.url.substring("/sort".length));
+  const newSort = { [subPath]: ctx.request.body || {} };
+  const currentSort = await fs.promises
+    .readFile(`${process.env.CONFIG_DIR}/sort.json`)
+    .then((res) => JSON.parse(res.toString()))
+    .catch((err) => []);
+  const mergedSort = JSON.stringify({ ...(currentSort || {}), ...newSort })
+  await fs.promises.writeFile(
+    `${process.env.CONFIG_DIR}/sort.json`,
+    mergedSort
+  );
+  await fs.promises.chown(
+    `${process.env.CONFIG_DIR}/sort.json`,
+    PUID,
+    PGID
+  );
+  ctx.status = 200;
+}
+
+router.put("/sort/:path*", updateSort);
+
+async function getSort(ctx) {
+  const subPath = decodeURI(ctx.request.url.substring("/sort".length));
+  const sort = await fs.promises
+    .readFile(`${process.env.CONFIG_DIR}/sort.json`)
+    .then((res) => JSON.parse(res.toString()))
+    .catch((err) => []);
+  const pathSort = JSON.stringify(sort[subPath])
+  ctx.body = pathSort || {};
+  ctx.status = 200;
+}
+
+router.get("/sort/:path*", getSort);
 
 app.use(cors());
 app.use(bodyParser());
