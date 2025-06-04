@@ -23,7 +23,7 @@ export function NameInput(props) {
 	});
 
 	function handleConfirm() {
-		if (props.errorMsg) {
+		if (props.errorMsg || !props.value) {
 			props.onCancel();
 			return;
 		}
