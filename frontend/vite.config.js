@@ -16,6 +16,7 @@ export default defineConfig({
       devOptions: {
         enabled: true,
       },
+      base: "",
       manifest: {
         name: "Tasks.md",
         short_name: "Tasks.md",
@@ -52,11 +53,11 @@ export default defineConfig({
       },
     }),
   ],
+  base: "",
   server: {
-    port: Number(process.env.VITE_PORT)
+    port: Number(process.env.VITE_PORT),
   },
   build: {
     target: "esnext",
   },
-  base: "",
 });

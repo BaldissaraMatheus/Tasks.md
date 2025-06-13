@@ -300,6 +300,10 @@ button.small {
 .card__due-date:not(:empty) {
   margin-top: 12px;
 }
+.view-mode-extended .card__due-date:not(:empty),
+.view-mode-regular .card__due-date:not(:empty) {
+  margin-top: 0px;
+}
 
 .card__content {
   display: none;
@@ -459,6 +463,10 @@ dialog:not(.dialog--maximized) {
   gap: 8px;
   display: flex;
   align-items: center;
+}
+
+.dialog__due-date label {
+  white-space: nowrap;
 }
 
 .card__due-date--in-time {

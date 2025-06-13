@@ -141,12 +141,6 @@ function ExpandedCard(props) {
     if (isSameName) {
       return handleCardRenameCancel();
     }
-    fetch(`${api}/cards/${props.name}`, {
-      method: "PATCH",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newNameWihtoutSpaces }),
-    });
     props.onNameChange(newNameWihtoutSpaces);
     setNewCardName("");
     setIsCardBeingRenamed(false);
@@ -165,26 +159,33 @@ function ExpandedCard(props) {
   function uploadImage(file) {
     const formData = new FormData();
     formData.set("file", file);
-    return fetch(`${api}/images`, {
+    return fetch(`${api}/image`, {
       method: "POST",
       mode: "cors",
       body: formData,
-    }).then((res) => {
+    })
+    .then((res) => res.text())
+    .then((imageName) => {
       handleEditorOnChange();
-      return `${api}/images/${file.name}`;
-    });
+      return `${api}/image/${imageName}`;
+    })
   }
 
   function handleEditorOnChange(e) {
     // Prevent update when opening dialog
     if (
-      e.target.name?.includes("mode-toggle") ||
-      e.target.class?.includes("iconRichText") ||
-      e.target.title?.includes("mode")
+      e?.target.name?.includes("mode-toggle") ||
+      e?.target.class?.includes("iconRichText") ||
+      e?.target.title?.includes("mode")
     ) {
       return;
     }
-    setTimeout(() => props.onContentChange(editor()?.content), 0);
+    setTimeout(() => {
+      if (editor()?.content == props.content) {
+        return;
+      }
+      props.onContentChange(editor()?.content)
+  }, 0);
   }
 
   function getButtonCoordinates(event) {
