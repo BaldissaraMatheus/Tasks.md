@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "start": "cross-env VITE_PORT=3000 VITE_API_PORT=8080 vite",
+    "start": "cross-env VITE_PORT=3000 VITE_API_PORT=8080 VITE_STYLESHEETS_PATH=./stylesheets/custom.css vite --base=/foo",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build VITE_STYLESHEETS_PATH=./_api/stylesheets/custom.css --base=$BASE_PATH",
     "serve": "vite preview"
   },
   "license": "MIT",
@@ -23,6 +23,7 @@
     "@solidjs/router": "^0.15.3",
     "@stackoverflow/stacks-icons": "^6.2.0",
     "solid-js": "^1.6.10",
-    "stacks-editor": "file:src/components/Stacks-Editor"
+    "stacks-editor": "file:src/components/Stacks-Editor",
+    "uuid": "^11.1.0"
   }
 }

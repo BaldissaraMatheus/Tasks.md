@@ -1,4 +1,6 @@
 FROM node:18.20.4-alpine3.20 AS build-stage
+ARG BASE_PATH="/"
+ENV BASE_PATH=$BASE_PATH
 
 RUN apk add git
 RUN set -eux \
