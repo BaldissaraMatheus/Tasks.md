@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "start": "cross-env VITE_PORT=3000 VITE_API_PORT=8080 VITE_STYLESHEETS_PATH=./stylesheets/custom.css vite --base=/foo",
+    "start": "cross-env VITE_PORT=3000 VITE_API_PORT=8080 VITE_STYLESHEETS_PATH=/stylesheets vite",
     "dev": "vite",
-    "build": "vite build VITE_STYLESHEETS_PATH=./_api/stylesheets/custom.css --base=$BASE_PATH",
+    "build": "vite build",
     "serve": "vite preview"
   },
   "license": "MIT",

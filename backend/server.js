@@ -59,7 +59,14 @@ async function getResource(ctx) {
   const resources = await fs.promises.readdir(
     `${process.env.TASKS_DIR}/${decodeURI(path)}`,
     { withFileTypes: true }
-  );
+  ).catch(err => {
+    console.log(err.code)
+    if (err.code === 'ENOENT') {
+      fs.promises.mkdir(`${process.env.TASKS_DIR}/${decodeURI(path)}`)
+      return [];
+    }
+    throw err;
+  })
   const lanes = resources
     .filter((dir) => dir.isDirectory() && !dir.name.startsWith("."))
     .map((dir) => dir.name);
@@ -242,12 +249,11 @@ app.use(async (ctx, next) => {
   await next();
 });
 app.use(mount(`${BASE_PATH}_api`, router.routes()));
-app.use(mount(BASE_PATH, serve("/static")));
+app.use(mount(BASE_PATH, serve(`/static`)));
 app.use(
   mount(`${BASE_PATH}_api/image`, serve(`${process.env.CONFIG_DIR}/images`))
 );
 
-// TODO add _api path
 app.use(
   mount(
     `${BASE_PATH}_api/stylesheet`,
