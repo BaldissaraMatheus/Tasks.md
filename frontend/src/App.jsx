@@ -49,10 +49,10 @@ function App() {
   const navigate = useNavigate();
 
   const basePath = createMemo(() => {
-    if (import.meta.env.BASE_URL.endsWith('/')) {
-      return import.meta.env.BASE_URL.substring(0, import.meta.env.BASE_URL.length - 1)
+    if ((import.meta.env.VITE_BASE_URL || '').endsWith('/')) {
+      return import.meta.env.VITE_BASE_URL.substring(0, import.meta.env.VITE_BASE_URL.length - 1)
     }
-    return import.meta.env.BASE_URL;
+    return import.meta.env.VITE_BASE_URL || '';
   })
 
   const board = createMemo(() => {
@@ -342,7 +342,7 @@ function App() {
   async function createNewLane() {
     const newLanes = structuredClone(lanes());
     const newName = v7();
-    await fetch(`${api}/resource${board()}newName`, {
+    await fetch(`${api}/resource${board()}/${newName}`, {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -782,7 +782,7 @@ function App() {
           content={selectedCard().content}
           tags={selectedCard().tags || []}
           tagsOptions={tagsOptions()}
-          onClose={() => navigate(`${basePath()}${board()}`)}
+          onClose={() => navigate(`${basePath()}${board()}` || '/')}
           onContentChange={(value) =>
             debounceChangeCardContent(value, selectedCard().id)
           }
