@@ -12,6 +12,7 @@ WORKDIR /app
 ARG BASE_PATH="/"
 RUN rm -r src/components/Stacks-Editor
 RUN git clone https://github.com/BaldissaraMatheus/Stacks-Editor src/components/Stacks-Editor
+# TODO do those on docker run
 RUN set -eux \
     && npm ci --no-audit \
     && npm run build
@@ -27,7 +28,7 @@ FROM alpine:3.20 AS final
 ARG PUID=0
 ARG PGID=0
 ARG TITLE=""
-ARG BASE_PATH="/"
+ARG BASE_PATH=""
 ENV BASE_PATH=$BASE_PATH
 ARG LOCAL_IMAGES_CLEANUP_INTERVAL=1440
 ENV LOCAL_IMAGES_CLEANUP_INTERVAL=$LOCAL_IMAGES_CLEANUP_INTERVAL
