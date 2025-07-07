@@ -235,31 +235,35 @@ app.use(async (ctx, next) => {
   }
 });
 
-app.use(async (ctx, next) => {
-  if (BASE_PATH === "/") {
-    return next();
-  }
-  if (
-    ctx.URL.href ===
-    `${ctx.URL.origin}${BASE_PATH.substring(0, BASE_PATH.length - 1)}`
-  ) {
-    ctx.status = 301;
-    return ctx.redirect(`${ctx.URL.origin}${BASE_PATH}`);
-  }
-  await next();
-});
-app.use(mount(`${BASE_PATH}_api`, router.routes()));
-app.use(mount(BASE_PATH, serve(`/static`)));
 app.use(
   mount(`${BASE_PATH}_api/image`, serve(`${process.env.CONFIG_DIR}/images`))
 );
-
 app.use(
   mount(
     `${BASE_PATH}_api/stylesheet`,
     serve(`${process.env.CONFIG_DIR}/stylesheets`)
   )
 );
+app.use(mount(`${BASE_PATH}_api`, router.routes()));
+app.use(mount(BASE_PATH, (ctx, next) => {
+  const mid = serve(`/static`)
+  // GET /favicon/favicon.png
+  if (/\/favicon\/favicon-(16|32)x(16|32).png$/.test(ctx.request.url)) {
+    const dimension = /\/favicon\/favicon-(16|32)x(16|32).png$/.exec(ctx.request.url)[1]
+    ctx.request.url = `/favicon/favicon-${dimension}x${dimension}.png`
+  }
+  // GET /assets/{asset}.{js|css}
+  else if (/\/assets\/(.*).(js|css)$/.test(ctx.request.url)) {
+    const fileName = ctx.request.url.split('/').at(-1);
+    ctx.request.url = `/assets/${fileName}`
+    console.log(ctx.request.url)
+  }
+  // default to index.html
+  else {
+    ctx.request.url = '/'
+  }
+  return mid(ctx, next)
+}));
 
 async function getfilesPaths(dirPath) {
   const dirsAndFiles = (await fs.promises.readdir(dirPath,
