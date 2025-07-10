@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "start": "cross-env VITE_PORT=3000 VITE_API_PORT=8080 VITE_STYLESHEETS_PATH=/stylesheets vite",
+    "start": "cross-env VITE_PORT=3000 VITE_API_PORT=8080 vite",
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
