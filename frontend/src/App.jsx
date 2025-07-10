@@ -49,10 +49,10 @@ function App() {
   const navigate = useNavigate();
 
   const basePath = createMemo(() => {
-    if ((import.meta.env.VITE_BASE_PATH || '').endsWith('/')) {
-      return import.meta.env.VITE_BASE_PATH.substring(0, import.meta.env.VITE_BASE_PATH.length - 1)
+    if ((import.meta.env.BASE_URL || '').endsWith('/')) {
+      return import.meta.env.BASE_URL.substring(0, import.meta.env.BASE_URL.length - 1)
     }
-    return import.meta.env.VITE_BASE_PATH || '';
+    return import.meta.env.BASE_URL || '';
   })
 
   const board = createMemo(() => {
