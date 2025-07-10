@@ -9,19 +9,23 @@ const multer = require("@koa/multer");
 const mount = require("koa-mount");
 const serve = require("koa-static");
 
-const PUID = Number(process.env.PUID);
-const PGID = Number(process.env.PGID);
-const BASE_PATH =
-  process.env.BASE_PATH.at(-1) === "/"
-    ? process.env.BASE_PATH
-    : `${process.env.BASE_PATH}/`;
+const PUID = Number(process.env.PUID || '0');
+const PGID = Number(process.env.PGID || '0');
+let BASE_PATH = process.env.BASE_PATH || '';
+if (BASE_PATH === "/") {
+  BASE_PATH = '';
+}
+const CONFIG_DIR = process.env.CONFIG_DIR || 'config';
+const TASKS_DIR = process.env.TASKS_DIR || 'tasks';
+const TITLE = process.env.TITLE || '';
+const PORT = process.env.PORT || 8080;
 
 const multerInstance = multer();
 
 async function getTags(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/tags".length));
   const tags = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/tags.json`)
+    .readFile(`${CONFIG_DIR}/tags.json`)
     .then((res) => JSON.parse(res.toString()))
     .catch((err) => ({}));
   const pathTags = JSON.stringify(tags[subPath]);
@@ -34,13 +38,13 @@ router.get("/tags/:path*", getTags);
 async function updateTagBackgroundColor(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/tags".length));
   const tags = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/tags.json`)
+    .readFile(`${CONFIG_DIR}/tags.json`)
     .then((res) => JSON.parse(res.toString() || "{}"))
     .catch((err) => ({}));
   const tagsColors = ctx.request.body;
   const newTags = { ...tags, [subPath]: tagsColors };
   await fs.promises.writeFile(
-    `${process.env.CONFIG_DIR}/tags.json`,
+    `${CONFIG_DIR}/tags.json`,
     JSON.stringify(newTags)
   );
   ctx.status = 204;
@@ -49,7 +53,7 @@ async function updateTagBackgroundColor(ctx) {
 router.patch("/tags/:path*", updateTagBackgroundColor);
 
 async function getTitle(ctx) {
-  ctx.body = process.env.TITLE;
+  ctx.body = TITLE;
 }
 
 router.get("/title", getTitle);
@@ -57,12 +61,12 @@ router.get("/title", getTitle);
 async function getResource(ctx) {
   const path = ctx.request.url.substring("/resources".length);
   const resources = await fs.promises.readdir(
-    `${process.env.TASKS_DIR}/${decodeURI(path)}`,
+    `${TASKS_DIR}/${decodeURI(path)}`,
     { withFileTypes: true }
   ).catch(err => {
     console.log(err.code)
     if (err.code === 'ENOENT') {
-      fs.promises.mkdir(`${process.env.TASKS_DIR}/${decodeURI(path)}`)
+      fs.promises.mkdir(`${TASKS_DIR}/${decodeURI(path)}`)
       return [];
     }
     throw err;
@@ -74,7 +78,7 @@ async function getResource(ctx) {
   const lanesWithFiles = await Promise.all(
     lanes.map(async (lane) => {
       const filesPromises = await fs.promises
-        .readdir(`${process.env.TASKS_DIR}/${decodeURI(`${path}`)}/${lane}`)
+        .readdir(`${TASKS_DIR}/${decodeURI(`${path}`)}/${lane}`)
         .then((files) =>
           files
             .filter(
@@ -83,12 +87,12 @@ async function getResource(ctx) {
             )
             .map(async (fileName) => {
               const getFileContent = fs.promises.readFile(
-                `${process.env.TASKS_DIR}/${decodeURI(
+                `${TASKS_DIR}/${decodeURI(
                   `${path}`
                 )}/${lane}/${fileName}`
               );
               const getFileStats = fs.promises.stat(
-                `${process.env.TASKS_DIR}/${decodeURI(
+                `${TASKS_DIR}/${decodeURI(
                   `${path}`
                 )}/${lane}/${fileName}`
               );
@@ -121,11 +125,13 @@ async function createResource(ctx) {
   const isFile = ctx.request.body?.isFile;
   const content = ctx.request.body?.content || "";
   if (isFile) {
-    await fs.promises.writeFile(`${process.env.TASKS_DIR}/${subPath}`, content);
+    await fs.promises.writeFile(`${TASKS_DIR}/${subPath}`, content);
   } else {
-    await fs.promises.mkdir(`${process.env.TASKS_DIR}/${subPath}`);
+    await fs.promises.mkdir(`${TASKS_DIR}/${subPath}`);
   }
-  await fs.promises.chown(`${process.env.TASKS_DIR}/${subPath}`, PUID, PGID);
+  if (PUID && PGID) {
+    await fs.promises.chown(`${TASKS_DIR}/${subPath}`, PUID, PGID);
+  }
   ctx.status = 201;
 }
 
@@ -139,21 +145,23 @@ async function updateResource(ctx) {
   );
   if (newPath !== oldPath) {
     await fs.promises.rename(
-      `${process.env.TASKS_DIR}/${oldPath}`,
-      `${process.env.TASKS_DIR}/${newPath}`
+      `${TASKS_DIR}/${oldPath}`,
+      `${TASKS_DIR}/${newPath}`
     );
   }
 
   const newContent = ctx.request.body.content;
 
-  const isFile = fs.lstatSync(`${process.env.TASKS_DIR}/${newPath}`).isFile();
+  const isFile = fs.lstatSync(`${TASKS_DIR}/${newPath}`).isFile();
   if (isFile && newContent !== undefined) {
     await fs.promises.writeFile(
-      `${process.env.TASKS_DIR}/${newPath}`,
+      `${TASKS_DIR}/${newPath}`,
       newContent
     );
   }
-  await fs.promises.chown(`${process.env.TASKS_DIR}/${newPath}`, PUID, PGID);
+  if (PUID && PGID) {
+    await fs.promises.chown(`${TASKS_DIR}/${newPath}`, PUID, PGID);
+  }
   ctx.status = 204;
 }
 
@@ -161,7 +169,7 @@ router.patch("/resource/:path*", updateResource);
 
 async function deleteResource(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/resources".length));
-  await fs.promises.rm(`${process.env.TASKS_DIR}/${subPath}`, {
+  await fs.promises.rm(`${TASKS_DIR}/${subPath}`, {
     force: true,
     recursive: true,
   });
@@ -171,21 +179,23 @@ async function deleteResource(ctx) {
 router.delete("/resource/:path*", deleteResource);
 
 async function uploadImage(ctx) {
-  await fs.promises.mkdir(`${process.env.CONFIG_DIR}/images`, {
+  await fs.promises.mkdir(`${CONFIG_DIR}/images`, {
     recursive: true,
   });
   const originalname = ctx.request.file.originalname;
   const extension = originalname.split(".").at(-1);
   const imageName = `${uuid.v4()}.${extension}`;
   await fs.promises.writeFile(
-    `${process.env.CONFIG_DIR}/images/${imageName}`,
+    `${CONFIG_DIR}/images/${imageName}`,
     ctx.request.file.buffer
   );
-  await fs.promises.chown(
-    `${process.env.CONFIG_DIR}/images/${imageName}`,
-    PUID,
-    PGID
-  );
+  if (PUID && PGID) {
+    await fs.promises.chown(
+      `${CONFIG_DIR}/images/${imageName}`,
+      PUID,
+      PGID
+    );
+  }
   ctx.status = 200;
   ctx.body = imageName;
 }
@@ -196,15 +206,17 @@ async function updateSort(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/sort".length));
   const newSort = { [subPath]: ctx.request.body || {} };
   const currentSort = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/sort.json`)
+    .readFile(`${CONFIG_DIR}/sort.json`)
     .then((res) => JSON.parse(res.toString()))
     .catch((err) => []);
   const mergedSort = JSON.stringify({ ...(currentSort || {}), ...newSort });
   await fs.promises.writeFile(
-    `${process.env.CONFIG_DIR}/sort.json`,
+    `${CONFIG_DIR}/sort.json`,
     mergedSort
   );
-  await fs.promises.chown(`${process.env.CONFIG_DIR}/sort.json`, PUID, PGID);
+  if (PUID && PGID) {
+    await fs.promises.chown(`${CONFIG_DIR}/sort.json`, PUID, PGID);
+  }
   ctx.status = 200;
 }
 
@@ -213,7 +225,7 @@ router.put("/sort/:path*", updateSort);
 async function getSort(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/sort".length));
   const sort = await fs.promises
-    .readFile(`${process.env.CONFIG_DIR}/sort.json`)
+    .readFile(`${CONFIG_DIR}/sort.json`)
     .then((res) => JSON.parse(res.toString()))
     .catch((err) => []);
   const pathSort = JSON.stringify(sort[subPath]);
@@ -236,33 +248,32 @@ app.use(async (ctx, next) => {
 });
 
 app.use(
-  mount(`${BASE_PATH}_api/image`, serve(`${process.env.CONFIG_DIR}/images`))
+  mount(`${BASE_PATH}/_api/image`, serve(`${CONFIG_DIR}/images`))
 );
-app.use(
-  mount(
-    `${BASE_PATH}_api/stylesheet`,
-    serve(`${process.env.CONFIG_DIR}/stylesheets`)
-  )
-);
-app.use(mount(`${BASE_PATH}_api`, router.routes()));
-app.use(mount(BASE_PATH, (ctx, next) => {
-  const mid = serve(`/static`)
-  // GET /favicon/favicon.png
-  if (/\/favicon\/favicon-(16|32)x(16|32).png$/.test(ctx.request.url)) {
-    const dimension = /\/favicon\/favicon-(16|32)x(16|32).png$/.exec(ctx.request.url)[1]
+app.use(mount(`${BASE_PATH}/_api`, router.routes()));
+app.use(mount((`${BASE_PATH || '/'}`), (ctx, next) => {
+  let middleware = serve('static')
+  if (/stylesheets\/(.*).css$/.test(ctx.request.url)) {
+    const fileName = ctx.request.url.split('/stylesheets').at(-1);
+    ctx.request.url = fileName;
+    middleware = serve(`${CONFIG_DIR}/stylesheets`)
+  }
+  else if (ctx.request.url.endsWith('apple-touch-icon.png')) {
+    ctx.request.url = `/favicon/apple-touch-icon.png`
+  }
+  else if (/favicon\/favicon-(16|32)x(16|32).png$/.test(ctx.request.url)) {
+    const dimension = /favicon\/favicon-(16|32)x(16|32).png$/.exec(ctx.request.url)[1]
     ctx.request.url = `/favicon/favicon-${dimension}x${dimension}.png`
   }
-  // GET /assets/{asset}.{js|css}
-  else if (/\/assets\/(.*).(js|css)$/.test(ctx.request.url)) {
+  else if (/assets\/(.*).(js|css)$/.test(ctx.request.url)) {
     const fileName = ctx.request.url.split('/').at(-1);
     ctx.request.url = `/assets/${fileName}`
-    console.log(ctx.request.url)
   }
   // default to index.html
   else {
     ctx.request.url = '/'
   }
-  return mid(ctx, next)
+  return middleware(ctx, next)
 }));
 
 async function getfilesPaths(dirPath) {
@@ -282,8 +293,8 @@ async function getfilesPaths(dirPath) {
 }
 
 async function removeUnusedImages() {
-  await fs.promises.mkdir(process.env.TASKS_DIR, { recursive: true });
-  const tasksDir = process.env.TASKS_DIR;
+  await fs.promises.mkdir(TASKS_DIR, { recursive: true });
+  const tasksDir = TASKS_DIR;
   const allFiles = await getfilesPaths(tasksDir)
   const filesReadPromises = allFiles.map(file => fs.promises.readFile(file))
   const filesContents = await Promise.all(filesReadPromises).then(buffers => buffers.map(buffer => buffer.toString()));
@@ -293,20 +304,24 @@ async function removeUnusedImages() {
     .filter((image) => !!image && image.includes("_api/image/"))
     .map((image) => image.split("_api/image/")[1].slice(0, -1));
   const allImages = await fs.promises.readdir(
-    `${process.env.CONFIG_DIR}/images`
+    `${CONFIG_DIR}/images`
   );
   const unusedImages = allImages.filter(
     (image) => !imagesBeingUsed.includes(image)
   );
   await Promise.all(
     unusedImages.map((image) =>
-      fs.promises.rm(`${process.env.CONFIG_DIR}/images/${image}`)
+      fs.promises.rm(`${CONFIG_DIR}/images/${image}`)
     )
   );
 }
 
-if (process.env.LOCAL_IMAGES_CLEANUP_INTERVAL) {
-  const intervalInMs = process.env.LOCAL_IMAGES_CLEANUP_INTERVAL * 60000;
+const localImagesCleanupInterval = /^\d{1,}$/.test(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL)
+  ? Number(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL)
+  : 1440
+
+if (localImagesCleanupInterval) {
+  const intervalInMs = localImagesCleanupInterval * 60000;
   try {
     if (intervalInMs > 0) {
       setInterval(removeUnusedImages, intervalInMs);
@@ -316,4 +331,5 @@ if (process.env.LOCAL_IMAGES_CLEANUP_INTERVAL) {
   }
 }
 
-app.listen(process.env.PORT);
+console.log('API starting at ' + PORT)
+app.listen(PORT);
