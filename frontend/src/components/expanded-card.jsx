@@ -12,7 +12,7 @@ import { makePersisted } from "@solid-primitives/storage";
 import { NameInput } from "./name-input";
 import { Portal } from "solid-js/web";
 import { StacksEditor } from "./Stacks-Editor/src/stacks-editor/editor";
-import { IconClear, IconScreenFull } from "@stackoverflow/stacks-icons/icons";
+import { IconClear, IconScreenFull, IconScreenNormal } from "@stackoverflow/stacks-icons/icons";
 import stacksStyle from "@stackoverflow/stacks/dist/css/stacks.css?inline";
 import stacksEditorStyle from "./Stacks-Editor/src/styles/index.css?inline";
 
@@ -396,16 +396,18 @@ function ExpandedCard(props) {
                 <button
                   type="button"
                   class="dialog__toolbar-btn"
+                  title={isMaximized() === "true" ? 'Minimize card' : 'Expand card'}
                   onClick={() =>
                     setIsMaximized(isMaximized() === "true" ? "false" : "true")
                   }
                 >
-                  <span innerHTML={IconScreenFull} />
+                  <span innerHTML={isMaximized() === 'true' ? IconScreenNormal : IconScreenFull} />
                 </button>
                 <button
                   type="button"
                   class="dialog__toolbar-btn"
                   onClick={props.onClose}
+                  title="Close"
                 >
                   <span innerHTML={IconClear} />
                 </button>
