@@ -637,3 +637,7 @@ a > * {
 .view-mode-tight .lane__content {
   gap: 6px;
 }
+
+.svg-icon-bg.iconEllipsisHorizontal {
+  --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/EllipsisHorizontal.svg");
+}
