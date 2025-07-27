@@ -641,3 +641,7 @@ a > * {
 .svg-icon-bg.iconEllipsisHorizontal {
   --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/EllipsisHorizontal.svg");
 }
+
+.s-tag ~ .ProseMirror-separator {
+  display: inline;
+}
