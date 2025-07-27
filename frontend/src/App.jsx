@@ -513,6 +513,9 @@ function App() {
     if (newName.endsWith(".md")) {
       return "Name must not end with .md";
     }
+    if (newName === "_api") {
+      return 'Name "_api" is prohibited';
+    }
     return null;
   }
 
