@@ -321,6 +321,9 @@ function ExpandedCard(props) {
   });
 
   function handleDialogCancel(e) {
+    if (e?.target?.type === 'file') {
+      return;
+    }
     e?.preventDefault();
     if (newCardName() || isCreatingNewTag()) {
       setNameInputValue(null);
