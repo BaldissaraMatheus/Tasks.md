@@ -35,7 +35,10 @@ function App() {
     name: "sortDirection",
   });
   const [search, setSearch] = createSignal("");
-  const [filteredTag, setFilteredTag] = createSignal(null);
+  const [filteredTag, setFilteredTag] = makePersisted(createSignal(null), {
+    storage: localStorage,
+    name: "filteredTag",
+  });
   const [tagsOptions, setTagsOptions] = createSignal([]);
   const [laneBeingRenamedName, setLaneBeingRenamedName] = createSignal(null);
   const [newLaneName, setNewLaneName] = createSignal(null);
