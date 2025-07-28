@@ -1,13 +1,18 @@
 const fs = require("fs");
 const uuid = require("uuid");
 const Koa = require("koa");
-const app = new Koa();
-const router = require("@koa/router")();
+const Router = require("@koa/router");
 const bodyParser = require("koa-bodyparser");
 const cors = require("@koa/cors");
 const multer = require("@koa/multer");
 const mount = require("koa-mount");
 const serve = require("koa-static");
+const websockify = require('koa-websocket');
+
+const app = websockify(new Koa());
+
+const router = new Router();
+const socketRouter = new Router();
 
 const PUID = Number(process.env.PUID || '0');
 const PGID = Number(process.env.PGID || '0');
@@ -19,6 +24,9 @@ const CONFIG_DIR = process.env.CONFIG_DIR || 'config';
 const TASKS_DIR = process.env.TASKS_DIR || 'tasks';
 const TITLE = process.env.TITLE || '';
 const PORT = process.env.PORT || 8080;
+
+let watchFiles = true;
+const fileWatcher = fs.watch(process.env.TASKS_DIR, { recursive: true });
 
 const multerInstance = multer();
 
@@ -237,19 +245,28 @@ router.get("/sort/:path*", getSort);
 
 app.use(cors());
 app.use(bodyParser());
-app.use(async (ctx, next) => {
+
+const httpInstance = new Koa();
+httpInstance.use(async (ctx, next) => {
   try {
+    watchFiles = false;
     await next();
   } catch (err) {
     console.error(err);
     err.status = err.statusCode || err.status || 500;
     throw err;
+  } finally {
+    watchFiles = true;
   }
 });
 
 app.use(
+  mount(`${BASE_PATH}/_api`, httpInstance)
+);
+app.use(
   mount(`${BASE_PATH}/_api/image`, serve(`${CONFIG_DIR}/images`))
 );
+
 app.use(mount(`${BASE_PATH}/_api`, router.routes()));
 app.use(mount((`${BASE_PATH || '/'}`), (ctx, next) => {
   let middleware = serve('static')
@@ -275,6 +292,18 @@ app.use(mount((`${BASE_PATH || '/'}`), (ctx, next) => {
   }
   return middleware(ctx, next)
 }));
+
+socketRouter.get('/watch', async (ctx) => {
+  console.log('socket connection stablished')
+  ctx.websocket.send('socket connection stablished');
+  fileWatcher.on('change', (e, fileName) => {
+    if (watchFiles) {
+      ctx.websocket.send('files changed');
+    }
+  })
+});
+
+app.ws.use(mount(`${BASE_PATH}/_api`, socketRouter.routes())).use(router.allowedMethods());
 
 async function getfilesPaths(dirPath) {
   const dirsAndFiles = (await fs.promises.readdir(dirPath,

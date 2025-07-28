@@ -20,7 +20,7 @@ import { CardName } from "./components/card-name";
 import { makePersisted } from "@solid-primitives/storage";
 import { DragAndDrop } from "./components/drag-and-drop";
 import { useLocation, useNavigate } from "@solidjs/router";
-import { v7 } from 'uuid';
+import { v7 } from "uuid";
 import "./stylesheets/index.css";
 
 function App() {
@@ -48,15 +48,19 @@ function App() {
     storage: localStorage,
     name: "viewMode",
   });
+  const [renderUID, setRenderUID] = createSignal(v7());
   const location = useLocation();
   const navigate = useNavigate();
 
   const basePath = createMemo(() => {
-    if ((import.meta.env.BASE_URL || '').endsWith('/')) {
-      return import.meta.env.BASE_URL.substring(0, import.meta.env.BASE_URL.length - 1)
+    if ((import.meta.env.BASE_URL || "").endsWith("/")) {
+      return import.meta.env.BASE_URL.substring(
+        0,
+        import.meta.env.BASE_URL.length - 1
+      );
     }
-    return import.meta.env.BASE_URL || '';
-  })
+    return import.meta.env.BASE_URL || "";
+  });
 
   const board = createMemo(() => {
     let { pathname } = location || "";
@@ -65,20 +69,17 @@ function App() {
       pathnameParts.pop();
       const concatenatedName = pathnameParts
         .join("/")
-        .substring(basePath().length, pathname.length)
+        .substring(basePath().length, pathname.length);
       if (!concatenatedName) {
-        return '';
+        return "";
       }
-      return '/' + concatenatedName;
+      return "/" + concatenatedName;
     }
     if (pathname.endsWith("/")) {
       pathname = pathname.substring(0, pathname.length - 1);
     }
-    if (basePath() !== '/') {
-      pathname = pathname.substring(
-        basePath().length,
-        pathname.length
-      );
+    if (basePath() !== "/") {
+      pathname = pathname.substring(basePath().length, pathname.length);
     }
     return pathname;
   });
@@ -104,11 +105,10 @@ function App() {
       return fetch(`${api}/title`).then((res) => res.text());
     }
     const boardSplit = board().split("/");
-    // TODO -1?
     return decodeURI(boardSplit.at(-1));
-	}
+  }
 
-	const [title] = createResource(fetchTitle);
+  const [title] = createResource(fetchTitle);
 
   function getTagBackgroundCssColor(tagColor) {
     const backgroundColorNumber = RegExp("[0-9]").exec(`${tagColor || "1"}`)[0];
@@ -162,7 +162,6 @@ function App() {
           return duplicatedTag.toLowerCase() === tag.toLowerCase();
         }) === index
     );
-    // TOOD ????
     const localTagNames = currentTagsWithoutDuplicates;
     const tagsWithColors = localTagNames.map((tagName) => {
       const remoteTag = remoteTagOptions.find((tag) => tag.name === tagName);
@@ -197,6 +196,7 @@ function App() {
     batch(() => {
       setLanes(newLanes);
       setCards(newCards);
+      setRenderUID(v7());
     });
   }
 
@@ -320,7 +320,7 @@ function App() {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isFile: true })
+      body: JSON.stringify({ isFile: true }),
     });
     newCard.name = newCardName;
     newCard.lastUpdated = new Date().toISOString();
@@ -435,7 +435,7 @@ function App() {
   }
 
   function handleOnSelectedCardNameChange(newName) {
-    renameCard(selectedCard().name, newName)
+    renameCard(selectedCard().name, newName);
     navigate(`${basePath()}${board()}/${newName}.md`);
   }
 
@@ -453,9 +453,7 @@ function App() {
 
   function renameCard(oldName, newName) {
     const newCards = structuredClone(cards());
-    const newCardIndex = newCards.findIndex(
-      (card) => card.name === oldName
-    );
+    const newCardIndex = newCards.findIndex((card) => card.name === oldName);
     const newCard = newCards[newCardIndex];
     const newCardNameWithoutSpaces = newName.trim();
     fetch(`${api}/resource${board()}/${newCard.lane}/${newCard.name}.md`, {
@@ -492,9 +490,7 @@ function App() {
           card.name === selectedCard().name && card.lane === selectedCard().lane
       )
     );
-    navigate(
-      `${basePath()}${board()}/${cards()[newCardIndex].name}.md`
-    );
+    navigate(`${basePath()}${board()}/${cards()[newCardIndex].name}.md`);
   }
 
   function validateName(newName, namesList, item) {
@@ -580,6 +576,12 @@ function App() {
       window.location.replace(`${url}/`);
     }
     fetchData();
+    const webSocket = new WebSocket(`${api}/watch`);
+    webSocket.addEventListener("message", (e) => {
+      if (e.data === "files changed") {
+        fetchData();
+      }
+    });
   });
 
   createEffect(() => {
@@ -640,7 +642,9 @@ function App() {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newPath: `${board()}/${newCardLane}/${cardName}.md` }),
+      body: JSON.stringify({
+        newPath: `${board()}/${newCardLane}/${cardName}.md`,
+      }),
     });
     card.lane = newCardLane;
     const newCards = lanes().flatMap((lane) => {
@@ -732,9 +736,9 @@ function App() {
                         onClick={() => {
                           let cardUrl = basePath();
                           if (board()) {
-                            cardUrl += `${board()}`
+                            cardUrl += `${board()}`;
                           }
-                          cardUrl += `/${card.name}.md`; 
+                          cardUrl += `/${card.name}.md`;
                           navigate(cardUrl);
                         }}
                         headerSlot={
@@ -752,7 +756,12 @@ function App() {
                                 "card"
                               )}
                               onChange={(newValue) => setNewCardName(newValue)}
-                              onConfirm={() => renameCard(cardBeingRenamed()?.name, newCardName())}
+                              onConfirm={() =>
+                                renameCard(
+                                  cardBeingRenamed()?.name,
+                                  newCardName()
+                                )
+                              }
                               onCancel={() => {
                                 setNewCardName(null);
                                 setCardBeingRenamed(null);
@@ -782,31 +791,35 @@ function App() {
         </DragAndDrop.Container>
         <DragAndDrop.Target />
       </DragAndDrop.Provider>
-      <Show when={!!selectedCard()}>
-        <ExpandedCard
-          name={selectedCard().name}
-          content={selectedCard().content}
-          tags={selectedCard().tags || []}
-          tagsOptions={tagsOptions()}
-          onClose={() => navigate(`${basePath()}${board()}` || '/')}
-          onContentChange={(value) =>
-            debounceChangeCardContent(value, selectedCard().id)
-          }
-          onTagColorChange={updateTagColorFromExpandedCard}
-          onNameChange={handleOnSelectedCardNameChange}
-          getNameErrorMsg={(newName) =>
-            validateName(
-              newName,
-              cards()
-                .filter((card) => card.name !== selectedCard().name)
-                .map((card) => card.name),
-              "card"
-            )
-          }
-          disableImageUpload={false}
-          board={board()}
-          lane={selectedCard()?.lane}
-        />
+      <Show when={renderUID()} keyed>
+        <Show when={selectedCard()}>
+          <ExpandedCard
+            name={selectedCard().name}
+            content={selectedCard().content}
+            tags={selectedCard().tags || []}
+            tagsOptions={tagsOptions()}
+            onClose={() => {
+              navigate(`${basePath()}${board()}` || "/");
+            }}
+            onContentChange={(value) =>
+              debounceChangeCardContent(value, selectedCard().id)
+            }
+            onTagColorChange={updateTagColorFromExpandedCard}
+            onNameChange={handleOnSelectedCardNameChange}
+            getNameErrorMsg={(newName) =>
+              validateName(
+                newName,
+                cards()
+                  .filter((card) => card.name !== selectedCard().name)
+                  .map((card) => card.name),
+                "card"
+              )
+            }
+            disableImageUpload={false}
+            board={board()}
+            lane={selectedCard()?.lane}
+          />
+        </Show>
       </Show>
     </>
   );

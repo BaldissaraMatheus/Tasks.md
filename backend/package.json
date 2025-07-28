@@ -8,6 +8,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-mount": "^4.0.0",
     "koa-static": "^5.0.0",
+    "koa-websocket": "^7.0.0",
     "uuid": "^9.0.1"
   },
   "scripts": {
