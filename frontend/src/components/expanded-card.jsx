@@ -167,7 +167,7 @@ function ExpandedCard(props) {
     .then((res) => res.text())
     .then((imageName) => {
       handleEditorOnChange();
-      return `${api}/image/${imageName}`;
+      return `${import.meta.env.DEV ? `${api}/` : (import.meta.env.BASE_URL || '/')}_api/image/${imageName}`;
     })
   }
 
