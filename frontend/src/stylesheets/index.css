@@ -256,6 +256,11 @@ button.small {
   transition: translate 0.25s;
 }
 
+.view-mode-extended .card,
+.view-mode-regular .card {
+  min-height: 75px;
+}
+
 .card.card__drag-disabled {
   cursor: pointer !important;
 }
@@ -284,11 +289,14 @@ button.small {
   flex-wrap: wrap;
   gap: 8px;
   overflow: hidden;
-  min-height: 24px;
   padding: 0;
   /* Those are required to override stacks classes */
   margin: 0;
   list-style-type: none;
+}
+
+.card__tags:not(:empty) {
+  min-height: 24px;
 }
 
 .card__due-date {
@@ -296,18 +304,13 @@ button.small {
   align-items: center;
 }
 
-.card__tags:not(:empty),
+.card__content:not(:empty),
 .card__due-date:not(:empty) {
   margin-top: 12px;
-}
-.view-mode-extended .card__due-date:not(:empty),
-.view-mode-regular .card__due-date:not(:empty) {
-  margin-top: 0px;
 }
 
 .card__content {
   display: none;
-  margin-top: 12px;
 }
 
 [popover] {
