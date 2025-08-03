@@ -21,6 +21,7 @@
     "@solid-primitives/storage": "^2.1.2",
     "@solidjs/router": "^0.15.3",
     "@stackoverflow/stacks-icons": "^6.2.0",
+    "@stackoverflow/stacks": "^2.3.2",
     "solid-js": "^1.6.10",
     "stacks-editor": "file:src/components/Stacks-Editor",
     "uuid": "^11.1.0",
