@@ -297,6 +297,7 @@ button.small {
 
 .card__tags:not(:empty) {
   min-height: 24px;
+  margin-top: 8px;
 }
 
 .card__due-date {
