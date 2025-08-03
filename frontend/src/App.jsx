@@ -94,8 +94,9 @@ function App() {
   });
 
   const selectedCard = createMemo(() => {
+    const decodedCardName = decodeURI(selectedCardName())
     const card = cards().find(
-      (card) => `${card.name}.md` === selectedCardName()
+      (card) => `${card.name}.md` === decodedCardName
     );
     return card;
   });
