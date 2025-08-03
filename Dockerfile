@@ -11,7 +11,7 @@ COPY entrypoint.sh /api/entrypoint.sh
 WORKDIR /app
 RUN rm -r src/components/Stacks-Editor
 RUN git clone https://github.com/BaldissaraMatheus/Stacks-Editor src/components/Stacks-Editor
-# TODO install only prod dependencies
+RUN cd src/components/Stacks-Editor && npm ci --no-audit
 RUN set -eux && npm ci --no-audit --omit=dev
 
 COPY backend/ /api/
