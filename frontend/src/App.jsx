@@ -254,35 +254,32 @@ function App() {
         }));
       })
     );
-    const currentTags = getTagsByCardContent(newContent);
-    const currentTagsWithoutDuplicates = currentTags.filter(
+    const cardTags = getTagsByCardContent(newContent);
+    const cardTagsWithoutDuplicates = cardTags.filter(
       (tag, index, arr) =>
         arr.findIndex((duplicatedTag) => {
           return duplicatedTag.toLowerCase() === tag.toLowerCase();
         }) === index
     );
-    const localTagNames = currentTagsWithoutDuplicates.filter((tagName) =>
-      remoteTagOptions.every(
-        (remoteTag) => remoteTag.name.toLowerCase() !== tagName.toLowerCase()
-      )
-    );
-    const localTagOptions = localTagNames.map((tag) => {
-      const tagColor = getTagBackgroundCssColor(
-        pickTagColorIndexBasedOnHash(tag)
+    const cardTagOptions = cardTagsWithoutDuplicates.map((tagName) => {
+      const remoteTagOption = remoteTagOptions.find(option => option.name === tagName);
+      const tagColor = remoteTagOption?.backgroundColor || getTagBackgroundCssColor(
+        pickTagColorIndexBasedOnHash(tagName)
       );
       return {
-        name: tag,
+        name: tagName,
         backgroundColor: tagColor,
       };
     });
-    const allTagOptions = [...remoteTagOptions, ...localTagOptions];
-    setTagsOptions(allTagOptions);
-    newCard.tags = localTagOptions;
-    const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
+    newCard.tags = cardTagOptions;
     newCard.lastUpdated = new Date().toISOString();
+    const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
     newCard.dueDate = dueDateStringMatch?.length ? dueDateStringMatch[1] : "";
     newCards[newCardIndex] = newCard;
     setCards(newCards);
+    const localTagOptions = cardTagOptions.filter((tag) => !tagsOptions().some(remoteTag => remoteTag.name === tag.name))
+    const allTagOptions = [...tagsOptions(), ...localTagOptions];
+    setTagsOptions(allTagOptions);
     navigate(`${basePath()}${board()}/${newCard.name}.md`);
   }
 

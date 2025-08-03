@@ -645,3 +645,7 @@ a > * {
 .s-tag ~ .ProseMirror-separator {
   display: inline;
 }
+
+.editor .s-code-block.markdown {
+  height: 100%;
+}
