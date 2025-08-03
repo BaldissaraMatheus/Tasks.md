@@ -19,12 +19,18 @@ export function Header(props) {
       return null;
     }
     return (
-      <select onChange={props.onTagChange} value={props.filteredTag || 'none'}>
-        <option value="none">None</option>
-        <For each={props.tagOptions}>
-          {(tag) => <option value={tag}>{tag}</option>}
-        </For>
-      </select>
+      <>
+        <div class="app-header__group-item-label">Filter by tag:</div>
+        <select
+          onChange={props.onTagChange}
+          value={props.filteredTag || "none"}
+        >
+          <option value="none">None</option>
+          <For each={props.tagOptions}>
+            {(tag) => <option value={tag}>{tag}</option>}
+          </For>
+        </select>
+      </>
     );
   });
 
@@ -51,7 +57,6 @@ export function Header(props) {
         </select>
       </div>
       <div class="app-header__group-item">
-        <div class="app-header__group-item-label">Filter by tag:</div>
         {filterSelect()}
       </div>
       <div class="app-header__group-item">
