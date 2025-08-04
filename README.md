@@ -100,11 +100,7 @@ More details (and it how it looks within Obsidian) can be found [here](https://g
 With the goal of having a good mix of performance and maintainability, the application was built with [SolidJS](https://github.com/solidjs/solid) and [Koa](https://github.com/koajs/koa). It also uses [Stacks-Editor](https://github.com/StackExchange/Stacks-Editor) for text editing and [serve-static](https://github.com/expressjs/serve-static) to serve the css files as-is.
 
 ## 🔨 Contribute
-### Bugfixes and new features requests
-Feel free to create issues for encountered bugs or to request new features. Also give a thumbs up to the issues you feel that are relevant to be implemented for next releases.
-
-### Development
-If you want to contribute to its development, select one of the [existing issues](https://github.com/BaldissaraMatheus/Tasks.md/issues), develop your solution and submit a pull request, it will eventually be reviewed and may be merged with the existing code. If you're not confident about your solution, discuss your ideas in its issue page or publish a draft pull request.
+This is a low maintenance project. The scope of features and support are purposefully kept narrow to ensure longer term maintenance is viable. Issues and PRs raised for bugs and quality of life improvements are perfectly fine, just don’t do that for features that significantly increase the scope of the project.
 
 ### Sponsor
 If you like the project, consider [becoming a sponsor](https://github.com/sponsors/BaldissaraMatheus) with a one-time donation!
