@@ -13,6 +13,9 @@ A self-hosted, Markdown file based task management board.
 - Support for subpath based reverse-proxy with an environment variable for base path;
 - Can be installed as PWA.
 
+## Upgrade from 2.X.X to 3.X.X
+If you were running a docker container with version 2 of Tasks.md and want to upgrade it to version 3, please follow up [those instructions](/public/migration-guide.md) as it requires some tweeks for it to work properly.
+
 ## 🐋 Installation
 ### Docker
 Paste this command:
