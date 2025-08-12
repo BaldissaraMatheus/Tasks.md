@@ -1,8 +1,7 @@
 let basePath = import.meta.env.DEV
-	? `http://localhost:${import.meta.env.VITE_API_PORT}`
-	: /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]*\b|localhost:[0-9]{1,5})/.exec(window.location.href)[0];
-if (!basePath.startsWith('http')) {
-	basePath = `http://${basePath}`;
+	? `http://localhost:${import.meta.env.VITE_API_PORT}${import.meta.env.BASE_URL || '/'}`
+	: `${import.meta.env.BASE_URL || '/'}`
+if (basePath.endsWith('/')) {
+	basePath = basePath.substring(0, basePath.length - 1);
 }
-let subPath = import.meta.env.BASE_URL || '/';
-export const api = `${basePath}${subPath}_api`;
+export const api = `${basePath}/_api`;
