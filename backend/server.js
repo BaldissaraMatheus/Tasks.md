@@ -7,28 +7,103 @@ const cors = require("@koa/cors");
 const multer = require("@koa/multer");
 const mount = require("koa-mount");
 const serve = require("koa-static");
-const websockify = require('koa-websocket');
+const websockify = require("koa-websocket");
+const koaSession = require("koa-session");
+const passport = require("koa-passport");
+const { Strategy, Issuer } = require("openid-client");
 
 const app = websockify(new Koa());
 
 const router = new Router();
 const socketRouter = new Router();
 
-const PUID = Number(process.env.PUID || '0');
-const PGID = Number(process.env.PGID || '0');
-let BASE_PATH = process.env.BASE_PATH || '';
+const PUID = Number(process.env.PUID || "0");
+const PGID = Number(process.env.PGID || "0");
+let BASE_PATH = process.env.BASE_PATH || "";
 if (BASE_PATH === "/") {
-  BASE_PATH = '';
+  BASE_PATH = "";
 }
-const CONFIG_DIR = process.env.CONFIG_DIR || 'config';
-const TASKS_DIR = process.env.TASKS_DIR || 'tasks';
-const TITLE = process.env.TITLE || '';
+const CONFIG_DIR = process.env.CONFIG_DIR || "config";
+const TASKS_DIR = process.env.TASKS_DIR || "tasks";
+const TITLE = process.env.TITLE || "";
 const PORT = process.env.PORT || 8080;
 
 let watchFiles = true;
 const fileWatcher = fs.watch(process.env.TASKS_DIR, { recursive: true });
 
 const multerInstance = multer();
+
+const koaSessionConfig = {
+  key: "koa.sess",
+  maxAge: 86400000,
+  autoCommit: true,
+  overwrite: true,
+  httpOnly: true,
+  signed: true,
+  rolling: false,
+  renew: false,
+  secure: false,
+};
+const session = koaSession.createSession;
+app.keys = ["koa.sess"];
+app.use(session(koaSessionConfig, app));
+
+Issuer.discover("https://demo.pocket-id.org/.well-known/openid-configuration").then((oidcIssuer) => {
+  const client = new oidcIssuer.Client({
+    client_id: "",
+    client_secret: "",
+    redirect_uris: ["http://localhost:8080/_api/login-cb"],
+    response_types: ["code"],
+
+  });
+  passport.use('openid',
+    new Strategy({ client, passReqToCallback: true }, (ctx, tokenSet, naosei, user) => {
+      console.log({ ctx, tokenSet, naosei, user });
+    }));
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+async function checkUserAuth(ctx, next) {
+  next();
+}
+app.use(checkUserAuth);
+
+const login = (ctx) => {
+  return passport.authenticate("openid", { scope: "openid" })(ctx);
+};
+
+router.get("/login", login);
+
+const loginCb = (ctx) => {
+  return passport.authenticate("openid", {
+    successRedirect: "http://localhost:8080/_api/success",
+    failureRedirect: "http://localhost:8080/_api/error",
+  })(ctx);
+};
+
+router.get("/login-cb", loginCb);
+
+router.get("/logout", (ctx) => {
+  ctx.logout();
+});
+
+router.get("/success", (ctx) => {
+  ctx.body = "success " + JSON.stringify(ctx);
+  ctx.status = 200;
+});
+
+router.get("/error", (ctx) => {
+  ctx.body = "error " + JSON.stringify(ctx);
+  ctx.status = 200;
+});
+
+router.get("/ping", (ctx) => {
+  console.log("ping ", ctx.isAuthenticated());
+  ctx.body = "user is authenticated:" + ctx.isAuthenticated();
+  ctx.status = 200;
+});
 
 async function getTags(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/tags".length));
@@ -68,17 +143,15 @@ router.get("/title", getTitle);
 
 async function getResource(ctx) {
   const path = ctx.request.url.substring("/resources".length);
-  const resources = await fs.promises.readdir(
-    `${TASKS_DIR}/${decodeURI(path)}`,
-    { withFileTypes: true }
-  ).catch(err => {
-    console.log(err.code)
-    if (err.code === 'ENOENT') {
-      fs.promises.mkdir(`${TASKS_DIR}/${decodeURI(path)}`)
-      return [];
-    }
-    throw err;
-  })
+  const resources = await fs.promises
+    .readdir(`${TASKS_DIR}/${decodeURI(path)}`, { withFileTypes: true })
+    .catch((err) => {
+      if (err.code === "ENOENT") {
+        fs.promises.mkdir(`${TASKS_DIR}/${decodeURI(path)}`);
+        return [];
+      }
+      throw err;
+    });
   const lanes = resources
     .filter((dir) => dir.isDirectory() && !dir.name.startsWith("."))
     .map((dir) => dir.name);
@@ -95,14 +168,10 @@ async function getResource(ctx) {
             )
             .map(async (fileName) => {
               const getFileContent = fs.promises.readFile(
-                `${TASKS_DIR}/${decodeURI(
-                  `${path}`
-                )}/${lane}/${fileName}`
+                `${TASKS_DIR}/${decodeURI(`${path}`)}/${lane}/${fileName}`
               );
               const getFileStats = fs.promises.stat(
-                `${TASKS_DIR}/${decodeURI(
-                  `${path}`
-                )}/${lane}/${fileName}`
+                `${TASKS_DIR}/${decodeURI(`${path}`)}/${lane}/${fileName}`
               );
               const [content, stats] = await Promise.all([
                 getFileContent,
@@ -162,10 +231,7 @@ async function updateResource(ctx) {
 
   const isFile = fs.lstatSync(`${TASKS_DIR}/${newPath}`).isFile();
   if (isFile && newContent !== undefined) {
-    await fs.promises.writeFile(
-      `${TASKS_DIR}/${newPath}`,
-      newContent
-    );
+    await fs.promises.writeFile(`${TASKS_DIR}/${newPath}`, newContent);
   }
   if (PUID && PGID) {
     await fs.promises.chown(`${TASKS_DIR}/${newPath}`, PUID, PGID);
@@ -198,11 +264,7 @@ async function uploadImage(ctx) {
     ctx.request.file.buffer
   );
   if (PUID && PGID) {
-    await fs.promises.chown(
-      `${CONFIG_DIR}/images/${imageName}`,
-      PUID,
-      PGID
-    );
+    await fs.promises.chown(`${CONFIG_DIR}/images/${imageName}`, PUID, PGID);
   }
   ctx.status = 200;
   ctx.body = imageName;
@@ -218,10 +280,7 @@ async function updateSort(ctx) {
     .then((res) => JSON.parse(res.toString()))
     .catch((err) => []);
   const mergedSort = JSON.stringify({ ...(currentSort || {}), ...newSort });
-  await fs.promises.writeFile(
-    `${CONFIG_DIR}/sort.json`,
-    mergedSort
-  );
+  await fs.promises.writeFile(`${CONFIG_DIR}/sort.json`, mergedSort);
   if (PUID && PGID) {
     await fs.promises.chown(`${CONFIG_DIR}/sort.json`, PUID, PGID);
   }
@@ -260,94 +319,98 @@ httpInstance.use(async (ctx, next) => {
   }
 });
 
-app.use(
-  mount(`${BASE_PATH}/_api`, httpInstance)
-);
-app.use(
-  mount(`${BASE_PATH}/_api/image`, serve(`${CONFIG_DIR}/images`))
-);
+app.use(mount(`${BASE_PATH}/_api`, httpInstance));
+app.use(mount(`${BASE_PATH}/_api/image`, serve(`${CONFIG_DIR}/images`)));
 
 app.use(mount(`${BASE_PATH}/_api`, router.routes()));
-app.use(mount((`${BASE_PATH || '/'}`), (ctx, next) => {
-  let middleware = serve('static')
-  if (/stylesheets\/(.*).css$/.test(ctx.request.url)) {
-    const fileName = ctx.request.url.split('/stylesheets').at(-1);
-    ctx.request.url = fileName;
-    middleware = serve(`${CONFIG_DIR}/stylesheets`)
-  }
-  else if (ctx.request.url.endsWith('apple-touch-icon.png')) {
-    ctx.request.url = `/favicon/apple-touch-icon.png`
-  }
-  else if (/favicon\/favicon-(16|32)x(16|32).png$/.test(ctx.request.url)) {
-    const dimension = /favicon\/favicon-(16|32)x(16|32).png$/.exec(ctx.request.url)[1]
-    ctx.request.url = `/favicon/favicon-${dimension}x${dimension}.png`
-  }
-  else if (/assets\/(.*).(js|css)$/.test(ctx.request.url)) {
-    const fileName = ctx.request.url.split('/').at(-1);
-    ctx.request.url = `/assets/${fileName}`
-  }
-  // default to index.html
-  else {
-    ctx.request.url = '/'
-  }
-  return middleware(ctx, next)
-}));
-
-socketRouter.get('/watch', async (ctx) => {
-  console.log('socket connection stablished')
-  ctx.websocket.send('socket connection stablished');
-  fileWatcher.on('change', (e, fileName) => {
-    if (watchFiles) {
-      ctx.websocket.send('files changed');
+app.use(
+  mount(`${BASE_PATH || "/"}`, (ctx, next) => {
+    let middleware = serve("static");
+    if (/stylesheets\/(.*).css$/.test(ctx.request.url)) {
+      const fileName = ctx.request.url.split("/stylesheets").at(-1);
+      ctx.request.url = fileName;
+      middleware = serve(`${CONFIG_DIR}/stylesheets`);
+    } else if (ctx.request.url.endsWith("apple-touch-icon.png")) {
+      ctx.request.url = `/favicon/apple-touch-icon.png`;
+    } else if (/favicon\/favicon-(16|32)x(16|32).png$/.test(ctx.request.url)) {
+      const dimension = /favicon\/favicon-(16|32)x(16|32).png$/.exec(
+        ctx.request.url
+      )[1];
+      ctx.request.url = `/favicon/favicon-${dimension}x${dimension}.png`;
+    } else if (/assets\/(.*).(js|css)$/.test(ctx.request.url)) {
+      const fileName = ctx.request.url.split("/").at(-1);
+      ctx.request.url = `/assets/${fileName}`;
     }
+    // default to index.html
+    else {
+      ctx.request.url = "/";
+    }
+    return middleware(ctx, next);
   })
+);
+
+socketRouter.get("/watch", async (ctx) => {
+  console.log("socket connection stablished");
+  ctx.websocket.send("socket connection stablished");
+  fileWatcher.on("change", (e, fileName) => {
+    if (watchFiles) {
+      ctx.websocket.send("files changed");
+    }
+  });
 });
 
-app.ws.use(mount(`${BASE_PATH}/_api`, socketRouter.routes())).use(router.allowedMethods());
+app.ws
+  .use(mount(`${BASE_PATH}/_api`, socketRouter.routes()))
+  .use(router.allowedMethods());
 
 async function getfilesPaths(dirPath) {
-  const dirsAndFiles = (await fs.promises.readdir(dirPath,
-    { withFileTypes: true }
-  ));
+  const dirsAndFiles = await fs.promises.readdir(dirPath, {
+    withFileTypes: true,
+  });
   const files = dirsAndFiles
-    .filter(dirOrFile => dirOrFile.isFile() 
-      && dirOrFile.name.endsWith(".md") 
-      && !dirOrFile.name.startsWith(".")
-  ).map(file => `${dirPath}/${file.name}`)
+    .filter(
+      (dirOrFile) =>
+        dirOrFile.isFile() &&
+        dirOrFile.name.endsWith(".md") &&
+        !dirOrFile.name.startsWith(".")
+    )
+    .map((file) => `${dirPath}/${file.name}`);
   const subFilesPromises = dirsAndFiles
-    .filter(dirOrFile => dirOrFile.isDirectory())
-    .map(dir => getfilesPaths(`${dirPath}/${dir.name}`))
-  const subFiles = await Promise.all(subFilesPromises).then(res => res.flat())
+    .filter((dirOrFile) => dirOrFile.isDirectory())
+    .map((dir) => getfilesPaths(`${dirPath}/${dir.name}`));
+  const subFiles = await Promise.all(subFilesPromises).then((res) =>
+    res.flat()
+  );
   return [...files, ...subFiles];
 }
 
 async function removeUnusedImages() {
   await fs.promises.mkdir(TASKS_DIR, { recursive: true });
   const tasksDir = TASKS_DIR;
-  const allFiles = await getfilesPaths(tasksDir)
-  const filesReadPromises = allFiles.map(file => fs.promises.readFile(file))
-  const filesContents = await Promise.all(filesReadPromises).then(buffers => buffers.map(buffer => buffer.toString()));
+  const allFiles = await getfilesPaths(tasksDir);
+  const filesReadPromises = allFiles.map((file) => fs.promises.readFile(file));
+  const filesContents = await Promise.all(filesReadPromises).then((buffers) =>
+    buffers.map((buffer) => buffer.toString())
+  );
   const imagesBeingUsed = filesContents
     .map((content) => content.match(/!\[[^\]]*\]\(([^\s]+[.]*)\)/g))
     .flat()
     .filter((image) => !!image && image.includes("_api/image/"))
     .map((image) => image.split("_api/image/")[1].slice(0, -1));
-  const allImages = await fs.promises.readdir(
-    `${CONFIG_DIR}/images`
-  );
+  const allImages = await fs.promises.readdir(`${CONFIG_DIR}/images`);
   const unusedImages = allImages.filter(
     (image) => !imagesBeingUsed.includes(image)
   );
   await Promise.all(
-    unusedImages.map((image) =>
-      fs.promises.rm(`${CONFIG_DIR}/images/${image}`)
-    )
+    unusedImages.map((image) => fs.promises.rm(`${CONFIG_DIR}/images/${image}`))
   );
 }
 
-const localImagesCleanupInterval = /^\d{1,}$/.test(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL)
+const localImagesCleanupInterval = /^\d{1,}$/.test(
+  process.env.LOCAL_IMAGES_CLEANUP_INTERVAL
+)
   ? Number(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL)
-  : 1440
+  : 1440;
 
 if (localImagesCleanupInterval) {
   const intervalInMs = localImagesCleanupInterval * 60000;
@@ -360,5 +423,5 @@ if (localImagesCleanupInterval) {
   }
 }
 
-console.log('API starting at ' + PORT)
+console.log("API starting at " + PORT);
 app.listen(PORT);
