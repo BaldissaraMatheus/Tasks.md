@@ -26,8 +26,7 @@ cd /api;
 cp -r ${CONFIG_DIR}/stylesheets/. ./static/stylesheets/;
 cp -r ./static/stylesheets/. ${CONFIG_DIR}/stylesheets/;
 
-# TODO replace with --user flag
 chown -R $PUID:$PGID ${CONFIG_DIR};
 chown -R $PUID:$PGID ${TASKS_DIR};
 
-CONFIG_DIR=$CONFIG_DIR TASKS_DIR=$TASKS_DIR PORT=8080 node /api/server.js;
+CONFIG_DIR=$CONFIG_DIR TASKS_DIR=$TASKS_DIR node /api/server.js;
