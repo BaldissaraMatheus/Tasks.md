@@ -7,8 +7,14 @@
     "koa": "^2.14.1",
     "koa-bodyparser": "^4.3.0",
     "koa-mount": "^4.0.0",
+    "koa-passport": "^6.0.0",
+    "koa-session": "^7.0.2",
     "koa-static": "^5.0.0",
     "koa-websocket": "^7.0.0",
+    "openid-client": "^5.7.1",
+    "passport": "^0.7.0",
+    "passport-oauth2": "^1.8.0",
+    "passport-openidconnect": "^0.1.2",
     "uuid": "^9.0.1"
   },
   "scripts": {
