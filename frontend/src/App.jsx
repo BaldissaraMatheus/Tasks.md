@@ -574,12 +574,6 @@ function App() {
       window.location.replace(`${url}/`);
     }
     fetchData();
-    const webSocket = new WebSocket(`${api}/watch`);
-    webSocket.addEventListener("message", (e) => {
-      if (e.data === "files changed") {
-        fetchData();
-      }
-    });
   });
 
   createEffect(() => {

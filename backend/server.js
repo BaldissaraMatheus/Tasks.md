@@ -7,12 +7,8 @@ const cors = require("@koa/cors");
 const multer = require("@koa/multer");
 const mount = require("koa-mount");
 const serve = require("koa-static");
-const websockify = require('koa-websocket');
-
-const app = websockify(new Koa());
 
 const router = new Router();
-const socketRouter = new Router();
 
 const PUID = Number(process.env.PUID || '0');
 const PGID = Number(process.env.PGID || '0');
@@ -25,10 +21,9 @@ const TASKS_DIR = process.env.TASKS_DIR || 'tasks';
 const TITLE = process.env.TITLE || '';
 const PORT = process.env.PORT || 8080;
 
-let watchFiles = true;
-const fileWatcher = fs.watch(process.env.TASKS_DIR, { recursive: true });
-
 const multerInstance = multer();
+
+const app = new Koa();
 
 async function getTags(ctx) {
   const subPath = decodeURI(ctx.request.url.substring("/tags".length));
@@ -77,7 +72,6 @@ async function getResource(ctx) {
       fs.promises.mkdir(`${TASKS_DIR}/${decodeURI(path)}`)
       return [];
     }
-    throw err;
   })
   const lanes = resources
     .filter((dir) => dir.isDirectory() && !dir.name.startsWith("."))
@@ -249,14 +243,11 @@ app.use(bodyParser());
 const httpInstance = new Koa();
 httpInstance.use(async (ctx, next) => {
   try {
-    watchFiles = false;
     await next();
   } catch (err) {
     console.error(err);
     err.status = err.statusCode || err.status || 500;
     throw err;
-  } finally {
-    watchFiles = true;
   }
 });
 
@@ -292,18 +283,6 @@ app.use(mount((`${BASE_PATH || '/'}`), (ctx, next) => {
   }
   return middleware(ctx, next)
 }));
-
-socketRouter.get('/watch', async (ctx) => {
-  console.log('socket connection stablished')
-  ctx.websocket.send('socket connection stablished');
-  fileWatcher.on('change', (e, fileName) => {
-    if (watchFiles) {
-      ctx.websocket.send('files changed');
-    }
-  })
-});
-
-app.ws.use(mount(`${BASE_PATH}/_api`, socketRouter.routes())).use(router.allowedMethods());
 
 async function getfilesPaths(dirPath) {
   const dirsAndFiles = (await fs.promises.readdir(dirPath,

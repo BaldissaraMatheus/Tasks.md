@@ -8,10 +8,9 @@
     "koa-bodyparser": "^4.3.0",
     "koa-mount": "^4.0.0",
     "koa-static": "^5.0.0",
-    "koa-websocket": "^7.0.0",
     "uuid": "^9.0.1"
   },
   "scripts": {
-    "start": "cross-env PORT='8080' CONFIG_DIR='config' TASKS_DIR='tasks' BASE_PATH='/' PUID='1000' PGID='1000' LOCAL_IMAGES_CLEANUP_INTERVAL='1440' node server.js"
+    "start": "cross-env PORT='8080' CONFIG_DIR='config' TASKS_DIR='tasks' BASE_PATH='/' LOCAL_IMAGES_CLEANUP_INTERVAL='1440' node server.js"
   }
 }
