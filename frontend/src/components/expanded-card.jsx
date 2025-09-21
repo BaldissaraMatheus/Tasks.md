@@ -309,7 +309,9 @@ function ExpandedCard(props) {
       btn.addEventListener("click", handleClickEditorMode);
     }
     const modeBtn = modeBtns().find((node) => node.title === mode());
-    modeBtn.click();
+    if (modeBtn) {
+      modeBtn.click();
+    }
     const editorTextArea = editorContainerRef.childNodes[0].childNodes[2];
     editorTextArea.focus();
   });
