@@ -361,4 +361,8 @@ if (localImagesCleanupInterval) {
 }
 
 console.log('API starting at ' + PORT)
+fs.promises.mkdir(CONFIG_DIR, { recursive: true });
+if (PUID && PGID) {
+  fs.promises.chown(CONFIG_DIR, PUID, PGID);
+}
 app.listen(PORT);
