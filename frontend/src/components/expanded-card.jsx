@@ -354,7 +354,7 @@ function ExpandedCard(props) {
     <Portal>
       <div
         class="dialog-backdrop"
-        onClick={handleBackdropClick}
+        onPointerDown={handleBackdropClick}
         onKeyDown={(e) =>
           handleKeyDown(e, (event) => handleBackdropClick(event))
         }
