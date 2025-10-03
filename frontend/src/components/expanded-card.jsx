@@ -15,6 +15,7 @@ import { StacksEditor } from "./Stacks-Editor/src/stacks-editor/editor";
 import { IconClear, IconScreenFull, IconScreenNormal } from "@stackoverflow/stacks-icons/icons";
 import stacksStyle from "@stackoverflow/stacks/dist/css/stacks.css?inline";
 import stacksEditorStyle from "./Stacks-Editor/src/styles/index.css?inline";
+import { addTagToContent, removeTagFromContent, setDueDateInContent, getDueDateFromContent } from "../card-content-utils";
 
 /**
  *
@@ -53,14 +54,7 @@ function ExpandedCard(props) {
   });
 
   const dueDate = createMemo(() => {
-    if (!props.content) {
-      return null;
-    }
-    const dueDateStringMatch = props.content.match(/\[due:(.*?)\]/);
-    if (!dueDateStringMatch?.length) {
-      return null;
-    }
-    return dueDateStringMatch[1];
+    return getDueDateFromContent(props.content);
   });
 
   let dialogRef;
@@ -87,12 +81,7 @@ function ExpandedCard(props) {
     }
 
     const actualContent = editor().content;
-    const emptyLineIfFirstTag = [...actualContent.matchAll(/\[tag:(.*?)\]/g)]
-      .length
-      ? ""
-      : "\n\n";
-    const newTag = newTagName().trim();
-    const newContent = `[tag:${newTag}] ${emptyLineIfFirstTag}${actualContent}`;
+    const newContent = addTagToContent(actualContent, newTagName());
     props.onContentChange(newContent);
     editor().content = newContent;
     setNewTagName("");
@@ -114,18 +103,8 @@ function ExpandedCard(props) {
   function deleteTag(tagName) {
     setShowTagPopup(false);
     setMenuCoordinates(null);
-    let currentContent = editor().content;
-    const tagWithBrackets = `[tag:${tagName}]`;
-    const tagWithBracketsAndSpace = `${tagWithBrackets} `;
-    let tagLength = tagWithBracketsAndSpace.length;
-    let indexOfTag = currentContent
-      .toLowerCase()
-      .indexOf(tagWithBracketsAndSpace);
-    if (indexOfTag === -1) {
-      indexOfTag = currentContent.toLowerCase().indexOf(tagWithBrackets);
-      tagLength += 1;
-    }
-    const newContent = `${currentContent.substring(0, indexOfTag)}${currentContent.substring(indexOfTag + tagLength, currentContent.length)}`;
+    const currentContent = editor().content;
+    const newContent = removeTagFromContent(currentContent, tagName);
     editor().content = newContent;
     setClickedTag(null);
     props.onContentChange(newContent);
@@ -342,10 +321,7 @@ function ExpandedCard(props) {
   }
 
   function handleChangeDueDate(e) {
-    const newDueDateTag = `[due:${e.target.value}]`;
-    const newContent = dueDate()
-      ? props.content.replace(`[due:${dueDate()}]`, newDueDateTag)
-      : `${newDueDateTag}\n\n${props.content}`;
+    const newContent = setDueDateInContent(props.content, e.target.value);
     editor().content = newContent;
     props.onContentChange(newContent);
   }
@@ -444,7 +420,7 @@ function ExpandedCard(props) {
                 <For each={props.tags || []}>
                   {(tag) => (
                     <div
-                      class="tag tag--clicable"
+                      class="tag tag--clickable"
                       style={{
                         "background-color": tag.backgroundColor,
                       }}
