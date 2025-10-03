@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, onMount } from "solid-js";
+import { createEffect, createMemo, createSignal, onMount, For } from "solid-js";
 
 /**
  *
@@ -12,6 +12,8 @@ import { createEffect, createMemo, createSignal, onMount } from "solid-js";
  * @param {Function} props.onNewLanBtnClick
  * @param {Function} props.viewMode
  * @param {Function} props.onViewModeChange
+ * @param {boolean} props.selectionMode
+ * @param {Function} props.onSelectionModeChange
  */
 export function Header(props) {
   const filterSelect = createMemo(() => {
@@ -68,8 +70,19 @@ export function Header(props) {
           <option value="tight">Tight</option>
         </select>
       </div>
-      <button type="button" onClick={props.onNewLaneBtnClick}>
+      <button 
+        type="button" 
+        onClick={props.onNewLaneBtnClick}
+        disabled={props.selectionMode}
+      >
         New lane
+      </button>
+      <button 
+        type="button" 
+        onClick={() => props.onSelectionModeChange?.(!props.selectionMode)}
+        class={props.selectionMode ? "button--active" : ""}
+      >
+        {props.selectionMode ? "Exit Selection" : "Select Cards"}
       </button>
     </header>
   );
