@@ -504,8 +504,8 @@ function App() {
     if (namesList.filter((name) => name === (newName || "").trim()).length) {
       return `There's already a ${item} with that name`;
     }
-    if (/[<>:"/\\|?*#]/g.test(newName)) {
-      return `The new name cannot have any of the following chracters: <>:"/\\|?*#`;
+    if (/[<>:"/\\|?*]/g.test(newName)) {
+      return `The new name cannot have any of the following chracters: <>:"/\\|?*`;
     }
     if (newName.endsWith(".md")) {
       return "Name must not end with .md";
