@@ -142,7 +142,7 @@ router.post("/resource/:path*", createResource);
 async function updateResource(ctx) {
   const oldPath = decodeURI(ctx.request.url.substring("/resources".length));
   const newPath = decodeURI(ctx.request.body.newPath || oldPath).replaceAll(
-    /<>:"\/\\\|\?\*/g,
+    /<>:"\/\\\|\?\*#/g,
     " "
   );
   if (newPath !== oldPath) {
