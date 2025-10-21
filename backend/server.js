@@ -11,6 +11,10 @@ const serve = require("koa-static");
 
 const PUID = Number(process.env.PUID);
 const PGID = Number(process.env.PGID);
+
+console.log("Tasks.md Backend PUID", PUID);
+console.log("Tasks.md Backend GUID", PGID);
+
 const BASE_PATH =
   process.env.BASE_PATH.at(-1) === "/"
     ? process.env.BASE_PATH
@@ -225,21 +229,33 @@ async function createCard(ctx) {
 }
 
 async function createLane(ctx) {
-  const lane = uuid.v4();
-  await fs.promises.mkdir(`${process.env.TASKS_DIR}/${lane}`);
-  await fs.promises.chown(`${process.env.TASKS_DIR}/${lane}`, PUID, PGID);
-  ctx.body = lane;
+  const laneUUID = uuid.v4();
+  await fs.promises.mkdir(`${process.env.TASKS_DIR}/${laneUUID}`);
+  await fs.promises.chown(`${process.env.TASKS_DIR}/${laneUUID}`, PUID, PGID);
+  // TODO: all lanes really need to be objects, to support more complex things.
+  ctx.body = {
+    uuid: laneUUID,
+    // rename the lane later, but persist the UUID for now
+    name: laneUUID,
+    metadata: {
+      mute: false,
+    }
+  };
   ctx.status = 201;
 }
 
 router.post("/lanes", createLane);
 
 async function updateLane(ctx) {
-  const name = ctx.params.lane;
-  const newName = ctx.request.body.name
+
+  console.log("UPDATE THE LANE", ctx.params.lane, ctx.request.body);
+  console.log("TODO: handle MUTE");
+
+  const oldName = ctx.params.lane.name;
+  const newName = ctx.request.body.newName
     .replaceAll(/[<>:"/\\|?*]/g, ' ');
   await fs.promises.rename(
-    `${process.env.TASKS_DIR}/${name}`,
+    `${process.env.TASKS_DIR}/${oldName}`,
     `${process.env.TASKS_DIR}/${newName}`
   );
   await fs.promises.chown(`${process.env.TASKS_DIR}/${newName}`, PUID, PGID);

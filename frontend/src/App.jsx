@@ -20,6 +20,10 @@ import { makePersisted } from "@solid-primitives/storage";
 import { DragAndDrop } from "./components/drag-and-drop";
 
 function App() {
+	// solidJS signals:
+	// https://docs.solidjs.com/reference/basic-reactivity/create-signal
+	// set the initial value of the object here.
+	// assuming {} and [] are best instead of null or undefined
 	const [lanes, setLanes] = createSignal([]);
 	const [cards, setCards] = createSignal([]);
 	const [sort, setSort] = makePersisted(createSignal("none"), {
@@ -34,8 +38,11 @@ function App() {
 	const [search, setSearch] = createSignal("");
 	const [filteredTag, setFilteredTag] = createSignal(null);
 	const [tagsOptions, setTagsOptions] = createSignal([]);
-	const [laneBeingRenamedName, setLaneBeingRenamedName] = createSignal(null);
-	const [newLaneName, setNewLaneName] = createSignal(null);
+	// TODO: lanes need ot be objects
+	const [laneBeingRenamedName, setLaneBeingRenamedName] = createSignal({});
+	// TODO: is this even a good name for something now? or is it confusing?
+	const [newLaneName, setNewLaneName] = createSignal({});
+	// TODO: cards prob need to be objects also...
 	const [cardBeingRenamed, setCardBeingRenamed] = createSignal(null);
 	const [newCardName, setNewCardName] = createSignal(null);
 
@@ -221,6 +228,23 @@ function App() {
 		setFilteredTag(value);
 	}
 
+	const defaultRequest = {
+		method: "",
+		mode: "cors",		
+	}
+	const defaultJSONRequest = {
+		...defaultRequest
+		headers: { "Content-Type": "application/json" },
+	}	
+	const defaultPOSTRequest = {
+		...defaultRequest,
+		method: "POST",
+	}
+	const defaultDELETERequest = {
+		...defaultRequest,
+		method: "DELETE",
+	}
+
 	async function createNewCard(lane) {
 		const newCards = structuredClone(cards());
 		const newCard = { lane };
@@ -249,24 +273,27 @@ function App() {
 	}
 
 	async function createNewLane() {
+		console.log("createNewLane()");
 		const newLanes = structuredClone(lanes());
-		const newName = await fetch(`${api}/lanes`, {
+		console.log("New Lanes?", newLanes);
+		const newLane = await fetch(`${api}/lanes`, {
 			method: "POST",
 			mode: "cors",
 			headers: { "Content-Type": "application/json" },
 		}).then((res) => res.text());
-		newLanes.push(newName);
+		console.log("newName", newLane);
+		newLanes.push(newLane);
 		setLanes(newLanes);
-		setNewLaneName(newName);
-		setLaneBeingRenamedName(newName);
+		setNewLaneName(newLane);
+		setLaneBeingRenamedName(newLane.name);
 	}
 
 	function renameLane() {
-		fetch(`${api}/lanes/${laneBeingRenamedName()}`, {
+		fetch(`${api}/lanes/${laneBeingRenamedName().name}`, {
 			method: "PATCH",
 			mode: "cors",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ name: newLaneName() }),
+			body: JSON.stringify({ newName: newLaneName() }),
 		});
 		const newLanes = structuredClone(lanes());
 		const newLaneIndex = newLanes.findIndex(
@@ -296,6 +323,11 @@ function App() {
 		setLanes(lanesWithoutDeletedCard);
 		const newCards = cards().filter((card) => card.lane !== lane);
 		setCards(newCards);
+	}
+
+	function muteLane(lane) {
+		console.log("MUTE THE LANE", lane);
+		console.log("TODO: ACTUALLY DO THIS");
 	}
 
 	function sortCardsByName() {
@@ -402,6 +434,7 @@ function App() {
 	}
 
 	function startRenamingLane(lane) {
+		console.log('startRenamingLane(', lane, ')');
 		setNewLaneName(lane);
 		setLaneBeingRenamedName(lane);
 	}
@@ -423,7 +456,7 @@ function App() {
 	);
 
 	function getCardsFromLane(lane) {
-		return filteredCards().filter((card) => card.lane === lane);
+		return filteredCards().filter((card) => card.lane === lane.name);
 	}
 
 	function startRenamingCard(card) {
@@ -461,6 +494,7 @@ function App() {
 		if (disableCardsDrag()) {
 			return;
 		}
+		// TODO: probably broke this since lanes are now objects {}
 		const newCards = lanes().flatMap((lane) =>
 			cards().filter((card) => card.lane === lane),
 		);
@@ -477,10 +511,10 @@ function App() {
 
 	function handleLanesSortChange(changedLane) {
 		const lane = lanes().find(
-			(lane) => lane === changedLane.id.slice("lane-".length),
+			(lane) => lane.name === changedLane.id.slice("lane-".length),
 		);
 		const newLanes = JSON.parse(JSON.stringify(lanes())).filter(
-			(newLane) => newLane !== lane,
+			(newLane) => newLane.name !== lane.name,
 		);
 		setLanes([
 			...newLanes.slice(0, changedLane.index),
@@ -538,13 +572,13 @@ function App() {
 						{(lane) => (
 							<div class="lane" id={`lane-${lane}`}>
 								<header class="lane__header">
-									{laneBeingRenamedName() === lane ? (
+									{laneBeingRenamedName() === lane.name ? (
 										<NameInput
 											value={newLaneName()}
 											errorMsg={validateName(
 												newLaneName(),
 												lanes().filter(
-													(lane) => lane !== laneBeingRenamedName(),
+													(lane) => lane.name !== laneBeingRenamedName(),
 												),
 												"lane",
 											)}
@@ -557,11 +591,12 @@ function App() {
 										/>
 									) : (
 										<LaneName
-											name={lane}
-											count={getCardsFromLane(lane).length}
+											name={lane.name}
+											count={getCardsFromLane(lane.name).length}
 											onRenameBtnClick={() => startRenamingLane(lane)}
 											onCreateNewCardBtnClick={() => createNewCard(lane)}
 											onDelete={() => deleteLane(lane)}
+											onMute={() => muteLane(lane)}
 											onDeleteCards={() => handleDeleteCardsByLane(lane)}
 										/>
 									)}
@@ -569,7 +604,7 @@ function App() {
 								<DragAndDrop.Container
 									class="lane__content"
 									group="cards"
-									id={`lane-content-${lane}`}
+									id={`lane-content-${lane.name}`}
 									onChange={handleCardsSortChange}
 								>
 									<For each={getCardsFromLane(lane)}>

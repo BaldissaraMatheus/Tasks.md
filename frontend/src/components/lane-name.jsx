@@ -12,6 +12,7 @@ import { BiRegularDotsVerticalRounded } from "solid-icons/bi";
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDeleteCards
  * @param {Function} props.onDelete
+ * @param {Function} props.onMute
  * @param {Function} props.onDragStart
  * @param {Function} props.onCreateNewCardBtnClick
  */
@@ -49,6 +50,11 @@ export function LaneName(props) {
 			onClick: props.onDelete,
 			requiresConfirmation: true,
 		},
+		{
+			label: "Mute lane",
+			onClick: props.onMute,
+			requiresConfirmation: false,
+		}, 
 	];
 
 	return (
