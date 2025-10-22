@@ -462,7 +462,6 @@ function App() {
 
   function clearSelection() {
     setSelectedCards(new Set());
-    setSelectionMode(false);
   }
 
   function getCardKey(card) {
@@ -827,7 +826,7 @@ function App() {
         selectionMode={selectionMode()}
         onSelectionModeChange={setSelectionMode}
       />
-      <Show when={selectionMode() && selectedCards().size > 0}>
+      <Show when={selectionMode()}>
         <BulkOperationsToolbar
           selectedCount={selectedCards().size}
           onDelete={bulkDeleteCards}

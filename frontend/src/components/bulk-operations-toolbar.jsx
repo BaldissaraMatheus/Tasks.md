@@ -128,78 +128,79 @@ export function BulkOperationsToolbar(props) {
         <span class="bulk-operations-toolbar__count">
           {props.selectedCount} card{props.selectedCount !== 1 ? "s" : ""} selected
         </span>
-        
-        <button
-          class="bulk-operations-toolbar__button"
-          onClick={() => {
-            const nextShowTagMenu = !showTagMenu();
-            setShowTagMenu(nextShowTagMenu);
-            if (nextShowTagMenu) {
-              setShowRemoveTagMenu(false);
-              setRemoveTagSearchQuery("");
-              setShowDueDateInput(false);
-              setDueDate("");
-              setTimeout(() => tagSearchInputRef?.focus(), 0);
-            } else {
-              setTagSearchQuery("");
-            }
-          }}
-        >
-          Add Tags
-        </button>
+        <Show when={props.selectedCount > 0}>
+          <button
+            class="bulk-operations-toolbar__button"
+            onClick={() => {
+              const nextShowTagMenu = !showTagMenu();
+              setShowTagMenu(nextShowTagMenu);
+              if (nextShowTagMenu) {
+                setShowRemoveTagMenu(false);
+                setRemoveTagSearchQuery("");
+                setShowDueDateInput(false);
+                setDueDate("");
+                setTimeout(() => tagSearchInputRef?.focus(), 0);
+              } else {
+                setTagSearchQuery("");
+              }
+            }}
+          >
+            Add tags
+          </button>
 
-        <button
-          class="bulk-operations-toolbar__button"
-          onClick={() => {
-            const nextShowRemoveTagMenu = !showRemoveTagMenu();
-            setShowRemoveTagMenu(nextShowRemoveTagMenu);
-            if (nextShowRemoveTagMenu) {
-              setShowTagMenu(false);
-              setTagSearchQuery("");
-              setShowDueDateInput(false);
-              setDueDate("");
-              setTimeout(() => removeTagSearchInputRef?.focus(), 0);
-            } else {
-              setRemoveTagSearchQuery("");
-            }
-          }}
-          disabled={!props.tagsOnSelectedCards || props.tagsOnSelectedCards.length === 0}
-        >
-          Remove Tags
-        </button>
+          <button
+            class="bulk-operations-toolbar__button"
+            onClick={() => {
+              const nextShowRemoveTagMenu = !showRemoveTagMenu();
+              setShowRemoveTagMenu(nextShowRemoveTagMenu);
+              if (nextShowRemoveTagMenu) {
+                setShowTagMenu(false);
+                setTagSearchQuery("");
+                setShowDueDateInput(false);
+                setDueDate("");
+                setTimeout(() => removeTagSearchInputRef?.focus(), 0);
+              } else {
+                setRemoveTagSearchQuery("");
+              }
+            }}
+            disabled={!props.tagsOnSelectedCards || props.tagsOnSelectedCards.length === 0}
+          >
+            Remove tags
+          </button>
 
-        <button
-          class="bulk-operations-toolbar__button"
-          onClick={() => {
-            const nextShowDueDate = !showDueDateInput();
-            setShowDueDateInput(nextShowDueDate);
-            if (nextShowDueDate) {
-              setShowTagMenu(false);
-              setTagSearchQuery("");
-              setShowRemoveTagMenu(false);
-              setRemoveTagSearchQuery("");
-              setTimeout(() => dueDateRef?.focus(), 0);
-            } else {
-              setDueDate("");
-            }
-          }}
-        >
-          Set Due Date
-        </button>
+          <button
+            class="bulk-operations-toolbar__button"
+            onClick={() => {
+              const nextShowDueDate = !showDueDateInput();
+              setShowDueDateInput(nextShowDueDate);
+              if (nextShowDueDate) {
+                setShowTagMenu(false);
+                setTagSearchQuery("");
+                setShowRemoveTagMenu(false);
+                setRemoveTagSearchQuery("");
+                setTimeout(() => dueDateRef?.focus(), 0);
+              } else {
+                setDueDate("");
+              }
+            }}
+          >
+            Set due date
+          </button>
 
-        <button
-          class="bulk-operations-toolbar__button bulk-operations-toolbar__button--danger"
-          onClick={handleDelete}
-        >
-          Delete
-        </button>
+          <button
+            class="bulk-operations-toolbar__button bulk-operations-toolbar__button--danger"
+            onClick={handleDelete}
+          >
+            Delete
+          </button>
 
-        <button
-          class="bulk-operations-toolbar__button bulk-operations-toolbar__button--secondary"
-          onClick={props.onClearSelection}
-        >
-          Clear Selection
-        </button>
+          <button
+            class="bulk-operations-toolbar__button bulk-operations-toolbar__button--secondary"
+            onClick={props.onClearSelection}
+          >
+            Clear Selection
+          </button>
+        </Show>  
       </div>
 
       <Show when={showTagMenu()}>

@@ -82,7 +82,7 @@ export function Header(props) {
         onClick={() => props.onSelectionModeChange?.(!props.selectionMode)}
         class={props.selectionMode ? "button--active" : ""}
       >
-        {props.selectionMode ? "Exit Selection" : "Select Cards"}
+        {props.selectionMode ? "Exit selection" : "Select cards"}
       </button>
     </header>
   );

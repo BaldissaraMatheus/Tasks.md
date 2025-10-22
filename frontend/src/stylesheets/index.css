@@ -675,7 +675,7 @@ a > * {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 100;
-  
+  min-height: 57px;
 }
 
 .bulk-operations-toolbar__content {
@@ -684,6 +684,7 @@ a > * {
   gap: 12px;
   flex-wrap: wrap;
   position: relative;
+  height: 100%;
 }
 
 .bulk-operations-toolbar__count {
