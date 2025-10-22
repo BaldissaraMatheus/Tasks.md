@@ -17,10 +17,12 @@ import { NameInput } from "./components/name-input";
 import { Header } from "./components/header";
 import { Card } from "./components/card";
 import { CardName } from "./components/card-name";
+import { BulkOperationsToolbar } from "./components/bulk-operations-toolbar";
 import { makePersisted } from "@solid-primitives/storage";
 import { DragAndDrop } from "./components/drag-and-drop";
 import { useLocation, useNavigate } from "@solidjs/router";
 import { v7 } from "uuid";
+import { addTagToContent, removeTagFromContent, setDueDateInContent, getTagsFromContent } from "./card-content-utils";
 import "./stylesheets/index.css";
 
 function App() {
@@ -49,6 +51,8 @@ function App() {
     name: "viewMode",
   });
   const [renderUID, setRenderUID] = createSignal(v7());
+  const [selectionMode, setSelectionMode] = createSignal(false);
+  const [selectedCards, setSelectedCards] = createSignal(new Set());
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -284,12 +288,8 @@ function App() {
     navigate(`${basePath()}${board()}/${encodeURIComponent(newCard.name)}.md`);
   }
 
-  function getTagsByCardContent(text) {
-    const tags = [...text.matchAll(/\[tag:(.*?)\]/g)]
-      .map((tagMatch) => tagMatch[1].trim())
-      .filter((tag) => tag !== "");
-    return tags;
-  }
+  // Use shared utility function for getting tags
+  const getTagsByCardContent = getTagsFromContent;
 
   function handleSortSelectOnChange(e) {
     const value = e.target.value;
@@ -447,6 +447,146 @@ function App() {
     }
     const cardsToKeep = cards().filter((card) => card.lane !== lane);
     setCards(cardsToKeep);
+  }
+
+  // Bulk operations functions
+  function toggleCardSelection(cardKey, isSelected) {
+    const newSelected = new Set(selectedCards());
+    if (isSelected) {
+      newSelected.add(cardKey);
+    } else {
+      newSelected.delete(cardKey);
+    }
+    setSelectedCards(newSelected);
+  }
+
+  function clearSelection() {
+    setSelectedCards(new Set());
+  }
+
+  function getCardKey(card) {
+    return `${card.lane}/${card.name}`;
+  }
+
+  // Get tags that exist on selected cards (for remove tags dropdown)
+  const tagsOnSelectedCards = createMemo(() => {
+    const selectedCardsList = cards().filter((card) =>
+      selectedCards().has(getCardKey(card))
+    );
+    
+    const allTagsOnSelected = new Set();
+    selectedCardsList.forEach((card) => {
+      const cardTags = getTagsFromContent(card.content || "");
+      cardTags.forEach((tag) => allTagsOnSelected.add(tag));
+    });
+    
+    return Array.from(allTagsOnSelected);
+  });
+
+  async function bulkDeleteCards() {
+    const cardsToDelete = cards().filter((card) =>
+      selectedCards().has(getCardKey(card))
+    );
+
+    // Delete all selected cards using existing API
+    const deletePromises = cardsToDelete.map((card) =>
+      fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+        method: "DELETE",
+        mode: "cors",
+      })
+    );
+
+    await Promise.all(deletePromises);
+
+    // Update local state
+    const remainingCards = cards().filter(
+      (card) => !selectedCards().has(getCardKey(card))
+    );
+    setCards(remainingCards);
+    clearSelection(); // Clear after delete since cards are gone
+  }
+
+  async function bulkAddTags(tagName) {
+    const cardsToUpdate = cards().filter((card) =>
+      selectedCards().has(getCardKey(card))
+    );
+
+    // Add tag to each selected card using shared utility function
+    const updatePromises = cardsToUpdate.map(async (card) => {
+      const content = card.content || "";
+      const currentTags = getTagsFromContent(content);
+      
+      // Skip if card already has this tag
+      if (currentTags.some((t) => t.toLowerCase() === tagName.toLowerCase())) {
+        return;
+      }
+
+      const newContent = addTagToContent(content, tagName);
+
+      return fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+        method: "PATCH",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newContent }),
+      });
+    });
+
+    await Promise.all(updatePromises);
+    await fetchData();
+    // Keep selection to allow chaining operations
+  }
+
+  async function bulkRemoveTags(tagName) {
+    const cardsToUpdate = cards().filter((card) =>
+      selectedCards().has(getCardKey(card))
+    );
+
+    // Remove tag from each selected card using shared utility function
+    const updatePromises = cardsToUpdate.map(async (card) => {
+      const content = card.content || "";
+      const currentTags = getTagsFromContent(content);
+      
+      // Skip if card doesn't have this tag
+      if (!currentTags.some((t) => t.toLowerCase() === tagName.toLowerCase())) {
+        return;
+      }
+
+      const newContent = removeTagFromContent(content, tagName);
+
+      return fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+        method: "PATCH",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newContent }),
+      });
+    });
+
+    await Promise.all(updatePromises);
+    await fetchData();
+    // Keep selection to allow chaining operations
+  }
+
+  async function bulkSetDueDate(dueDate) {
+    const cardsToUpdate = cards().filter((card) =>
+      selectedCards().has(getCardKey(card))
+    );
+
+    // Set due date for each selected card using shared utility function
+    const updatePromises = cardsToUpdate.map(async (card) => {
+      const content = card.content || "";
+      const newContent = setDueDateInContent(content, dueDate);
+
+      return fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+        method: "PATCH",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newContent }),
+      });
+    });
+
+    await Promise.all(updatePromises);
+    await fetchData();
+    // Keep selection to allow chaining operations
   }
 
   function renameCard(oldName, newName) {
@@ -655,12 +795,19 @@ function App() {
     setCards(newCards);
   }
 
-  const disableCardsDrag = createMemo(() => sort() !== "none");
+  const disableCardsDrag = createMemo(() => sort() !== "none" || selectionMode());
 
   createEffect((prev) => {
     document.body.classList.remove(`view-mode-${prev}`);
     document.body.classList.add(`view-mode-${viewMode()}`);
     return viewMode();
+  });
+
+  // Clear selection when exiting selection mode
+  createEffect(() => {
+    if (!selectionMode()) {
+      setSelectedCards(new Set());
+    }
   });
 
   return (
@@ -676,7 +823,21 @@ function App() {
         onNewLaneBtnClick={createNewLane}
         viewMode={viewMode()}
         onViewModeChange={(e) => setViewMode(e.target.value)}
+        selectionMode={selectionMode()}
+        onSelectionModeChange={setSelectionMode}
       />
+      <Show when={selectionMode()}>
+        <BulkOperationsToolbar
+          selectedCount={selectedCards().size}
+          onDelete={bulkDeleteCards}
+          onAddTags={bulkAddTags}
+          onRemoveTags={bulkRemoveTags}
+          onSetDueDate={bulkSetDueDate}
+          onClearSelection={clearSelection}
+          tagsOptions={tagsOptions().map((option) => option.name)}
+          tagsOnSelectedCards={tagsOnSelectedCards()}
+        />
+      </Show>
       {title() ? <h1 class="app-title">{title()}</h1> : <></>}
       <DragAndDrop.Provider>
         <DragAndDrop.Container class={`lanes`} onChange={handleLanesSortChange}>
@@ -725,13 +886,21 @@ function App() {
                         tags={card.tags}
                         dueDate={card.dueDate}
                         content={card.content}
+                        disableDrag={disableCardsDrag()}
+                        selectionMode={selectionMode()}
+                        isSelected={selectedCards().has(getCardKey(card))}
+                        onSelectionChange={(isSelected) =>
+                          toggleCardSelection(getCardKey(card), isSelected)
+                        }
                         onClick={() => {
-                          let cardUrl = basePath();
-                          if (board()) {
-                            cardUrl += `${board()}`;
+                          if (!selectionMode()) {
+                            let cardUrl = basePath();
+                            if (board()) {
+                              cardUrl += `${board()}`;
+                            }
+                            cardUrl += `/${encodeURIComponent(card.name)}.md`;
+                            navigate(cardUrl);
                           }
-                          cardUrl += `/${encodeURIComponent(card.name)}.md`;
-                          navigate(cardUrl);
                         }}
                         headerSlot={
                           cardBeingRenamed()?.name === card.name ? (

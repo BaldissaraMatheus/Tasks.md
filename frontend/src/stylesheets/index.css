@@ -254,6 +254,7 @@ button.small {
   box-sizing: border-box;
   padding: 12px;
   transition: translate 0.25s;
+  position: relative;
 }
 
 .view-mode-extended .card,
@@ -281,6 +282,11 @@ button.small {
 
 .card__toolbar > :first-child {
   flex-grow: 1;
+}
+
+.card__toolbar .card__checkbox {
+  flex-shrink: 0;
+  margin: 0;
 }
 
 .card__tags {
@@ -361,7 +367,7 @@ button.small {
   white-space: nowrap;
 }
 
-.tag--clicable {
+.tag--clickable {
   cursor: pointer;
 }
 
@@ -656,4 +662,195 @@ a > * {
 
 .editor .s-code-block.markdown {
   height: 100%;
+}
+
+/* Bulk operations styles */
+.bulk-operations-toolbar {
+  background: var(--color-background-2);
+  border-bottom: 1px solid var(--color-background-4);
+  padding: 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 100;
+  min-height: 57px;
+}
+
+.bulk-operations-toolbar__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+  height: 100%;
+}
+
+.bulk-operations-toolbar__count {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.bulk-operations-toolbar__button {
+  padding: 8px 16px;
+  border: 1px solid var(--color-background-4);
+  background: var(--color-background-4);
+  color: var(--color-foreground);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.bulk-operations-toolbar__button--danger {
+  background: var(--color-alt-1);
+  border-color: var(--color-alt-1);
+  color: white;
+}
+
+.bulk-operations-toolbar__button--danger:hover {
+  opacity: 0.85;
+}
+
+.bulk-operations-toolbar__button--secondary {
+  background: transparent;
+  border-color: var(--color-background-4);
+}
+
+.bulk-operations-toolbar__date-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--color-background-2);
+  border: 1px solid var(--color-accent);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+}
+
+.bulk-operations-toolbar__date-input {
+  padding: 6px 12px;
+  border: 1px solid var(--color-background-4);
+  background: var(--color-background-4);
+  color: var(--color-foreground);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.bulk-operations-toolbar__dropdown {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background-2);
+  border: 1px solid var(--color-accent);
+  border-radius: 6px;
+  padding: 12px;
+  gap: 8px;
+  min-width: 300px;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+}
+
+.bulk-operations-toolbar__dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.bulk-operations-toolbar__search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--color-background-4);
+  background: var(--color-background-4);
+  color: var(--color-foreground);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bulk-operations-toolbar__dropdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.bulk-operations-toolbar__dropdown-item {
+  padding: 8px 12px;
+  border: none;
+  background: var(--color-background-4);
+  color: var(--color-foreground);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.bulk-operations-toolbar__dropdown-item:hover {
+  background: var(--color-accent);
+  color: white;
+}
+
+.bulk-operations-toolbar__dropdown-item--create {
+  background: var(--color-accent);
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-operations-toolbar__dropdown-item--create:hover {
+  opacity: 0.9;
+}
+
+.bulk-operations-toolbar__create-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.bulk-operations-toolbar__dropdown-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--color-foreground);
+  opacity: 0.6;
+  font-size: 0.875rem;
+}
+
+/* Card selection styles */
+.card__checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.card--selected {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Header button active state */
+.button--active {
+  background: var(--color-accent) !important;
+  color: white !important;
+  border-color: var(--color-accent) !important;
 }

@@ -10,6 +10,9 @@ import { handleKeyDown } from "../utils";
  * @param {string} props.dueDate
  * @param {Function} props.onClick
  * @param {JSX.Element} props.headerSlot
+ * @param {boolean} props.selectionMode
+ * @param {boolean} props.isSelected
+ * @param {Function} props.onSelectionChange
  */
 export function Card(props) {
 
@@ -43,18 +46,38 @@ export function Card(props) {
     <div
       role="button"
       id={`card-${props.name}`}
-      class={`card ${props.disableDrag ? "card__drag-disabled" : ""}`}
+      class={`card ${props.disableDrag ? "card__drag-disabled" : ""} ${props.isSelected ? "card--selected" : ""}`}
       onKeyDown={(e) => handleKeyDown(e, props.onClick)}
       onClick={e => {
         const isDescendant = e.currentTarget === e.target || e.currentTarget.contains(e.target);
         if (!isDescendant) {
           return;
         }
-        props.onClick()
+        // If in selection mode, toggle selection instead of opening
+        if (props.selectionMode && props.onSelectionChange) {
+          e.stopPropagation();
+          props.onSelectionChange(!props.isSelected);
+        } else {
+          props.onClick();
+        }
       }}
       tabIndex="0"
     >
-      <div class="card__toolbar">{props.headerSlot}</div>
+      <div class="card__toolbar">
+        {props.headerSlot}
+        {props.selectionMode && (
+          <input
+            type="checkbox"
+            class="card__checkbox"
+            checked={props.isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              props.onSelectionChange?.(e.target.checked);
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+      </div>
       <ul class="card__tags">
         <For each={props.tags}>
           {(tag) => (
