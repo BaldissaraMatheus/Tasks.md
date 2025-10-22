@@ -26,7 +26,7 @@ const multerInstance = multer();
 const app = new Koa();
 
 async function getTags(ctx) {
-  const subPath = decodeURI(ctx.request.url.substring("/tags".length));
+  const subPath = decodeURIComponent(ctx.request.url.substring("/tags".length));
   const tags = await fs.promises
     .readFile(`${CONFIG_DIR}/tags.json`)
     .then((res) => JSON.parse(res.toString()))
@@ -39,7 +39,7 @@ async function getTags(ctx) {
 router.get("/tags/:path*", getTags);
 
 async function updateTagBackgroundColor(ctx) {
-  const subPath = decodeURI(ctx.request.url.substring("/tags".length));
+  const subPath = decodeURIComponent(ctx.request.url.substring("/tags".length));
   const tags = await fs.promises
     .readFile(`${CONFIG_DIR}/tags.json`)
     .then((res) => JSON.parse(res.toString() || "{}"))
@@ -64,12 +64,12 @@ router.get("/title", getTitle);
 async function getResource(ctx) {
   const path = ctx.request.url.substring("/resources".length);
   const resources = await fs.promises.readdir(
-    `${TASKS_DIR}/${decodeURI(path)}`,
+    `${TASKS_DIR}/${decodeURIComponent(path)}`,
     { withFileTypes: true }
   ).catch(err => {
     console.log(err.code)
     if (err.code === 'ENOENT') {
-      fs.promises.mkdir(`${TASKS_DIR}/${decodeURI(path)}`)
+      fs.promises.mkdir(`${TASKS_DIR}/${decodeURIComponent(path)}`)
       return [];
     }
   })
@@ -80,7 +80,7 @@ async function getResource(ctx) {
   const lanesWithFiles = await Promise.all(
     lanes.map(async (lane) => {
       const filesPromises = await fs.promises
-        .readdir(`${TASKS_DIR}/${decodeURI(`${path}`)}/${lane}`)
+        .readdir(`${TASKS_DIR}/${decodeURIComponent(`${path}`)}/${lane}`)
         .then((files) =>
           files
             .filter(
@@ -89,12 +89,12 @@ async function getResource(ctx) {
             )
             .map(async (fileName) => {
               const getFileContent = fs.promises.readFile(
-                `${TASKS_DIR}/${decodeURI(
+                `${TASKS_DIR}/${decodeURIComponent(
                   `${path}`
                 )}/${lane}/${fileName}`
               );
               const getFileStats = fs.promises.stat(
-                `${TASKS_DIR}/${decodeURI(
+                `${TASKS_DIR}/${decodeURIComponent(
                   `${path}`
                 )}/${lane}/${fileName}`
               );
@@ -123,7 +123,7 @@ async function getResource(ctx) {
 router.get("/resource/:path*", getResource);
 
 async function createResource(ctx) {
-  const subPath = decodeURI(ctx.request.url.substring("/resources".length));
+  const subPath = decodeURIComponent(ctx.request.url.substring("/resources".length));
   const isFile = ctx.request.body?.isFile;
   const content = ctx.request.body?.content || "";
   if (isFile) {
@@ -140,9 +140,9 @@ async function createResource(ctx) {
 router.post("/resource/:path*", createResource);
 
 async function updateResource(ctx) {
-  const oldPath = decodeURI(ctx.request.url.substring("/resources".length));
-  const newPath = decodeURI(ctx.request.body.newPath || oldPath).replaceAll(
-    /<>:"\/\\\|\?\*/g,
+  const oldPath = decodeURIComponent(ctx.request.url.substring("/resources".length));
+  const newPath = decodeURIComponent(ctx.request.body.newPath || oldPath).replaceAll(
+    /<>:"\/\\\|\?\*#/g,
     " "
   );
   if (newPath !== oldPath) {
@@ -170,7 +170,7 @@ async function updateResource(ctx) {
 router.patch("/resource/:path*", updateResource);
 
 async function deleteResource(ctx) {
-  const subPath = decodeURI(ctx.request.url.substring("/resources".length));
+  const subPath = decodeURIComponent(ctx.request.url.substring("/resources".length));
   await fs.promises.rm(`${TASKS_DIR}/${subPath}`, {
     force: true,
     recursive: true,
@@ -205,7 +205,7 @@ async function uploadImage(ctx) {
 router.post("/image", multerInstance.single("file"), uploadImage);
 
 async function updateSort(ctx) {
-  const subPath = decodeURI(ctx.request.url.substring("/sort".length));
+  const subPath = decodeURIComponent(ctx.request.url.substring("/sort".length));
   const newSort = { [subPath]: ctx.request.body || {} };
   const currentSort = await fs.promises
     .readFile(`${CONFIG_DIR}/sort.json`)
@@ -225,7 +225,7 @@ async function updateSort(ctx) {
 router.put("/sort/:path*", updateSort);
 
 async function getSort(ctx) {
-  const subPath = decodeURI(ctx.request.url.substring("/sort".length));
+  const subPath = decodeURIComponent(ctx.request.url.substring("/sort".length));
   const sort = await fs.promises
     .readFile(`${CONFIG_DIR}/sort.json`)
     .then((res) => JSON.parse(res.toString()))

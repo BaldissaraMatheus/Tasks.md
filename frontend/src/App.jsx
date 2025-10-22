@@ -240,7 +240,7 @@ function App() {
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
     await fetch(
-      `${api}/resource${board()}/${newCard.lane}/${newCard.name}.md`,
+      `${api}/resource${board()}/${newCard.lane}/${encodeURIComponent(newCard.name)}.md`,
       {
         method: "PATCH",
         mode: "cors",
@@ -285,7 +285,7 @@ function App() {
     const localTagOptions = cardTagOptions.filter((tag) => !tagsOptions().some(remoteTag => remoteTag.name === tag.name))
     const allTagOptions = [...tagsOptions(), ...localTagOptions];
     setTagsOptions(allTagOptions);
-    navigate(`${basePath()}${board()}/${newCard.name}.md`);
+    navigate(`${basePath()}${board()}/${encodeURIComponent(newCard.name)}.md`);
   }
 
   // Use shared utility function for getting tags
@@ -314,7 +314,7 @@ function App() {
     const newCards = structuredClone(cards());
     const newCard = { lane };
     const newCardName = v7();
-    await fetch(`${api}/resource${board()}/${lane}/${newCardName}.md`, {
+    await fetch(`${api}/resource${board()}/${lane}/${encodeURIComponent(newCardName)}.md`, {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -330,7 +330,7 @@ function App() {
 
   function deleteCard(card) {
     const newCards = structuredClone(cards());
-    fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+    fetch(`${api}/resource${board()}/${card.lane}/${encodeURIComponent(card.name)}.md`, {
       method: "DELETE",
       mode: "cors",
     });
@@ -434,13 +434,13 @@ function App() {
 
   function handleOnSelectedCardNameChange(newName) {
     renameCard(selectedCard().name, newName);
-    navigate(`${basePath()}${board()}/${newName}.md`);
+    navigate(`${basePath()}${board()}/${encodeURIComponent(newName)}.md`);
   }
 
   function handleDeleteCardsByLane(lane) {
     const cardsToDelete = cards().filter((card) => card.lane === lane);
     for (const card of cardsToDelete) {
-      fetch(`${api}/resource${board()}/${lane}/${card.name}.md`, {
+      fetch(`${api}/resource${board()}/${lane}/${encodeURIComponent(card.name)}.md`, {
         method: "DELETE",
         mode: "cors",
       });
@@ -595,7 +595,7 @@ function App() {
     const newCardIndex = newCards.findIndex((card) => card.name === oldName);
     const newCard = newCards[newCardIndex];
     const newCardNameWithoutSpaces = newName.trim();
-    fetch(`${api}/resource${board()}/${newCard.lane}/${newCard.name}.md`, {
+    fetch(`${api}/resource${board()}/${newCard.lane}/${encodeURIComponent(newCard.name)}.md`, {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -629,7 +629,7 @@ function App() {
           card.name === selectedCard().name && card.lane === selectedCard().lane
       )
     );
-    navigate(`${basePath()}${board()}/${cards()[newCardIndex].name}.md`);
+    navigate(`${basePath()}${board()}/${encodeURIComponent(cards()[newCardIndex].name)}.md`);
   }
 
   function validateName(newName, namesList, item) {
@@ -899,7 +899,7 @@ function App() {
                             if (board()) {
                               cardUrl += `${board()}`;
                             }
-                            cardUrl += `/${card.name}.md`;
+                            cardUrl += `/${encodeURIComponent(card.name)}.md`;
                             navigate(cardUrl);
                           }
                         }}
@@ -937,7 +937,7 @@ function App() {
                               onDelete={() => deleteCard(card)}
                               onClick={() =>
                                 navigate(
-                                  `${basePath()}${board()}/${card.name}.md`
+                                  `${basePath()}${board()}/${encodeURIComponent(card.name)}.md`
                                 )
                               }
                             />

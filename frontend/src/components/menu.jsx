@@ -92,7 +92,7 @@ export function Menu(props) {
 							handleKeyDown(e, () => handleOptionConfirmation(e), close)
 						}
 					>
-						Are you sure?
+						Confirm
 					</button>
 					<button
 						type="button"
