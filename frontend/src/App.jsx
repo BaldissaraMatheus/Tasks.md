@@ -98,7 +98,7 @@ function App() {
   });
 
   const selectedCard = createMemo(() => {
-    const decodedCardName = decodeURI(selectedCardName())
+    const decodedCardName = decodeURIComponent(selectedCardName())
     const card = cards().find(
       (card) => `${card.name}.md` === decodedCardName
     );
@@ -110,7 +110,7 @@ function App() {
       return fetch(`${api}/title`).then((res) => res.text());
     }
     const boardSplit = board().split("/");
-    return decodeURI(boardSplit.at(-1));
+    return decodeURIComponent(boardSplit.at(-1));
   }
 
   const [title] = createResource(fetchTitle);
@@ -240,7 +240,7 @@ function App() {
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
     await fetch(
-      `${api}/resource${board()}/${newCard.lane}/${encodeURIComponent(newCard.name)}.md`,
+      `${api}/resource${board()}/${encodeURIComponent(newCard.lane)}/${encodeURIComponent(newCard.name)}.md`,
       {
         method: "PATCH",
         mode: "cors",
@@ -314,7 +314,7 @@ function App() {
     const newCards = structuredClone(cards());
     const newCard = { lane };
     const newCardName = v7();
-    await fetch(`${api}/resource${board()}/${lane}/${encodeURIComponent(newCardName)}.md`, {
+    await fetch(`${api}/resource${board()}/${encodeURIComponent(lane)}/${encodeURIComponent(newCardName)}.md`, {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -330,7 +330,7 @@ function App() {
 
   function deleteCard(card) {
     const newCards = structuredClone(cards());
-    fetch(`${api}/resource${board()}/${card.lane}/${encodeURIComponent(card.name)}.md`, {
+    fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(card.name)}.md`, {
       method: "DELETE",
       mode: "cors",
     });
@@ -343,7 +343,7 @@ function App() {
   async function createNewLane() {
     const newLanes = structuredClone(lanes());
     const newName = v7();
-    await fetch(`${api}/resource${board()}/${newName}`, {
+    await fetch(`${api}/resource${board()}/${encodeURIComponent(newName)}`, {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -355,7 +355,7 @@ function App() {
   }
 
   function renameLane() {
-    fetch(`${api}/resource${board()}/${laneBeingRenamedName()}`, {
+    fetch(`${api}/resource${board()}/${encodeURIComponent(laneBeingRenamedName())}`, {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -378,7 +378,7 @@ function App() {
   }
 
   function deleteLane(lane) {
-    fetch(`${api}/resource${board()}/${lane}`, {
+    fetch(`${api}/resource${board()}/${encodeURIComponent(lane)}`, {
       method: "DELETE",
       mode: "cors",
     });
@@ -440,7 +440,7 @@ function App() {
   function handleDeleteCardsByLane(lane) {
     const cardsToDelete = cards().filter((card) => card.lane === lane);
     for (const card of cardsToDelete) {
-      fetch(`${api}/resource${board()}/${lane}/${encodeURIComponent(card.name)}.md`, {
+      fetch(`${api}/resource${board()}/${encodeURIComponent(lane)}/${encodeURIComponent(card.name)}.md`, {
         method: "DELETE",
         mode: "cors",
       });
@@ -490,7 +490,7 @@ function App() {
 
     // Delete all selected cards using existing API
     const deletePromises = cardsToDelete.map((card) =>
-      fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+      fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(card.name)}.md`, {
         method: "DELETE",
         mode: "cors",
       })
@@ -523,7 +523,7 @@ function App() {
 
       const newContent = addTagToContent(content, tagName);
 
-      return fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+      return fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(card.name)}.md`, {
         method: "PATCH",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
@@ -553,7 +553,7 @@ function App() {
 
       const newContent = removeTagFromContent(content, tagName);
 
-      return fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+      return fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(card.name)}.md`, {
         method: "PATCH",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
@@ -576,7 +576,7 @@ function App() {
       const content = card.content || "";
       const newContent = setDueDateInContent(content, dueDate);
 
-      return fetch(`${api}/resource${board()}/${card.lane}/${card.name}.md`, {
+      return fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(card.name)}.md`, {
         method: "PATCH",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
@@ -594,7 +594,7 @@ function App() {
     const newCardIndex = newCards.findIndex((card) => card.name === oldName);
     const newCard = newCards[newCardIndex];
     const newCardNameWithoutSpaces = newName.trim();
-    fetch(`${api}/resource${board()}/${newCard.lane}/${encodeURIComponent(newCard.name)}.md`, {
+    fetch(`${api}/resource${board()}/${encodeURIComponent(newCard.lane)}/${encodeURIComponent(newCard.name)}.md`, {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -644,8 +644,8 @@ function App() {
     if (namesList.filter((name) => name === (newName || "").trim()).length) {
       return `There's already a ${item} with that name`;
     }
-    if (/[<>:"/\\|?*]/g.test(newName)) {
-      return `The new name cannot have any of the following chracters: <>:"/\\|?*`;
+    if (/[<>:%"/\\|?*]/g.test(newName)) {
+      return `The new name cannot have any of the following chracters: <>:%"/\\|?*`;
     }
     if (newName.endsWith(".md")) {
       return "Name must not end with .md";
@@ -770,7 +770,7 @@ function App() {
     const oldIndex = cards().findIndex((card) => card.name === cardName);
     const card = cards()[oldIndex];
     const newCardLane = changedCard.to.slice("lane-content-".length);
-    fetch(`${api}/resource${board()}/${card.lane}/${cardName}.md`, {
+    fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(cardName)}.md`, {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
