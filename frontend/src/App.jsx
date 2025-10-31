@@ -714,6 +714,16 @@ function App() {
       window.location.replace(`${url}/`);
     }
     fetchData();
+
+    // Auto-refresh every 5 seconds
+    const refreshInterval = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    // Cleanup interval on component unmount
+    onCleanup(() => {
+      clearInterval(refreshInterval);
+    });
   });
 
   createEffect(() => {
