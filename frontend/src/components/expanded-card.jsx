@@ -307,7 +307,6 @@ function ExpandedCard(props) {
     }
     e?.preventDefault();
     if (newCardName() || isCreatingNewTag()) {
-      setNameInputValue(null);
       setIsCreatingNewTag(false);
       return;
     }

@@ -236,6 +236,9 @@ function App() {
 
   async function changeCardContent(newContent) {
     const newCards = structuredClone(cards());
+    if (!selectedCard()) {
+      return;
+    }
     const newCardIndex = structuredClone(
       newCards.findIndex(
         (card) =>
@@ -452,9 +455,11 @@ function App() {
   function sortCardsByTags() {
     const newCards = structuredClone(cards());
     return newCards.sort((a, b) => {
+      const tagNameA = a.tags?.[0]?.name || '';
+      const tagNameB = b.tags?.[0]?.name || '';
       return sortDirection() === "asc"
-        ? a.tags[0]?.name.localeCompare(b.tags?.[0])
-        : b.tags[0]?.name.localeCompare(a.tags?.[0]);
+        ? tagNameA.localeCompare(tagNameB)
+        : tagNameB.localeCompare(tagNameA);
     });
   }
 
