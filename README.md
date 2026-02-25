@@ -12,6 +12,7 @@ A self-hosted, Markdown file based task management board.
 - Heavily customizable with 3 default color themes ([Adwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html), [Nord](https://www.nordtheme.com/) and [Catppuccin](https://github.com/catppuccin/catppuccin));
 - Support for subpath based reverse-proxy with an environment variable for base path;
 - Can be installed as PWA.
+- Multilingual support, with locale auto-detected from browser and persisted per user;
 
 ## Upgrade from 2.X.X to 3.X.X
 If you're running a docker container with version 2 of Tasks.md and want to upgrade it to version 3, please follow up [those instructions](/migration-guide.md) as it requires some tweeks for it to work properly.

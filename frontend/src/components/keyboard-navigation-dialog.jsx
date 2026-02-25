@@ -8,12 +8,12 @@ export function KeyboardNavigationDialog(props) {
         <dialog open class="help-dialog" onClick={(e) => e.stopPropagation()}>
           <div class="dialog__body help-dialog__body">
             <div class="help-dialog__header">
-              <h2 class="help-dialog__title">Keyboard Shortcuts</h2>
+              <h2 class="help-dialog__title">{props.t()('keyboard.title')}</h2>
               <button
                 type="button"
                 class="dialog__toolbar-btn help-dialog__close-btn"
                 onClick={() => props.onClose()}
-                title="Close"
+                title={props.t()('common.close')}
               >
                 <span innerHTML={IconClear} />
               </button>
@@ -21,7 +21,7 @@ export function KeyboardNavigationDialog(props) {
 
             <div class="help-dialog__sections">
               <div class="help-dialog__section">
-                <h3 class="help-dialog__section-title">Navigation</h3>
+                <h3 class="help-dialog__section-title">{props.t()('keyboard.sections.navigation')}</h3>
                 <table class="help-dialog__table">
                   <tbody>
                     <tr>
@@ -77,7 +77,7 @@ export function KeyboardNavigationDialog(props) {
               </div>
 
               <div class="help-dialog__section">
-                <h3 class="help-dialog__section-title">Card Actions</h3>
+                <h3 class="help-dialog__section-title">{props.t()('keyboard.sections.cardActions')}</h3>
                 <table class="help-dialog__table">
                   <tbody>
                     <tr>
@@ -109,7 +109,7 @@ export function KeyboardNavigationDialog(props) {
               </div>
 
               <div class="help-dialog__section">
-                <h3 class="help-dialog__section-title">General</h3>
+                <h3 class="help-dialog__section-title">{props.t()('keyboard.sections.general')}</h3>
                 <table class="help-dialog__table">
                   <tbody>
                     <tr>

@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, createMemo } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
 import { Portal } from "solid-js/web";
@@ -11,6 +11,7 @@ import { IconEllipsisVertical } from '@stackoverflow/stacks-icons/icons'
  * @param {boolean} props.hasContent
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDelete
+ * @param {Function} props.t
  */
 export function CardName(props) {
 	const [showMenu, setShowMenu] = createSignal(false);
@@ -26,14 +27,14 @@ export function CardName(props) {
 		setMenuCoordinates(null);
 	}
 
-	const menuOptions = [
-		{ label: "Rename card", onClick: startRenamingCard },
+	const menuOptions = createMemo(() => [
+		{ label: props.t()('cardName.rename'), onClick: startRenamingCard },
 		{
-			label: "Delete card",
+			label: props.t()('cardName.delete'),
 			onClick: props.onDelete,
 			requiresConfirmation: true,
 		},
-	];
+	]);
 
 	function handleClickCardOptions(event, focus) {
 		const coordinates = getButtonCoordinates(event);
@@ -57,7 +58,7 @@ export function CardName(props) {
 			<div class="header-buttons">
 				<button
 					type="button"
-					title="Show card options"
+					title={props.t()('cardName.showOptions')}
 					class="small"
 					popoverTarget={`${props.name}-card-options`}
 					onClick={handleClickCardOptions}
@@ -77,7 +78,7 @@ export function CardName(props) {
 					<Menu
 						id={`${props.name}-card-options`}
 						open={showMenu()}
-						options={menuOptions}
+						options={menuOptions()}
 						onClose={handleMenuClose}
 						x={menuCoordinates()?.x}
 						y={menuCoordinates()?.y}

@@ -30,6 +30,7 @@ import { addTagToContent, removeTagFromContent, setDueDateInContent, getDueDateF
  * @param {Function} props.onTagColorChange Callback function for when the color of a tag is changed
  * @param {Function} props.onNameChange Callback function for when the name of the card is changed
  * @param {Function} props.getNameErrorMsg Callback function to validate new card name
+ * @param {Function} props.t
  */
 function ExpandedCard(props) {
   const [isCardBeingRenamed, setIsCardBeingRenamed] = createSignal(false);
@@ -67,7 +68,7 @@ function ExpandedCard(props) {
     const taskAlreadyHasThisTag = props.tags.some(
       (tag) => tag.name.toLowerCase() === newTagName().toLowerCase()
     );
-    setTagNameError(taskAlreadyHasThisTag ? "Task already has this tag" : null);
+    setTagNameError(taskAlreadyHasThisTag ? props.t()('expandedCard.tagError.duplicate') : null);
   }
 
   function handleTagRenameConfirm() {
@@ -213,12 +214,11 @@ function ExpandedCard(props) {
   }
 
   const tagOptionsLength = 7;
-  const colorMenuOptions = new Array(tagOptionsLength)
-    .fill(1)
-    .map((option, i) => ({
+  const colorMenuOptions = createMemo(() =>
+    new Array(tagOptionsLength).fill(1).map((_, i) => ({
       label: (
         <>
-          Color {i + 1}{" "}
+          {props.t()('expandedCard.colorOption', { n: i + 1 })}{" "}
           <div
             class="color-preview-option"
             style={{ "background-color": `var(--color-alt-${i + 1})` }}
@@ -226,17 +226,18 @@ function ExpandedCard(props) {
         </>
       ),
       onClick: () => handleColorOptionClick(i),
-    }));
+    }))
+  );
 
   const tagMenuOptions = createMemo(() =>
     editor()
       ? [
           {
-            label: "Change color",
+            label: props.t()('expandedCard.changeColor'),
             onClick: handleChangeColorOptionClick,
             popoverTarget: "tag-color-menu",
           },
-          { label: "Delete tag", onClick: () => deleteTag(clickedTag()?.name) },
+          { label: props.t()('expandedCard.deleteTag'), onClick: () => deleteTag(clickedTag()?.name) },
         ]
       : []
   );
@@ -369,7 +370,7 @@ function ExpandedCard(props) {
                       role="button"
                       onClick={startRenamingCard}
                       onKeyDown={(e) => handleKeyDown(e, startRenamingCard)}
-                      title="Click to rename card"
+                      title={props.t()('expandedCard.rename')}
                       tabIndex="0"
                     >
                       {props.name || "NO NAME"}
@@ -381,7 +382,7 @@ function ExpandedCard(props) {
                 <button
                   type="button"
                   class="dialog__toolbar-btn"
-                  title={isMaximized() === "true" ? 'Minimize card' : 'Expand card'}
+                  title={isMaximized() === "true" ? props.t()('expandedCard.minimize') : props.t()('expandedCard.expand')}
                   onClick={() =>
                     setIsMaximized(isMaximized() === "true" ? "false" : "true")
                   }
@@ -392,7 +393,7 @@ function ExpandedCard(props) {
                   type="button"
                   class="dialog__toolbar-btn"
                   onClick={props.onClose}
-                  title="Close"
+                  title={props.t()('common.close')}
                 >
                   <span innerHTML={IconClear} />
                 </button>
@@ -418,7 +419,7 @@ function ExpandedCard(props) {
                   />
                 ) : (
                   <button type="button" onClick={handleAddTagBtnOnClick}>
-                    Add tag
+                    {props.t()('expandedCard.addTag')}
                   </button>
                 )}
                 <For each={props.tags || []}>
@@ -442,7 +443,7 @@ function ExpandedCard(props) {
                 </For>
               </div>
               <div class="dialog__due-date">
-                <label for="due">Due date: </label>
+                <label for="due">{props.t()('expandedCard.dueDate')}: </label>
                 <input
                   name="due"
                   type="date"
@@ -479,7 +480,7 @@ function ExpandedCard(props) {
           <Menu
             id="tag-color-menu"
             open={showColorPopup()}
-            options={colorMenuOptions}
+            options={colorMenuOptions()}
             onClose={() => {
               setShowColorPopup(null);
               setMenuCoordinates(null);

@@ -14,6 +14,8 @@ import { handleKeyDown } from "../utils";
  * @param {boolean} props.isSelected
  * @param {Function} props.onSelectionChange
  * @param {Function} props.onFocus
+ * @param {Function} props.t
+ * @param {string} props.locale
  */
 export function Card(props) {
 
@@ -40,7 +42,7 @@ export function Card(props) {
     }
     const [year, month, day] = props.dueDate.split('-')
     const dueDateLocalTime = new Date(year, month - 1, day);
-    return `Due ${dueDateLocalTime.toLocaleDateString()}`
+    return props.t()('card.due', { date: dueDateLocalTime.toLocaleDateString(props.locale, { month: 'short', day: 'numeric' }) });
   })
 
   return (

@@ -24,6 +24,7 @@ import { v7 } from "uuid";
 import { addTagToContent, removeTagFromContent, setDueDateInContent, getTagsFromContent } from "./card-content-utils";
 import "./stylesheets/index.css";
 import { KeyboardNavigationDialog } from "./components/keyboard-navigation-dialog";
+import { useI18n } from "./i18n";
 
 function App() {
   const [lanes, setLanes] = createSignal([]);
@@ -57,6 +58,7 @@ function App() {
   const [focusedLaneIndex, setFocusedLaneIndex] = createSignal(null);
   const [hasAutoFocusedFirstCard, setHasAutoFocusedFirstCard] = createSignal(false);
   const [showHelpDialog, setShowHelpDialog] = createSignal(false);
+  const { t, locale, setLocale } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   let mainContainerRef;
@@ -690,27 +692,27 @@ function App() {
     navigate(`${basePath()}${board()}/${encodeURIComponent(cards()[newCardIndex].name)}.md`);
   }
 
-  function validateName(newName, namesList, item) {
+  function validateName(newName, namesList) {
     if (newName === null) {
       return null;
     }
     if (newName === "") {
-      return `The ${item} must have a name`;
+      return t()('validation.mustHaveName');
     }
     if (newName.startsWith(".")) {
-      return "Cards and lanes with names starting with dot are hidden";
+      return t()('validation.hiddenByDot');
     }
     if (namesList.filter((name) => name === (newName || "").trim()).length) {
-      return `There's already a ${item} with that name`;
+      return t()('validation.duplicateName');
     }
     if (/[<>:%"/\\|?*]/g.test(newName)) {
-      return `The new name cannot have any of the following chracters: <>:%"/\\|?*`;
+      return t()('validation.forbiddenChars');
     }
     if (newName.endsWith(".md")) {
-      return "Name must not end with .md";
+      return t()('validation.noMdExtension');
     }
     if (newName === "_api") {
-      return 'Name "_api" is prohibited';
+      return t()('validation.prohibitedName');
     }
     return null;
   }
@@ -1232,6 +1234,9 @@ function App() {
         onViewModeChange={(e) => setViewMode(e.target.value)}
         selectionMode={selectionMode()}
         onSelectionModeChange={setSelectionMode}
+        t={t}
+        locale={locale()}
+        onLocaleChange={(e) => setLocale(e.target.value)}
       />
       <Show when={selectionMode()}>
         <BulkOperationsToolbar
@@ -1243,6 +1248,7 @@ function App() {
           onClearSelection={clearSelection}
           tagsOptions={tagsOptions().map((option) => option.name)}
           tagsOnSelectedCards={tagsOnSelectedCards()}
+          t={t}
         />
       </Show>
       {title() ? <h1 class="app-title">{title()}</h1> : <></>}
@@ -1267,8 +1273,7 @@ function App() {
                         newLaneName(),
                         lanes().filter(
                           (lane) => lane !== laneBeingRenamedName()
-                        ),
-                        "lane"
+                        )
                       )}
                       onChange={(newValue) => setNewLaneName(newValue)}
                       onConfirm={renameLane}
@@ -1285,6 +1290,7 @@ function App() {
                       onCreateNewCardBtnClick={() => createNewCard(lane)}
                       onDelete={() => deleteLane(lane)}
                       onDeleteCards={() => handleDeleteCardsByLane(lane)}
+                      t={t}
                     />
                   )}
                 </header>
@@ -1302,6 +1308,8 @@ function App() {
                         dueDate={card.dueDate}
                         content={card.content}
                         disableDrag={disableCardsDrag()}
+                        t={t}
+                        locale={locale()}
                         selectionMode={selectionMode()}
                         isSelected={selectedCards().has(getCardKey(card))}
                         onSelectionChange={(isSelected) =>
@@ -1332,8 +1340,7 @@ function App() {
                                     (card) =>
                                       card.name !== cardBeingRenamed()?.name
                                   )
-                                  .map((card) => card.name),
-                                "card"
+                                  .map((card) => card.name)
                               )}
                               onChange={(newValue) => setNewCardName(newValue)}
                               onConfirm={() =>
@@ -1366,6 +1373,7 @@ function App() {
                                   `${basePath()}${board()}/${encodeURIComponent(card.name)}.md`
                                 )
                               }
+                              t={t}
                             />
                           )
                         }
@@ -1386,6 +1394,7 @@ function App() {
             content={selectedCard().content}
             tags={selectedCard().tags || []}
             tagsOptions={tagsOptions()}
+            t={t}
             onClose={() => {
               const cardName = selectedCard().name;
               navigate(`${basePath()}${board()}` || "/");
@@ -1409,8 +1418,7 @@ function App() {
                 newName,
                 cards()
                   .filter((card) => card.name !== selectedCard().name)
-                  .map((card) => card.name),
-                "card"
+                  .map((card) => card.name)
               )
             }
             disableImageUpload={false}
@@ -1420,7 +1428,7 @@ function App() {
         </Show>
       </Show>
       <Show when={showHelpDialog()}>
-        <KeyboardNavigationDialog onClose={() => setShowHelpDialog(false)} />
+        <KeyboardNavigationDialog onClose={() => setShowHelpDialog(false)} t={t} />
       </Show>
     </div>
   );

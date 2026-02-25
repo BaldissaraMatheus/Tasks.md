@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, createMemo } from "solid-js";
 import { Menu } from "./menu";
 import { getButtonCoordinates, handleKeyDown } from "../utils";
 import { IconPlusSm, IconEllipsisVertical } from '@stackoverflow/stacks-icons/icons'
@@ -13,6 +13,7 @@ import { IconPlusSm, IconEllipsisVertical } from '@stackoverflow/stacks-icons/ic
  * @param {Function} props.onDelete
  * @param {Function} props.onDragStart
  * @param {Function} props.onCreateNewCardBtnClick
+ * @param {Function} props.t
  */
 export function LaneName(props) {
 	const [showMenu, setShowMenu] = createSignal(false);
@@ -36,19 +37,19 @@ export function LaneName(props) {
 		setShowMenu(true);
 	}
 
-	const menuOptions = [
-		{ label: "Rename lane", onClick: startRenamingLane },
+	const menuOptions = createMemo(() => [
+		{ label: props.t()('laneName.rename'), onClick: startRenamingLane },
 		{
-			label: "Delete cards",
+			label: props.t()('laneName.deleteCard'),
 			onClick: props.onDeleteCards,
 			requiresConfirmation: true,
 		},
 		{
-			label: "Delete lane",
+			label: props.t()('laneName.deleteLane'),
 			onClick: props.onDelete,
 			requiresConfirmation: true,
 		},
-	];
+	]);
 
 	return (
 		<>
@@ -66,7 +67,7 @@ export function LaneName(props) {
 			<div class="header-buttons">
 				<button
 					type="button"
-					title="Create new card"
+					title={props.t()('laneName.createCard')}
 					class="small"
 					onClick={() => props.onCreateNewCardBtnClick()}
 				>
@@ -74,7 +75,7 @@ export function LaneName(props) {
 				</button>
 				<button
 					type="button"
-					title="Show lane options"
+					title={props.t()('laneName.showOptions')}
 					class="small"
 					popoverTarget={`${props.name}-lane-options`}
 					onClick={handleOptionsBtnClick}
@@ -90,7 +91,7 @@ export function LaneName(props) {
 					<Menu
 						id={`${props.name}-lane-options`}
 						open={showMenu()}
-						options={menuOptions}
+						options={menuOptions()}
 						onClose={handleCancel}
 						x={menuCoordinates()?.x}
 						y={menuCoordinates()?.y}

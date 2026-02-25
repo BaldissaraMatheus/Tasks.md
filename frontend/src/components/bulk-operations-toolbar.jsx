@@ -10,6 +10,7 @@ import { createSignal, Show, For, onMount, onCleanup, createEffect } from "solid
  * @param {Function} props.onClearSelection - Callback to clear selection
  * @param {string[]} props.tagsOptions - Available tag options (all tags in project)
  * @param {string[]} props.tagsOnSelectedCards - Tags that exist on selected cards
+ * @param {Function} props.t
  */
 export function BulkOperationsToolbar(props) {
   const [showTagMenu, setShowTagMenu] = createSignal(false);
@@ -108,7 +109,7 @@ export function BulkOperationsToolbar(props) {
 
   function handleDelete() {
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${props.selectedCount} card${props.selectedCount !== 1 ? 's' : ''}? This action cannot be undone.`
+      props.t()(props.selectedCount !== 1 ? 'bulk.deleteConfirm_plural' : 'bulk.deleteConfirm')
     );
     if (confirmed) {
       props.onDelete();
@@ -126,7 +127,7 @@ export function BulkOperationsToolbar(props) {
     <div class="bulk-operations-toolbar">
       <div class="bulk-operations-toolbar__content">
         <span class="bulk-operations-toolbar__count">
-          {props.selectedCount} card{props.selectedCount !== 1 ? "s" : ""} selected
+          {props.t()(props.selectedCount !== 1 ? 'bulk.selected_plural' : 'bulk.selected', { count: props.selectedCount })}
         </span>
         <Show when={props.selectedCount > 0}>
           <button
@@ -145,7 +146,7 @@ export function BulkOperationsToolbar(props) {
               }
             }}
           >
-            Add tags
+            {props.t()('bulk.addTags')}
           </button>
 
           <button
@@ -165,7 +166,7 @@ export function BulkOperationsToolbar(props) {
             }}
             disabled={!props.tagsOnSelectedCards || props.tagsOnSelectedCards.length === 0}
           >
-            Remove tags
+            {props.t()('bulk.removeTags')}
           </button>
 
           <button
@@ -184,21 +185,21 @@ export function BulkOperationsToolbar(props) {
               }
             }}
           >
-            Set due date
+            {props.t()('bulk.setDueDate')}
           </button>
 
           <button
             class="bulk-operations-toolbar__button bulk-operations-toolbar__button--danger"
             onClick={handleDelete}
           >
-            Delete
+            {props.t()('bulk.delete')}
           </button>
 
           <button
             class="bulk-operations-toolbar__button bulk-operations-toolbar__button--secondary"
             onClick={props.onClearSelection}
           >
-            Clear Selection
+            {props.t()('bulk.clearSelection')}
           </button>
         </Show>  
       </div>
@@ -209,7 +210,7 @@ export function BulkOperationsToolbar(props) {
           <input
             type="text"
             class="bulk-operations-toolbar__search-input"
-            placeholder="Search or create tag..."
+            placeholder={props.t()('bulk.tagSearchPlaceholder')}
             value={tagSearchQuery()}
             onInput={(e) => setTagSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -229,7 +230,7 @@ export function BulkOperationsToolbar(props) {
                 onClick={handleCreateAndAddTag}
               >
                 <span class="bulk-operations-toolbar__create-icon">+</span>
-                Create "{tagSearchQuery()}"
+                {props.t()('bulk.createTag', { tag: tagSearchQuery() })}
               </button>
             </Show>
             <For each={filteredTags()}>
@@ -244,7 +245,7 @@ export function BulkOperationsToolbar(props) {
             </For>
             <Show when={filteredTags().length === 0 && !showCreateOption()}>
               <div class="bulk-operations-toolbar__dropdown-empty">
-                No tags found
+                {props.t()('common.noTagsFound')}
               </div>
             </Show>
           </div>
@@ -257,7 +258,7 @@ export function BulkOperationsToolbar(props) {
           <input
             type="text"
             class="bulk-operations-toolbar__search-input"
-            placeholder="Search tags to remove..."
+            placeholder={props.t()('bulk.removeTagPlaceholder')}
             value={removeTagSearchQuery()}
             onInput={(e) => setRemoveTagSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -281,7 +282,7 @@ export function BulkOperationsToolbar(props) {
             </For>
             <Show when={filteredRemoveTags().length === 0}>
               <div class="bulk-operations-toolbar__dropdown-empty">
-                No tags found
+                {props.t()('common.noTagsFound')}
               </div>
             </Show>
           </div>
@@ -302,7 +303,7 @@ export function BulkOperationsToolbar(props) {
             class="bulk-operations-toolbar__button"
             onClick={handleSetDueDate}
           >
-            Apply
+            {props.t()('common.confirm')}
           </button>
           <button
             class="bulk-operations-toolbar__button bulk-operations-toolbar__button--secondary"
@@ -311,7 +312,7 @@ export function BulkOperationsToolbar(props) {
               setDueDate("");
             }}
           >
-            Cancel
+            {props.t()('common.cancel')}
           </button>
         </div>
       </Show>
