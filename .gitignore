@@ -6,3 +6,7 @@ frontend/node_modules
 frontend/dist
 frontend/.env
 frontend/dev-dist
+AGENTS.md
+CLAUDE.md
+.claude/
+

@@ -237,6 +237,68 @@ async function getSort(ctx) {
 
 router.get("/sort/:path*", getSort);
 
+async function getRecurring(ctx) {
+  const subPath = decodeURIComponent(ctx.request.url.substring("/recurring".length));
+  const recurring = await fs.promises
+    .readFile(`${CONFIG_DIR}/recurring.json`)
+    .then((res) => JSON.parse(res.toString()))
+    .catch(() => ({}));
+  ctx.body = recurring[subPath] || [];
+  ctx.status = 200;
+}
+
+router.get("/recurring/:path*", getRecurring);
+
+async function createRecurring(ctx) {
+  const subPath = decodeURIComponent(ctx.request.url.substring("/recurring".length));
+  const recurring = await fs.promises
+    .readFile(`${CONFIG_DIR}/recurring.json`)
+    .then((res) => JSON.parse(res.toString()))
+    .catch(() => ({}));
+  const boardRecurring = recurring[subPath] || [];
+  const newDef = {
+    id: uuid.v4(),
+    name: ctx.request.body.name,
+    lane: ctx.request.body.lane,
+    content: ctx.request.body.content || "",
+    schedule: ctx.request.body.schedule,
+    lastCreated: null,
+  };
+  boardRecurring.push(newDef);
+  recurring[subPath] = boardRecurring;
+  await fs.promises.writeFile(
+    `${CONFIG_DIR}/recurring.json`,
+    JSON.stringify(recurring)
+  );
+  if (PUID && PGID) {
+    await fs.promises.chown(`${CONFIG_DIR}/recurring.json`, PUID, PGID);
+  }
+  ctx.body = newDef;
+  ctx.status = 201;
+}
+
+router.post("/recurring/:path*", createRecurring);
+
+async function deleteRecurring(ctx) {
+  const subPath = decodeURIComponent(ctx.request.url.substring("/recurring".length));
+  const recurring = await fs.promises
+    .readFile(`${CONFIG_DIR}/recurring.json`)
+    .then((res) => JSON.parse(res.toString()))
+    .catch(() => ({}));
+  const boardRecurring = recurring[subPath] || [];
+  recurring[subPath] = boardRecurring.filter((d) => d.id !== ctx.request.body.id);
+  await fs.promises.writeFile(
+    `${CONFIG_DIR}/recurring.json`,
+    JSON.stringify(recurring)
+  );
+  if (PUID && PGID) {
+    await fs.promises.chown(`${CONFIG_DIR}/recurring.json`, PUID, PGID);
+  }
+  ctx.status = 204;
+}
+
+router.delete("/recurring/:path*", deleteRecurring);
+
 app.use(cors());
 app.use(bodyParser());
 
@@ -324,6 +386,74 @@ async function removeUnusedImages() {
   );
 }
 
+function isDue(def, todayStr, dayOfWeek) {
+  const lastDate = def.lastCreated ? def.lastCreated.substring(0, 10) : null;
+  switch (def.schedule.type) {
+    case "daily":
+      return lastDate !== todayStr;
+    case "weekly": {
+      if (!lastDate) return true;
+      const diff = Date.now() - new Date(lastDate).getTime();
+      return diff >= 7 * 24 * 60 * 60 * 1000;
+    }
+    case "monthly": {
+      const currentMonth = todayStr.substring(0, 7);
+      const lastMonth = lastDate ? lastDate.substring(0, 7) : null;
+      return lastMonth !== currentMonth;
+    }
+    case "specific_days":
+      return (
+        Array.isArray(def.schedule.days) &&
+        def.schedule.days.includes(dayOfWeek) &&
+        lastDate !== todayStr
+      );
+    default:
+      return false;
+  }
+}
+
+async function checkRecurringTasks() {
+  const recurring = await fs.promises
+    .readFile(`${CONFIG_DIR}/recurring.json`)
+    .then((res) => JSON.parse(res.toString()))
+    .catch(() => ({}));
+  const now = new Date();
+  const todayStr = now.toISOString().substring(0, 10);
+  const dayOfWeek = now.getDay();
+  let changed = false;
+
+  for (const boardPath of Object.keys(recurring)) {
+    const defs = recurring[boardPath];
+    for (const def of defs) {
+      if (!isDue(def, todayStr, dayOfWeek)) continue;
+      const lanePath = `${TASKS_DIR}${boardPath}/${def.lane}`;
+      await fs.promises.mkdir(lanePath, { recursive: true });
+      const filePath = `${lanePath}/${def.name}.md`;
+      const exists = await fs.promises
+        .access(filePath)
+        .then(() => true)
+        .catch(() => false);
+      if (exists) continue;
+      await fs.promises.writeFile(filePath, def.content || "");
+      if (PUID && PGID) {
+        await fs.promises.chown(filePath, PUID, PGID);
+      }
+      def.lastCreated = now.toISOString();
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    await fs.promises.writeFile(
+      `${CONFIG_DIR}/recurring.json`,
+      JSON.stringify(recurring)
+    );
+    if (PUID && PGID) {
+      await fs.promises.chown(`${CONFIG_DIR}/recurring.json`, PUID, PGID);
+    }
+  }
+}
+
 const localImagesCleanupInterval = /^\d{1,}$/.test(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL)
   ? Number(process.env.LOCAL_IMAGES_CLEANUP_INTERVAL)
   : 1440
@@ -338,6 +468,19 @@ if (localImagesCleanupInterval) {
     console.error(error);
   }
 }
+
+try {
+  checkRecurringTasks();
+} catch (error) {
+  console.error(error);
+}
+setInterval(() => {
+  try {
+    checkRecurringTasks();
+  } catch (error) {
+    console.error(error);
+  }
+}, 60 * 60000);
 
 console.log('API starting at ' + PORT)
 fs.promises.mkdir(CONFIG_DIR, { recursive: true });

@@ -924,3 +924,140 @@ a > * {
   color: white !important;
   border-color: var(--color-accent) !important;
 }
+
+/* Recurring tasks dialog */
+dialog.recurring-dialog {
+  width: auto;
+  height: auto;
+  max-width: 500px;
+  max-height: 80vh;
+}
+
+.recurring-dialog__body {
+  padding: 20px;
+  gap: 16px;
+  overflow: auto;
+}
+
+.recurring-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.recurring-dialog__title {
+  margin: 0;
+  font-size: 20px;
+  color: var(--color-foreground);
+}
+
+.recurring-dialog__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recurring-dialog__empty {
+  color: var(--color-foreground);
+  opacity: 0.6;
+  font-size: 0.875rem;
+}
+
+.recurring-dialog__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-background-4);
+  border-radius: 6px;
+}
+
+.recurring-dialog__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recurring-dialog__item-info strong {
+  color: var(--color-foreground);
+}
+
+.recurring-dialog__item-meta {
+  font-size: 0.8rem;
+  color: var(--color-foreground);
+  opacity: 0.7;
+}
+
+.recurring-dialog__delete-btn {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  height: 28px;
+  font-size: 0.8rem;
+  background: var(--color-alt-1);
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.recurring-dialog__add-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.recurring-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--color-background-4);
+  border-radius: 6px;
+}
+
+.recurring-dialog__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+}
+
+.recurring-dialog__input,
+.recurring-dialog__select,
+.recurring-dialog__textarea {
+  padding: 6px 12px;
+  border: 1px solid var(--color-background-4);
+  background: var(--color-background-2);
+  color: var(--color-foreground);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.recurring-dialog__textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.recurring-dialog__days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recurring-dialog__day-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.recurring-dialog__form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

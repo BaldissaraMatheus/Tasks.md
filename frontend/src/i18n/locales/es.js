@@ -8,7 +8,7 @@ export default {
 		sort: { manually: "Manual", nameAsc: "Nombre (A-Z)", nameDesc: "Nombre (Z-A)", tagsAsc: "Etiquetas (A-Z)", tagsDesc: "Etiquetas (Z-A)", dueAsc: "Fecha más próxima", dueDesc: "Fecha más lejana", lastUpdated: "Última actualización", createdFirst: "Creado primero" },
 		viewMode: "Modo de vista",
 		view: { extended: "Extendido", regular: "Regular", compact: "Compacto", tight: "Ajustado" },
-		newLane: "Nueva columna", selectCards: "Seleccionar tarjetas", exitSelection: "Salir de selección", locale: "Idioma",
+		newLane: "Nueva columna", recurringTasks: "Tareas recurrentes", selectCards: "Seleccionar tarjetas", exitSelection: "Salir de selección", locale: "Idioma",
 	},
 	card: { due: "Vencimiento {{date}}" },
 	cardName: { rename: "Renombrar", delete: "Eliminar", showOptions: "Mostrar opciones" },
@@ -28,6 +28,12 @@ export default {
 	validation: {
 		mustHaveName: "El nombre es obligatorio", hiddenByDot: "Oculto por punto", duplicateName: "Nombre duplicado",
 		forbiddenChars: "Caracteres prohibidos", noMdExtension: "Sin extensión .md", prohibitedName: "Nombre prohibido",
+	},
+	recurring: {
+		title: "Tareas recurrentes", empty: "No hay tareas recurrentes definidas.", add: "Agregar tarea recurrente",
+		taskName: "Nombre de la tarea", targetLane: "Columna destino", content: "Contenido (opcional)",
+		schedule: "Programación", daily: "Diario", weekly: "Semanal", monthly: "Mensual",
+		specificDays: "Días específicos", create: "Crear", lastCreated: "Última creación:",
 	},
 	keyboard: { title: "Atajos de teclado", sections: { navigation: "Navegación", cardActions: "Acciones de tarjeta", general: "General" }, shortcuts: {} },
 }

@@ -8,7 +8,7 @@ export default {
 		sort: { manually: "Manually", nameAsc: "Name (A-Z)", nameDesc: "Name (Z-A)", tagsAsc: "Tags (A-Z)", tagsDesc: "Tags (Z-A)", dueAsc: "Due {{date}}", dueDesc: "Due {{date}}", lastUpdated: "Last updated", createdFirst: "Created first" },
 		viewMode: "View mode",
 		view: { extended: "Extended", regular: "Regular", compact: "Compact", tight: "Tight" },
-		newLane: "New lane", selectCards: "Select cards", exitSelection: "Exit selection", locale: "Language",
+		newLane: "New lane", recurringTasks: "Recurring tasks", selectCards: "Select cards", exitSelection: "Exit selection", locale: "Language",
 	},
 	card: { due: "Due {{date}}" },
 	cardName: { rename: "Rename", delete: "Delete", showOptions: "Show options" },
@@ -27,6 +27,12 @@ export default {
 	validation: {
 		mustHaveName: "Name is required", hiddenByDot: "Hidden by dot", duplicateName: "Duplicate name",
 		forbiddenChars: "Forbidden characters", noMdExtension: "No .md extension", prohibitedName: "Prohibited name",
+	},
+	recurring: {
+		title: "Recurring Tasks", empty: "No recurring tasks defined.", add: "Add recurring task",
+		taskName: "Task name", targetLane: "Target lane", content: "Content (optional)",
+		schedule: "Schedule", daily: "Daily", weekly: "Weekly", monthly: "Monthly",
+		specificDays: "Specific days", create: "Create", lastCreated: "Last created:",
 	},
 	keyboard: { title: "Keyboard Shortcuts", sections: { navigation: "Navigation", cardActions: "Card actions", general: "General" }, shortcuts: {} },
 }

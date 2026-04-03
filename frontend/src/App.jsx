@@ -24,6 +24,7 @@ import { v7 } from "uuid";
 import { addTagToContent, removeTagFromContent, setDueDateInContent, getTagsFromContent } from "./card-content-utils";
 import "./stylesheets/index.css";
 import { KeyboardNavigationDialog } from "./components/keyboard-navigation-dialog";
+import { RecurringTasksDialog } from "./components/recurring-tasks-dialog";
 import { useI18n } from "./i18n";
 
 function App() {
@@ -58,6 +59,8 @@ function App() {
   const [focusedLaneIndex, setFocusedLaneIndex] = createSignal(null);
   const [hasAutoFocusedFirstCard, setHasAutoFocusedFirstCard] = createSignal(false);
   const [showHelpDialog, setShowHelpDialog] = createSignal(false);
+  const [showRecurringDialog, setShowRecurringDialog] = createSignal(false);
+  const [recurringTasks, setRecurringTasks] = createSignal([]);
   const { t, locale, setLocale } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
@@ -210,6 +213,36 @@ function App() {
       setCards(newCards);
       setRenderUID(v7());
     });
+  }
+
+  async function fetchRecurringTasks() {
+    const res = await fetch(`${api}/recurring${board()}`, {
+      method: "GET",
+      mode: "cors",
+    });
+    const data = await res.json();
+    setRecurringTasks(data);
+  }
+
+  async function createRecurringTask(task) {
+    const res = await fetch(`${api}/recurring${board()}`, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+    const newDef = await res.json();
+    setRecurringTasks([...recurringTasks(), newDef]);
+  }
+
+  async function deleteRecurringTask(id) {
+    await fetch(`${api}/recurring${board()}`, {
+      method: "DELETE",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    setRecurringTasks(recurringTasks().filter((t) => t.id !== id));
   }
 
   function pickTagColorIndexBasedOnHash(value) {
@@ -775,6 +808,7 @@ function App() {
       window.location.replace(`${url}/`);
     }
     fetchData();
+    fetchRecurringTasks();
   });
 
   createEffect(() => {
@@ -1230,6 +1264,7 @@ function App() {
         filteredTag={filteredTag()}
         onTagChange={handleFilterSelectOnChange}
         onNewLaneBtnClick={createNewLane}
+        onRecurringBtnClick={() => setShowRecurringDialog(true)}
         viewMode={viewMode()}
         onViewModeChange={(e) => setViewMode(e.target.value)}
         selectionMode={selectionMode()}
@@ -1429,6 +1464,16 @@ function App() {
       </Show>
       <Show when={showHelpDialog()}>
         <KeyboardNavigationDialog onClose={() => setShowHelpDialog(false)} t={t} />
+      </Show>
+      <Show when={showRecurringDialog()}>
+        <RecurringTasksDialog
+          recurringTasks={recurringTasks()}
+          lanes={lanes()}
+          onCreate={createRecurringTask}
+          onDelete={deleteRecurringTask}
+          onClose={() => setShowRecurringDialog(false)}
+          t={t}
+        />
       </Show>
     </div>
   );

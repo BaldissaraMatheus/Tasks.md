@@ -82,6 +82,13 @@ export function Header(props) {
       </button>
       <button
         type="button"
+        onClick={props.onRecurringBtnClick}
+        disabled={props.selectionMode}
+      >
+        {props.t()('header.recurringTasks')}
+      </button>
+      <button
+        type="button"
         onClick={() => props.onSelectionModeChange?.(!props.selectionMode)}
         class={props.selectionMode ? "button--active" : ""}
       >
