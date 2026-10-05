@@ -222,10 +222,28 @@ function App() {
     return colorIndex;
   }
 
-  const debounceChangeCardContent = debounce(
-    (newContent) => changeCardContent(newContent),
+  // Pending editor content, held so it can be flushed when the card is closed
+  // before the debounce fires (otherwise the last edit is lost).
+  let pendingContentChange = null;
+  const debouncedFlushCardContentChange = debounce(
+    () => flushCardContentChange(),
     250
   );
+
+  function queueCardContentChange(newContent, card) {
+    pendingContentChange = { newContent, card };
+    debouncedFlushCardContentChange();
+  }
+
+  function flushCardContentChange() {
+    debouncedFlushCardContentChange.clear();
+    if (!pendingContentChange) {
+      return;
+    }
+    const { newContent, card } = pendingContentChange;
+    pendingContentChange = null;
+    return changeCardContent(newContent, card);
+  }
 
   function updateTagColors(mapTagToColor) {
     return fetch(`${api}/tags${board()}`, {
@@ -236,17 +254,17 @@ function App() {
     });
   }
 
-  async function changeCardContent(newContent) {
+  async function changeCardContent(newContent, targetCard) {
     const newCards = structuredClone(cards());
-    if (!selectedCard()) {
+    if (!targetCard) {
       return;
     }
-    const newCardIndex = structuredClone(
-      newCards.findIndex(
-        (card) =>
-          card.name === selectedCard().name && card.lane === selectedCard().lane
-      )
+    const newCardIndex = newCards.findIndex(
+      (card) => card.name === targetCard.name && card.lane === targetCard.lane
     );
+    if (newCardIndex === -1) {
+      return;
+    }
     const newCard = newCards[newCardIndex];
     newCard.content = newContent;
     await fetch(
@@ -295,7 +313,10 @@ function App() {
     const localTagOptions = cardTagOptions.filter((tag) => !tagsOptions().some(remoteTag => remoteTag.name === tag.name))
     const allTagOptions = [...tagsOptions(), ...localTagOptions];
     setTagsOptions(allTagOptions);
-    navigate(`${basePath()}${board()}/${encodeURIComponent(newCard.name)}.md`);
+    // Don't reopen the card if it was closed while the save was in flight
+    if (selectedCard()?.name === newCard.name) {
+      navigate(`${basePath()}${board()}/${encodeURIComponent(newCard.name)}.md`);
+    }
   }
 
   // Use shared utility function for getting tags
@@ -1396,6 +1417,7 @@ function App() {
             tagsOptions={tagsOptions()}
             t={t}
             onClose={() => {
+              flushCardContentChange();
               const cardName = selectedCard().name;
               navigate(`${basePath()}${board()}` || "/");
               // Restore focus to the card after navigation
@@ -1409,7 +1431,10 @@ function App() {
               }, 50);
             }}
             onContentChange={(value) =>
-              debounceChangeCardContent(value, selectedCard().id)
+              queueCardContentChange(value, {
+                name: selectedCard().name,
+                lane: selectedCard().lane,
+              })
             }
             onTagColorChange={updateTagColorFromExpandedCard}
             onNameChange={handleOnSelectedCardNameChange}
