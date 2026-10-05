@@ -453,6 +453,11 @@ dialog:not(.dialog--maximized) {
   align-items: center;
 }
 
+.dialog__toolbar-btn--text {
+  width: auto;
+  padding: 0 12px;
+}
+
 .dialog__tags-and-due-date {
   display: flex;
   justify-content: space-between;

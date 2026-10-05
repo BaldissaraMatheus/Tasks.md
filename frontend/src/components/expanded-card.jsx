@@ -30,6 +30,8 @@ import { addTagToContent, removeTagFromContent, setDueDateInContent, getDueDateF
  * @param {Function} props.onTagColorChange Callback function for when the color of a tag is changed
  * @param {Function} props.onNameChange Callback function for when the name of the card is changed
  * @param {Function} props.getNameErrorMsg Callback function to validate new card name
+ * @param {Function} props.onToggleDone Callback function to mark the card as done or not done, receives the current content
+ * @param {boolean} props.isDoneView
  * @param {Function} props.t
  */
 function ExpandedCard(props) {
@@ -379,6 +381,13 @@ function ExpandedCard(props) {
                 </h1>
               </div>
               <div class="dialog__toolbar-btns">
+                <button
+                  type="button"
+                  class="dialog__toolbar-btn dialog__toolbar-btn--text"
+                  onClick={() => props.onToggleDone(editor()?.content ?? props.content)}
+                >
+                  {props.isDoneView ? props.t()('expandedCard.undone') : props.t()('expandedCard.done')}
+                </button>
                 <button
                   type="button"
                   class="dialog__toolbar-btn"

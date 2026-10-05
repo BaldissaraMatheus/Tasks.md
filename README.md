@@ -13,6 +13,7 @@ A self-hosted, Markdown file based task management board.
 - Support for subpath based reverse-proxy with an environment variable for base path;
 - Can be installed as PWA.
 - Multilingual support, with locale auto-detected from browser and persisted per user;
+- Mark cards as done to move them out of the board, and browse them in a separate done view;
 
 ## Upgrade from 2.X.X to 3.X.X
 If you're running a docker container with version 2 of Tasks.md and want to upgrade it to version 3, please follow up [those instructions](/migration-guide.md) as it requires some tweeks for it to work properly.
@@ -96,6 +97,19 @@ The way directories and files are organized in Tasks.md is quite simple. Every l
 Sub-directories can also be opened as their own projects. In this example, by opening the app under `/backlog` path it will treat this directory as a different project, with its own lanes and tasks.
 
 More details (and it how it looks within Obsidian) can be found [here](https://github.com/BaldissaraMatheus/Tasks.md/issues/49).
+
+### Done cards
+Marking a card as done (from the card's options menu or editor, or for several cards at once in selection mode) adds a `[done:YYYY-MM-DDTHH:mm:ss]` marker to it and moves its file into a hidden `.done` directory, inside a directory with the same name as its lane:
+
+```
+Backlog/
+Sprint/
+.done/
+  Backlog/
+    Something something.md
+```
+
+The "Done tasks" button opens the done view, which shows the board's done cards with the most recently done first. Marking a card as "not done" removes the marker and moves it back to its lane. Renaming a lane also renames the directory of its done cards. Deleting a lane keeps its done cards; they can be deleted from the done view.
 
 ## 💻 Technology stack
 With the goal of having a good mix of performance and maintainability, the application was built with [SolidJS](https://github.com/solidjs/solid) and [Koa](https://github.com/koajs/koa). It also uses [Stacks-Editor](https://github.com/StackExchange/Stacks-Editor) for text editing and [serve-static](https://github.com/expressjs/serve-static) to serve the css files as-is.

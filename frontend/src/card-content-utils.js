@@ -98,3 +98,36 @@ export function getDueDateFromContent(content) {
   }
   return dueDateStringMatch[1];
 }
+
+/**
+ * Mark card content as done
+ * @param {string} content - Current card content
+ * @param {Date} date - When the card was done
+ * @returns {string} Updated content with done date set/updated
+ */
+export function setDoneInContent(content, date) {
+  const currentContent = removeDoneFromContent(content);
+  const pad = (value) => `${value}`.padStart(2, "0");
+  const doneDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  const doneTag = `[done:${doneDate}]`;
+  return currentContent ? `${doneTag}\n\n${currentContent}` : doneTag;
+}
+
+/**
+ * Remove the done date from card content
+ * @param {string} content - Current card content
+ * @returns {string} Updated content without done date
+ */
+export function removeDoneFromContent(content) {
+  return (content || "").replace(/\[done:[^\]]*\](\n\n)?/, "");
+}
+
+/**
+ * Extract done date from card content
+ * @param {string} content - Card content
+ * @returns {string|null} Done date string (YYYY-MM-DDTHH:mm:ss) or null if not found
+ */
+export function getDoneDateFromContent(content) {
+  const doneDateStringMatch = (content || "").match(/\[done:(.*?)\]/);
+  return doneDateStringMatch?.[1] || null;
+}

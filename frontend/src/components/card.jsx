@@ -8,6 +8,7 @@ import { handleKeyDown } from "../utils";
  * @param {boolean} props.disableDrag
  * @param {Object[]} props.tags
  * @param {string} props.dueDate
+ * @param {string} props.doneDate
  * @param {Function} props.onClick
  * @param {JSX.Element} props.headerSlot
  * @param {boolean} props.selectionMode
@@ -20,7 +21,7 @@ import { handleKeyDown } from "../utils";
 export function Card(props) {
 
   const dueDateStatusClass = createMemo(() => {
-    if (!props.dueDate) {
+    if (!props.dueDate || props.doneDate) {
       return '';
     }
     const [year, month, day] = props.dueDate.split('-')
@@ -37,6 +38,10 @@ export function Card(props) {
   });
 
   const dueDateFormatted = createMemo(() => {
+    if (props.doneDate) {
+      const doneDateLocalTime = new Date(props.doneDate);
+      return props.t()('card.done', { date: doneDateLocalTime.toLocaleDateString(props.locale, { month: 'short', day: 'numeric' }) });
+    }
     if (!props.dueDate) {
       return '';
     }

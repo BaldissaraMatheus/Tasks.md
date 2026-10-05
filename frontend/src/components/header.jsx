@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, onMount, For } from "solid-js";
+import { createEffect, createMemo, createSignal, onMount, For, Show } from "solid-js";
 
 /**
  *
@@ -14,6 +14,8 @@ import { createEffect, createMemo, createSignal, onMount, For } from "solid-js";
  * @param {Function} props.onViewModeChange
  * @param {boolean} props.selectionMode
  * @param {Function} props.onSelectionModeChange
+ * @param {boolean} props.isDoneView
+ * @param {string} props.doneViewToggleHref
  * @param {Function} props.t
  * @param {string} props.locale
  * @param {Function} props.onLocaleChange
@@ -47,20 +49,22 @@ export function Header(props) {
         onInput={(e) => props.onSearchChange(e.target.value)}
         class="search-input"
       />
-      <div class="app-header__group-item">
-        <div class="app-header__group-item-label">{props.t()('header.sortBy')}:</div>
-        <select onChange={props.onSortChange} value={props.sort}>
-          <option value="none">{props.t()('header.sort.manually')}</option>
-          <option value="name:asc">{props.t()('header.sort.nameAsc')}</option>
-          <option value="name:desc">{props.t()('header.sort.nameDesc')}</option>
-          <option value="tags:asc">{props.t()('header.sort.tagsAsc')}</option>
-          <option value="tags:desc">{props.t()('header.sort.tagsDesc')}</option>
-          <option value="due:asc">{props.t()('header.sort.dueAsc')}</option>
-          <option value="due:desc">{props.t()('header.sort.dueDesc')}</option>
-          <option value="lastUpdated:desc">{props.t()('header.sort.lastUpdated')}</option>
-          <option value="createdFirst:asc">{props.t()('header.sort.createdFirst')}</option>
-        </select>
-      </div>
+      <Show when={!props.isDoneView}>
+        <div class="app-header__group-item">
+          <div class="app-header__group-item-label">{props.t()('header.sortBy')}:</div>
+          <select onChange={props.onSortChange} value={props.sort}>
+            <option value="none">{props.t()('header.sort.manually')}</option>
+            <option value="name:asc">{props.t()('header.sort.nameAsc')}</option>
+            <option value="name:desc">{props.t()('header.sort.nameDesc')}</option>
+            <option value="tags:asc">{props.t()('header.sort.tagsAsc')}</option>
+            <option value="tags:desc">{props.t()('header.sort.tagsDesc')}</option>
+            <option value="due:asc">{props.t()('header.sort.dueAsc')}</option>
+            <option value="due:desc">{props.t()('header.sort.dueDesc')}</option>
+            <option value="lastUpdated:desc">{props.t()('header.sort.lastUpdated')}</option>
+            <option value="createdFirst:asc">{props.t()('header.sort.createdFirst')}</option>
+          </select>
+        </div>
+      </Show>
       <div class="app-header__group-item">
         {filterSelect()}
       </div>
@@ -73,19 +77,27 @@ export function Header(props) {
           <option value="tight">{props.t()('header.view.tight')}</option>
         </select>
       </div>
-      <button
-        type="button"
-        onClick={props.onNewLaneBtnClick}
-        disabled={props.selectionMode}
-      >
-        {props.t()('header.newLane')}
-      </button>
+      <Show when={!props.isDoneView}>
+        <button
+          type="button"
+          onClick={props.onNewLaneBtnClick}
+          disabled={props.selectionMode}
+        >
+          {props.t()('header.newLane')}
+        </button>
+      </Show>
       <button
         type="button"
         onClick={() => props.onSelectionModeChange?.(!props.selectionMode)}
         class={props.selectionMode ? "button--active" : ""}
       >
         {props.selectionMode ? props.t()('header.exitSelection') : props.t()('header.selectCards')}
+      </button>
+      <button
+        type="button"
+        onClick={() => window.location.assign(props.doneViewToggleHref)}
+      >
+        {props.isDoneView ? props.t()('header.showActive') : props.t()('header.showDone')}
       </button>
       <div class="app-header__group-item">
         <div class="app-header__group-item-label">{props.t()('header.locale')}:</div>

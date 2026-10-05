@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const uuid = require("uuid");
 const Koa = require("koa");
 const Router = require("@koa/router");
@@ -139,17 +140,79 @@ async function createResource(ctx) {
 
 router.post("/resource/:path*", createResource);
 
+// Done tasks of a lane live in "<board>/.done/<lane>"
+function getDoneLanePath(lanePath) {
+  return `${path.posix.dirname(lanePath)}/.done/${path.posix.basename(lanePath)}`;
+}
+
+async function createDirectory(dirPath) {
+  const firstCreatedDir = await fs.promises.mkdir(`${TASKS_DIR}/${dirPath}`, {
+    recursive: true,
+  });
+  if (!firstCreatedDir || !(PUID && PGID)) {
+    return;
+  }
+  let currentDir = `${TASKS_DIR}/${dirPath}`;
+  while (currentDir.length >= firstCreatedDir.length) {
+    await fs.promises.chown(currentDir, PUID, PGID);
+    currentDir = path.dirname(currentDir);
+  }
+}
+
+// Card names must be unique within a board, so when a card is moved to another
+// board (e.g. into ".done") pick a name not used by any of the board's lanes
+async function getAvailableCardPath(cardPath, oldPath) {
+  const lanePath = path.posix.dirname(cardPath);
+  const boardPath = path.posix.dirname(lanePath);
+  const lanes = await fs.promises
+    .readdir(`${TASKS_DIR}/${boardPath}`, { withFileTypes: true })
+    .catch(() => []);
+  const cardNamesPromises = lanes
+    .filter((dir) => dir.isDirectory() && !dir.name.startsWith("."))
+    .map((dir) =>
+      fs.promises.readdir(`${TASKS_DIR}/${boardPath}/${dir.name}`).catch(() => [])
+    );
+  const usedNames = (await Promise.all(cardNamesPromises)).flat();
+  const cardName = path.posix.basename(cardPath, ".md");
+  let newCardPath = cardPath;
+  let newCardName = `${cardName}.md`;
+  let suffix = 2;
+  while (usedNames.includes(newCardName) && newCardPath !== oldPath) {
+    newCardName = `${cardName} (${suffix}).md`;
+    newCardPath = `${lanePath}/${newCardName}`;
+    suffix++;
+  }
+  return newCardPath;
+}
+
 async function updateResource(ctx) {
   const oldPath = decodeURIComponent(ctx.request.url.substring("/resources".length));
-  const newPath = decodeURIComponent(ctx.request.body.newPath || oldPath).replaceAll(
+  let newPath = decodeURIComponent(ctx.request.body.newPath || oldPath).replaceAll(
     /<>:"\/\\\|\?\*#/g,
     " "
   );
   if (newPath !== oldPath) {
+    const isDirectory = fs.lstatSync(`${TASKS_DIR}/${oldPath}`).isDirectory();
+    if (ctx.request.body.keepBoth) {
+      newPath = await getAvailableCardPath(newPath, oldPath);
+    }
+    await createDirectory(path.posix.dirname(newPath));
     await fs.promises.rename(
       `${TASKS_DIR}/${oldPath}`,
       `${TASKS_DIR}/${newPath}`
     );
+    const oldDoneLanePath = getDoneLanePath(oldPath);
+    const newDoneLanePath = getDoneLanePath(newPath);
+    if (
+      isDirectory &&
+      fs.existsSync(`${TASKS_DIR}/${oldDoneLanePath}`) &&
+      !fs.existsSync(`${TASKS_DIR}/${newDoneLanePath}`)
+    ) {
+      await fs.promises.rename(
+        `${TASKS_DIR}/${oldDoneLanePath}`,
+        `${TASKS_DIR}/${newDoneLanePath}`
+      );
+    }
   }
 
   const newContent = ctx.request.body.content;

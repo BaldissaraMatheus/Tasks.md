@@ -7,6 +7,8 @@ import { createSignal, Show, For, onMount, onCleanup, createEffect } from "solid
  * @param {Function} props.onAddTags - Callback for bulk add tags
  * @param {Function} props.onRemoveTags - Callback for bulk remove tags
  * @param {Function} props.onSetDueDate - Callback for bulk set due date
+ * @param {Function} props.onToggleDone - Callback for bulk mark done / not done
+ * @param {boolean} props.isDoneView - Whether the selected cards are done
  * @param {Function} props.onClearSelection - Callback to clear selection
  * @param {string[]} props.tagsOptions - Available tag options (all tags in project)
  * @param {string[]} props.tagsOnSelectedCards - Tags that exist on selected cards
@@ -186,6 +188,13 @@ export function BulkOperationsToolbar(props) {
             }}
           >
             {props.t()('bulk.setDueDate')}
+          </button>
+
+          <button
+            class="bulk-operations-toolbar__button"
+            onClick={props.onToggleDone}
+          >
+            {props.isDoneView ? props.t()('bulk.undone') : props.t()('bulk.done')}
           </button>
 
           <button

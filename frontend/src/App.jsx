@@ -21,7 +21,7 @@ import { makePersisted } from "@solid-primitives/storage";
 import { DragAndDrop } from "./components/drag-and-drop";
 import { useLocation, useNavigate } from "@solidjs/router";
 import { v7 } from "uuid";
-import { addTagToContent, removeTagFromContent, setDueDateInContent, getTagsFromContent } from "./card-content-utils";
+import { addTagToContent, removeTagFromContent, setDueDateInContent, getTagsFromContent, setDoneInContent, removeDoneFromContent, getDoneDateFromContent } from "./card-content-utils";
 import "./stylesheets/index.css";
 import { KeyboardNavigationDialog } from "./components/keyboard-navigation-dialog";
 import { useI18n } from "./i18n";
@@ -95,6 +95,13 @@ function App() {
     return pathname;
   });
 
+  // Done cards live in "<board>/.done", which is shown as a board of its own
+  const isDoneView = createMemo(() => board().endsWith("/.done"));
+
+  const parentBoard = createMemo(() =>
+    isDoneView() ? board().substring(0, board().length - "/.done".length) : board()
+  );
+
   const selectedCardName = createMemo(() => {
     let pathname = location.pathname;
     if (location.pathname.endsWith("/")) {
@@ -113,11 +120,15 @@ function App() {
   });
 
   function fetchTitle() {
-    if (!board()) {
-      return fetch(`${api}/title`).then((res) => res.text());
+    const boardTitle = !parentBoard()
+      ? fetch(`${api}/title`).then((res) => res.text())
+      : decodeURIComponent(parentBoard().split("/").at(-1));
+    if (!isDoneView()) {
+      return boardTitle;
     }
-    const boardSplit = board().split("/");
-    return decodeURIComponent(boardSplit.at(-1));
+    return Promise.resolve(boardTitle).then((boardTitle) =>
+      [boardTitle, t()('doneView.title')].filter((item) => !!item).join(" - ")
+    );
   }
 
   const [title] = createResource(fetchTitle);
@@ -133,7 +144,7 @@ function App() {
       method: "GET",
       mode: "cors",
     }).then((res) => res.json());
-    const tagsReq = fetch(`${api}/tags${board()}`, {
+    const tagsReq = fetch(`${api}/tags${parentBoard()}`, {
       method: "GET",
       mode: "cors",
     }).then((res) =>
@@ -144,7 +155,8 @@ function App() {
         }))
       )
     );
-    const sortReq = fetch(`${api}/sort${board()}`, {
+    // The done view uses the lanes order of its board
+    const sortReq = fetch(`${api}/sort${parentBoard()}`, {
       method: "GET",
     }).then((res) => res.json());
     const [remoteTagOptions, resources, manualSort] = await Promise.all([
@@ -198,6 +210,7 @@ function App() {
         newCard.dueDate = dueDateStringMatch?.length
           ? dueDateStringMatch[1]
           : "";
+        newCard.doneDate = getDoneDateFromContent(newCard.content) || "";
         return newCard;
       })
       .toSorted((a, b) => {
@@ -228,7 +241,7 @@ function App() {
   );
 
   function updateTagColors(mapTagToColor) {
-    return fetch(`${api}/tags${board()}`, {
+    return fetch(`${api}/tags${parentBoard()}`, {
       method: "PATCH",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
@@ -258,7 +271,7 @@ function App() {
         body: JSON.stringify({ content: newContent }),
       }
     );
-    const remoteTagOptions = await fetch(`${api}/tags${board()}`, {
+    const remoteTagOptions = await fetch(`${api}/tags${parentBoard()}`, {
       method: "GET",
       mode: "cors",
     }).then((res) =>
@@ -290,6 +303,7 @@ function App() {
     newCard.lastUpdated = new Date().toISOString();
     const dueDateStringMatch = newCard.content.match(/\[due:(.*?)\]/);
     newCard.dueDate = dueDateStringMatch?.length ? dueDateStringMatch[1] : "";
+    newCard.doneDate = getDoneDateFromContent(newCard.content) || "";
     newCards[newCardIndex] = newCard;
     setCards(newCards);
     const localTagOptions = cardTagOptions.filter((tag) => !tagsOptions().some(remoteTag => remoteTag.name === tag.name))
@@ -351,6 +365,9 @@ function App() {
   }
 
   function moveCardToLane(card, newLane) {
+    if (isDoneView()) {
+      return;
+    }
     // Move card to a different lane (used for keyboard shortcuts) by reusing
     // the existing handleCardsSortChange logic used by drag-and-drop.
     const targetLaneCards = cards().filter((c) => c.lane === newLane);
@@ -370,6 +387,9 @@ function App() {
   }
 
   function moveCardInLane(card, direction) {
+    if (isDoneView()) {
+      return;
+    }
     // Move card up or down within its current lane by delegating to
     // handleCardsSortChange so that ordering logic is centralized.
     const laneCards = cards().filter((c) => c.lane === card.lane);
@@ -481,6 +501,44 @@ function App() {
     });
   }
 
+  function sortCardsByDoneDate() {
+    const newCards = structuredClone(cards());
+    return newCards.sort((a, b) => {
+      return (b.doneDate || "").localeCompare(a.doneDate || "");
+    });
+  }
+
+  // Done cards are moved to "<board>/.done/<lane>", and back to the board when undone
+  async function toggleCardsDone(cardsToMove) {
+    const newBoard = isDoneView() ? parentBoard() : `${board()}/.done`;
+    const movePromises = cardsToMove.map((card) => {
+      const newContent = isDoneView()
+        ? removeDoneFromContent(card.content)
+        : setDoneInContent(card.content, new Date());
+      return fetch(`${api}/resource${board()}/${encodeURIComponent(card.lane)}/${encodeURIComponent(card.name)}.md`, {
+        method: "PATCH",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newPath: `${newBoard}/${card.lane}/${card.name}.md`,
+          content: newContent,
+          keepBoth: true,
+        }),
+      });
+    });
+    await Promise.all(movePromises);
+    const movedCardsNames = cardsToMove.map((card) => card.name);
+    setCards(cards().filter((card) => !movedCardsNames.includes(card.name)));
+  }
+
+  // Used by the editor, which passes its latest content since edits are saved with a delay
+  async function toggleSelectedCardDone(content) {
+    const card = selectedCard();
+    debounceChangeCardContent.clear();
+    navigate(`${basePath()}${board()}` || "/");
+    await toggleCardsDone([{ ...card, content }]);
+  }
+
   function sortCardsByCreatedFirst() {
     const newCards = structuredClone(cards());
     return newCards.sort((a, b) => {
@@ -560,6 +618,14 @@ function App() {
     );
     setCards(remainingCards);
     clearSelection(); // Clear after delete since cards are gone
+  }
+
+  async function bulkToggleDone() {
+    const cardsToMove = cards().filter((card) =>
+      selectedCards().has(getCardKey(card))
+    );
+    await toggleCardsDone(cardsToMove);
+    clearSelection(); // Clear since cards were moved out of this view
   }
 
   async function bulkAddTags(tagName) {
@@ -723,6 +789,9 @@ function App() {
   }
 
   const sortedCards = createMemo(() => {
+    if (isDoneView()) {
+      return sortCardsByDoneDate();
+    }
     if (sort() === "none") {
       return cards();
     }
@@ -787,7 +856,7 @@ function App() {
     if (!lanes().length) {
       return;
     }
-    if (selectedCard()) {
+    if (selectedCard() || isDoneView()) {
       return;
     }
     const newSortJson = lanes().reduce((prev, curr) => {
@@ -873,7 +942,7 @@ function App() {
     }, 50);
   }
 
-  const disableCardsDrag = createMemo(() => sort() !== "none" || selectionMode());
+  const disableCardsDrag = createMemo(() => sort() !== "none" || selectionMode() || isDoneView());
 
   createEffect((prev) => {
     document.body.classList.remove(`view-mode-${prev}`);
@@ -1148,7 +1217,7 @@ function App() {
 
       case 'n': // New card
         e.preventDefault();
-        if (lanes().length > 0) {
+        if (lanes().length > 0 && !isDoneView()) {
           const currentCard = focusedCardId()
             ? cards().find(c => c.name === focusedCardId())
             : null;
@@ -1234,6 +1303,8 @@ function App() {
         onViewModeChange={(e) => setViewMode(e.target.value)}
         selectionMode={selectionMode()}
         onSelectionModeChange={setSelectionMode}
+        isDoneView={isDoneView()}
+        doneViewToggleHref={`${basePath()}${parentBoard()}${isDoneView() ? "" : "/.done"}/`}
         t={t}
         locale={locale()}
         onLocaleChange={(e) => setLocale(e.target.value)}
@@ -1245,6 +1316,8 @@ function App() {
           onAddTags={bulkAddTags}
           onRemoveTags={bulkRemoveTags}
           onSetDueDate={bulkSetDueDate}
+          onToggleDone={bulkToggleDone}
+          isDoneView={isDoneView()}
           onClearSelection={clearSelection}
           tagsOptions={tagsOptions().map((option) => option.name)}
           tagsOnSelectedCards={tagsOnSelectedCards()}
@@ -1290,6 +1363,7 @@ function App() {
                       onCreateNewCardBtnClick={() => createNewCard(lane)}
                       onDelete={() => deleteLane(lane)}
                       onDeleteCards={() => handleDeleteCardsByLane(lane)}
+                      isDoneView={isDoneView()}
                       t={t}
                     />
                   )}
@@ -1306,6 +1380,7 @@ function App() {
                         name={card.name}
                         tags={card.tags}
                         dueDate={card.dueDate}
+                        doneDate={card.doneDate}
                         content={card.content}
                         disableDrag={disableCardsDrag()}
                         t={t}
@@ -1368,6 +1443,8 @@ function App() {
                               hasContent={!!card.content}
                               onRenameBtnClick={() => startRenamingCard(card)}
                               onDelete={() => deleteCard(card)}
+                              onToggleDone={() => toggleCardsDone([card])}
+                              isDoneView={isDoneView()}
                               onClick={() =>
                                 navigate(
                                   `${basePath()}${board()}/${encodeURIComponent(card.name)}.md`
@@ -1413,6 +1490,8 @@ function App() {
             }
             onTagColorChange={updateTagColorFromExpandedCard}
             onNameChange={handleOnSelectedCardNameChange}
+            onToggleDone={toggleSelectedCardDone}
+            isDoneView={isDoneView()}
             getNameErrorMsg={(newName) =>
               validateName(
                 newName,

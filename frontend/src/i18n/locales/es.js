@@ -9,22 +9,25 @@ export default {
 		viewMode: "Modo de vista",
 		view: { extended: "Extendido", regular: "Regular", compact: "Compacto", tight: "Ajustado" },
 		newLane: "Nueva columna", selectCards: "Seleccionar tarjetas", exitSelection: "Salir de selección", locale: "Idioma",
+		showDone: "Tareas completadas", showActive: "Tareas activas",
 	},
-	card: { due: "Vencimiento {{date}}" },
-	cardName: { rename: "Renombrar", delete: "Eliminar", showOptions: "Mostrar opciones" },
+	card: { due: "Vencimiento {{date}}", done: "Completada {{date}}" },
+	cardName: { done: "Marcar como completada", undone: "Marcar como no completada", rename: "Renombrar", delete: "Eliminar", showOptions: "Mostrar opciones" },
 	laneName: { rename: "Renombrar", deleteCard: "Eliminar tarjeta", deleteLane: "Eliminar columna", createCard: "Crear tarjeta", showOptions: "Mostrar opciones" },
 	expandedCard: {
 		addTag: "Agregar etiqueta", changeColor: "Cambiar color", deleteTag: "Eliminar etiqueta", dueDate: "Fecha de vencimiento",
 		minimize: "Minimizar", expand: "Expandir", colorOption: "Color {{n}}", rename: "Clic para renombrar",
 		tagError: { duplicate: "Etiqueta duplicada" },
+		done: "Marcar como completada", undone: "Marcar como no completada",
 		close: "Cerrar"
 	},
 	bulk: {
 		selected: "{{count}} tarjeta seleccionada", selected_plural: "{{count}} tarjetas seleccionadas",
-		addTags: "Agregar etiquetas", removeTags: "Eliminar etiquetas", setDueDate: "Asignar fecha de vencimiento", delete: "Eliminar", clearSelection: "Limpiar selección",
+		addTags: "Agregar etiquetas", removeTags: "Eliminar etiquetas", setDueDate: "Asignar fecha de vencimiento", done: "Marcar como completadas", undone: "Marcar como no completadas", delete: "Eliminar", clearSelection: "Limpiar selección",
 		tagSearchPlaceholder: "Buscar etiquetas", removeTagPlaceholder: "Eliminar etiqueta", createTag: 'Crear "{{tag}}"',
 		deleteConfirm: "¿Eliminar seleccionadas?", deleteConfirm_plural: "¿Eliminar seleccionadas?",
 	},
+	doneView: { title: "Completadas" },
 	validation: {
 		mustHaveName: "El nombre es obligatorio", hiddenByDot: "Oculto por punto", duplicateName: "Nombre duplicado",
 		forbiddenChars: "Caracteres prohibidos", noMdExtension: "Sin extensión .md", prohibitedName: "Nombre prohibido",

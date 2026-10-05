@@ -11,6 +11,8 @@ import { IconEllipsisVertical } from '@stackoverflow/stacks-icons/icons'
  * @param {boolean} props.hasContent
  * @param {Function} props.onRenameBtnClick
  * @param {Function} props.onDelete
+ * @param {Function} props.onToggleDone
+ * @param {boolean} props.isDoneView
  * @param {Function} props.t
  */
 export function CardName(props) {
@@ -28,6 +30,10 @@ export function CardName(props) {
 	}
 
 	const menuOptions = createMemo(() => [
+		{
+			label: props.isDoneView ? props.t()('cardName.undone') : props.t()('cardName.done'),
+			onClick: props.onToggleDone,
+		},
 		{ label: props.t()('cardName.rename'), onClick: startRenamingCard },
 		{
 			label: props.t()('cardName.delete'),
